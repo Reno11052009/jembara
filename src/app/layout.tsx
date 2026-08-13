@@ -21,21 +21,17 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SkillBridge",
-  description: "Cari kerja, mulai matchmaking-mu.",
+  title: "Jembatan Karya",
+  description: "Temukan talenta. Selesaikan project.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="id"
-      className={`${chakra.variable} ${inter.variable} ${jetbrains.variable}`}
+      className={`${chakra.variable} ${inter.variable} ${jetbrains.variable} h-full antialiased`}
     >
-      <body>
+      <body className="min-h-full flex flex-col">
         <SmoothScroll>{children}</SmoothScroll>
       </body>
     </html>

@@ -132,7 +132,7 @@ export default async function ProfilePage() {
                     </div>
                   </div>
                   <p className="text-gray-600 text-sm">
-                    "Kerjanya luar biasa cepat tanggap dan mengerti apa yang kami mau. Web toko kami sekarang terlihat modern dan keren sekali!"
+                    &quot;Kerjanya luar biasa cepat tanggap dan mengerti apa yang kami mau. Web toko kami sekarang terlihat modern dan keren sekali!&quot;
                   </p>
                 </div>
 
@@ -149,7 +149,7 @@ export default async function ProfilePage() {
                     </div>
                   </div>
                   <p className="text-gray-600 text-sm">
-                    "Desain UI aplikasinya sangat user-friendly untuk pelanggan kami yang rata-rata ibu-ibu. Kerjasama yang sangat menyenangkan!"
+                    &quot;Desain UI aplikasinya sangat user-friendly untuk pelanggan kami yang rata-rata ibu-ibu. Kerjasama yang sangat menyenangkan!&quot;
                   </p>
                 </div>
 
