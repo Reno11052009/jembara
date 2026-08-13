@@ -12,12 +12,93 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  STUDENT
+  UMKM
+  ADMIN
+}
+
 model user {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique
+  password  String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  student student?
+  umkm    umkm?
+  admin   admin?
+}
+
+model student {
+  id                 String          @id @default(uuid()) @db.Uuid
+  user_id            String          @unique @db.Uuid
+  name               String?
+  username           String          @unique
+  bio                String?
+  avatar             String?
+  no_telepon         String
+  location           String?
+  school             String
+  tingkat_pendidikan String
+  jurusan            String
+  rating             Float?
+  createdAt          DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt          DateTime        @updatedAt @db.Timestamp(6)
+  studentSkills      student_skill[]
+
+  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model umkm {
+  id             String   @id @default(uuid()) @db.Uuid
+  user_id        String   @unique @db.Uuid
+  name           String?
+  nama_usaha     String
+  deskripsi      String?
+  logo           String?
+  kategori_usaha String?
+  no_telepon     String
+  location       String?
+  website        String?
+  createdAt      DateTime @default(now()) @db.Timestamp(6)
+  updatedAt      DateTime @updatedAt @db.Timestamp(6)
+
+  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model skill {
+  id            String          @id @default(uuid()) @db.Uuid
+  name          String
+  kategori      String
+  createdAt     DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime        @updatedAt @db.Timestamp(6)
+  studentSkills student_skill[]
+
+  @@unique([name, kategori])
+}
+
+model student_skill {
   id         String   @id @default(uuid()) @db.Uuid
-  email      String   @unique
-  name       String?
-  no_telepon Int
-  password   String
+  student_id String   @db.Uuid
+  skill_id   String   @db.Uuid
   createdAt  DateTime @default(now()) @db.Timestamp(6)
-  updateAt   DateTime @updatedAt @db.Timestamp(6)
+  updatedAt  DateTime @updatedAt @db.Timestamp(6)
+
+  student student @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  skill   skill   @relation(fields: [skill_id], references: [id], onDelete: Cascade)
+}
+
+model admin {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String   @unique @db.Uuid
+  name       String?
+  avatar     String?
+  no_telepon String
+  location   String?
+  createdAt  DateTime @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime @updatedAt @db.Timestamp(6)
+
+  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
