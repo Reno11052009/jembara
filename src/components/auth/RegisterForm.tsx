@@ -1,0 +1,132 @@
+"use client";
+
+import { FormEvent, useMemo, useState } from "react";
+import InputField from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
+import { RegisterFormData, RegisterFormErrors, FormStatus } from "@/types/auth";
+import {
+  validateFullName,
+  validateEmail,
+  validatePassword,
+  validateConfirmPassword,
+} from "@/lib/validation";
+
+const initialData: RegisterFormData = {
+  fullName: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+};
+
+export default function RegisterForm() {
+  const [formData, setFormData] = useState<RegisterFormData>(initialData);
+  const [errors, setErrors] = useState<RegisterFormErrors>({});
+  const [status, setStatus] = useState<FormStatus>("idle");
+
+  function handleChange(field: keyof RegisterFormData, value: string) {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
+  }
+
+  function validate(): RegisterFormErrors {
+    return {
+      fullName: validateFullName(formData.fullName),
+      email: validateEmail(formData.email),
+      password: validatePassword(formData.password),
+      confirmPassword: validateConfirmPassword(
+        formData.password,
+        formData.confirmPassword
+      ),
+    };
+  }
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const nextErrors = validate();
+    const hasError = Object.values(nextErrors).some(Boolean);
+    setErrors(nextErrors);
+
+    if (hasError) {
+      setStatus("error");
+      return;
+    }
+
+    setStatus("submitting");
+    try {
+      // TODO: ganti dengan pemanggilan API register yang sebenarnya
+      await new Promise((resolve) => setTimeout(resolve, 900));
+      setStatus("success");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  const completion = useMemo(() => {
+    const fields = Object.values(formData);
+    const filled = fields.filter((v) => v.trim().length > 0).length;
+    return Math.round((filled / fields.length) * 100);
+  }, [formData]);
+
+  return (
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
+      <div>
+        <div className="mb-1.5 flex justify-between font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500">
+          <span>Profile Progress</span>
+          <span>{completion}%</span>
+        </div>
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-line">
+          <div
+            className="h-full rounded-full bg-xp transition-all duration-300"
+            style={{ width: `${completion}%` }}
+          />
+        </div>
+      </div>
+
+      <InputField
+        label="Nama Lengkap"
+        autoComplete="name"
+        placeholder="Nama kamu"
+        value={formData.fullName}
+        error={errors.fullName}
+        onChange={(e) => handleChange("fullName", e.target.value)}
+      />
+      <InputField
+        label="Email"
+        type="email"
+        autoComplete="email"
+        placeholder="kamu@email.com"
+        value={formData.email}
+        error={errors.email}
+        onChange={(e) => handleChange("email", e.target.value)}
+      />
+      <InputField
+        label="Password"
+        type="password"
+        autoComplete="new-password"
+        placeholder="Minimal 8 karakter"
+        value={formData.password}
+        error={errors.password}
+        onChange={(e) => handleChange("password", e.target.value)}
+      />
+      <InputField
+        label="Konfirmasi Password"
+        type="password"
+        autoComplete="new-password"
+        placeholder="Ulangi password"
+        value={formData.confirmPassword}
+        error={errors.confirmPassword}
+        onChange={(e) => handleChange("confirmPassword", e.target.value)}
+      />
+
+      {status === "success" && (
+        <p className="font-mono text-xs text-xp">
+          Akun dibuat. Menyiapkan profil kamu...
+        </p>
+      )}
+
+      <Button type="submit" isLoading={status === "submitting"}>
+        Gabung Matchmaking
+      </Button>
+    </form>
+  );
+}

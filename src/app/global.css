@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  --color-void: #0A0D16;
+  --color-surface: #141924;
+  --color-line: #232B3D;
+  --color-queue: #7C5CFF;
+  --color-queue-soft: #9B8CFF;
+  --color-xp: #FFB84D;
+  --color-alert: #FF5C7A;
+
+  --font-display: var(--font-chakra), sans-serif;
+  --font-body: var(--font-inter), sans-serif;
+  --font-mono: var(--font-jetbrains), monospace;
+
+  --shadow-glow-queue: 0 0 0 1px rgba(124, 92, 255, 0.4), 0 0 24px rgba(124, 92, 255, 0.35);
+  --shadow-glow-alert: 0 0 0 1px rgba(255, 92, 122, 0.4), 0 0 20px rgba(255, 92, 122, 0.25);
+
+  --animate-pulse-ring: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  70% { transform: scale(1.6); opacity: 0; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  @apply bg-void text-slate-100 font-body;
+}
+
+.bg-hexgrid {
+  background-image:
+    linear-gradient(30deg, rgba(124,92,255,0.08) 12%, transparent 12.5%, transparent 87%, rgba(124,92,255,0.08) 87.5%, rgba(124,92,255,0.08)),
+    linear-gradient(150deg, rgba(124,92,255,0.08) 12%, transparent 12.5%, transparent 87%, rgba(124,92,255,0.08) 87.5%, rgba(124,92,255,0.08)),
+    linear-gradient(30deg, rgba(124,92,255,0.08) 12%, transparent 12.5%, transparent 87%, rgba(124,92,255,0.08) 87.5%, rgba(124,92,255,0.08)),
+    linear-gradient(150deg, rgba(124,92,255,0.08) 12%, transparent 12.5%, transparent 87%, rgba(124,92,255,0.08) 87.5%, rgba(124,92,255,0.08));
+  background-size: 44px 76px;
+  background-position: 0 0, 0 0, 22px 38px, 22px 38px;
+}
+
+::selection {
+  background-color: var(--color-queue);
+  color: var(--color-void);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-queue-soft);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
