@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -12,12 +7,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  STUDENT
-  UMKM
-  ADMIN
-}
-
 model user {
   id        String   @id @default(uuid()) @db.Uuid
   email     String   @unique
@@ -25,15 +14,13 @@ model user {
   role      Role     @default(STUDENT)
   createdAt DateTime @default(now()) @db.Timestamp(6)
   updatedAt DateTime @updatedAt @db.Timestamp(6)
-
-  student student?
-  umkm    umkm?
-  admin   admin?
+  admin     admin?
+  student   student?
+  umkm      umkm?
 }
 
 model student {
   id                 String          @id @default(uuid()) @db.Uuid
-  user_id            String          @unique @db.Uuid
   name               String?
   username           String          @unique
   bio                String?
@@ -46,14 +33,13 @@ model student {
   rating             Float?
   createdAt          DateTime        @default(now()) @db.Timestamp(6)
   updatedAt          DateTime        @updatedAt @db.Timestamp(6)
+  user_id            String          @unique @db.Uuid
+  user               user            @relation(fields: [user_id], references: [id], onDelete: Cascade)
   studentSkills      student_skill[]
-
-  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model umkm {
   id             String   @id @default(uuid()) @db.Uuid
-  user_id        String   @unique @db.Uuid
   name           String?
   nama_usaha     String
   deskripsi      String?
@@ -64,8 +50,8 @@ model umkm {
   website        String?
   createdAt      DateTime @default(now()) @db.Timestamp(6)
   updatedAt      DateTime @updatedAt @db.Timestamp(6)
-
-  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id        String   @unique @db.Uuid
+  user           user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model skill {
@@ -85,20 +71,24 @@ model student_skill {
   skill_id   String   @db.Uuid
   createdAt  DateTime @default(now()) @db.Timestamp(6)
   updatedAt  DateTime @updatedAt @db.Timestamp(6)
-
-  student student @relation(fields: [student_id], references: [id], onDelete: Cascade)
-  skill   skill   @relation(fields: [skill_id], references: [id], onDelete: Cascade)
+  skill      skill    @relation(fields: [skill_id], references: [id], onDelete: Cascade)
+  student    student  @relation(fields: [student_id], references: [id], onDelete: Cascade)
 }
 
 model admin {
   id         String   @id @default(uuid()) @db.Uuid
-  user_id    String   @unique @db.Uuid
   name       String?
   avatar     String?
   no_telepon String
   location   String?
   createdAt  DateTime @default(now()) @db.Timestamp(6)
   updatedAt  DateTime @updatedAt @db.Timestamp(6)
+  user_id    String   @unique @db.Uuid
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
 
-  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+enum Role {
+  STUDENT
+  UMKM
+  ADMIN
 }
