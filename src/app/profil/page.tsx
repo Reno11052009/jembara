@@ -131,7 +131,7 @@ export default async function ProfilePage() {
                       5.0
                     </div>
                   </div>
-                  <p className="text-gray-600 font-geist text-sm">
+                  <p className="text-gray-600 text-sm">
                     "Kerjanya luar biasa cepat tanggap dan mengerti apa yang kami mau. Web toko kami sekarang terlihat modern dan keren sekali!"
                   </p>
                 </div>
@@ -148,7 +148,7 @@ export default async function ProfilePage() {
                       4.8
                     </div>
                   </div>
-                  <p className="text-gray-600 font-geist text-sm">
+                  <p className="text-gray-600 text-sm">
                     "Desain UI aplikasinya sangat user-friendly untuk pelanggan kami yang rata-rata ibu-ibu. Kerjasama yang sangat menyenangkan!"
                   </p>
                 </div>
