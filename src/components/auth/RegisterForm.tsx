@@ -70,13 +70,13 @@ export default function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
       <div>
-        <div className="mb-1.5 flex justify-between font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500">
+        <div className="mb-1.5 flex justify-between text-xs text-ink-muted">
           <span>Profile Progress</span>
-          <span>{completion}%</span>
+          <span className="font-medium text-brand">{completion}%</span>
         </div>
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-line">
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-hairline">
           <div
-            className="h-full rounded-full bg-xp transition-all duration-300"
+            className="h-full rounded-full bg-brand transition-all duration-300"
             style={{ width: `${completion}%` }}
           />
         </div>
@@ -119,7 +119,7 @@ export default function RegisterForm() {
       />
 
       {status === "success" && (
-        <p className="font-mono text-xs text-xp">
+        <p className="text-xs text-success">
           Akun dibuat. Menyiapkan profil kamu...
         </p>
       )}

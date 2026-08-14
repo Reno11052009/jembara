@@ -3,9 +3,9 @@
 import { FormEvent, useState } from "react";
 import InputField from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
+import Modal from "@/components/ui/Modal";
 import { LoginFormData, LoginFormErrors, FormStatus } from "@/types/auth";
 import { validateEmail, validatePassword } from "@/lib/validation";
-import Modal from "@/components/ui/Modal";
 
 export default function LoginForm() {
   const [formData, setFormData] = useState<LoginFormData>({
@@ -45,54 +45,56 @@ export default function LoginForm() {
       await new Promise((resolve) => setTimeout(resolve, 900));
       setStatus("success");
     } catch {
-        setStatus("error");
-        setModalOpen(true);
+      setStatus("error");
+      setModalOpen(true);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
-      <InputField
-        label="Email"
-        type="email"
-        autoComplete="email"
-        placeholder="kamu@email.com"
-        value={formData.email}
-        error={errors.email}
-        onChange={(e) => handleChange("email", e.target.value)}
-      />
-      <InputField
-        label="Password"
-        type="password"
-        autoComplete="current-password"
-        placeholder="••••••••"
-        value={formData.password}
-        error={errors.password}
-        onChange={(e) => handleChange("password", e.target.value)}
-      />
+    <>
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
+        <InputField
+          label="Email"
+          type="email"
+          autoComplete="email"
+          placeholder="kamu@email.com"
+          value={formData.email}
+          error={errors.email}
+          onChange={(e) => handleChange("email", e.target.value)}
+        />
+        <InputField
+          label="Password"
+          type="password"
+          autoComplete="current-password"
+          placeholder="••••••••"
+          value={formData.password}
+          error={errors.password}
+          onChange={(e) => handleChange("password", e.target.value)}
+        />
 
-      {status === "success" && (
-        <p className="font-mono text-xs text-xp">
-          Masuk berhasil. Mengarahkan ke dashboard...
-        </p>
-      )}
+        {status === "success" && (
+          <p className="text-xs text-success">
+            Masuk berhasil. Mengarahkan ke dashboard...
+          </p>
+        )}
 
-      <Button type="submit" isLoading={status === "submitting"}>
-        Masuk Antrean
-      </Button>
+        <Button type="submit" isLoading={status === "submitting"}>
+          Masuk Antrean
+        </Button>
+      </form>
 
       <Modal
-          isOpen={modalOpen}
-          onClose={() => setModalOpen(false)}
-          icon="error"
-          title="Koneksi ke server gagal"
-          description="Sepertinya ada gangguan saat proses matchmaking. Coba lagi dalam beberapa saat."
-          footer={
-            <a href="/help" className="text-queue-soft hover:text-queue">
-              Kenapa ini terjadi?
-            </a>
-          }
-        />
-    </form>
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        icon="error"
+        title="Koneksi ke server gagal"
+        description="Sepertinya ada gangguan saat proses matchmaking. Coba lagi dalam beberapa saat."
+        footer={
+          <a href="/help" className="text-brand hover:opacity-80">
+            Kenapa ini terjadi?
+          </a>
+        }
+      />
+    </>
   );
 }

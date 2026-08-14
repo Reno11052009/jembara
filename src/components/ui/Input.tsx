@@ -15,10 +15,7 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
 
     return (
       <div className="flex flex-col gap-1.5">
-        <label
-          htmlFor={inputId}
-          className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400"
-        >
+        <label htmlFor={inputId} className="text-sm font-medium text-ink">
           {label}
         </label>
         <input
@@ -26,15 +23,15 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
           id={inputId}
           aria-invalid={!!error}
           aria-describedby={error ? errorId : undefined}
-          className={`w-full rounded-md border bg-surface px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 outline-none transition-all duration-200 ${
+          className={`w-full rounded-lg border bg-card px-4 py-2.5 text-sm text-ink placeholder:text-ink-muted outline-none transition-colors duration-200 ${
             error
-              ? "border-alert/60 focus:border-alert focus:shadow-glow-alert"
-              : "border-line focus:border-queue focus:shadow-glow-queue"
+              ? "border-danger focus:border-danger"
+              : "border-hairline focus:border-brand"
           } ${className ?? ""}`}
           {...rest}
         />
         {error && (
-          <p id={errorId} className="font-mono text-xs text-alert">
+          <p id={errorId} className="text-xs text-danger">
             {error}
           </p>
         )}

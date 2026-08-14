@@ -36,31 +36,31 @@ export default function Modal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-void/80 backdrop-blur-sm px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 backdrop-blur-sm px-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm rounded-lg border border-line bg-surface p-6 text-center shadow-glow-alert"
+        className="w-full max-w-sm rounded-xl border border-hairline bg-card p-6 text-center shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 ${
-            isError ? "border-alert text-alert" : "border-xp text-xp"
+          className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full ${
+            isError ? "bg-danger-soft text-danger" : "bg-brand-soft text-brand"
           }`}
         >
-          <span className="font-display text-2xl">{isError ? "!" : "✓"}</span>
+          <span className="text-2xl font-bold">{isError ? "!" : "✓"}</span>
         </div>
 
-        <h2 id="modal-title" className="mt-4 font-display text-lg font-semibold text-slate-50">
+        <h2 id="modal-title" className="mt-4 text-lg font-semibold text-ink">
           {title}
         </h2>
-        <p className="mt-2 text-sm text-slate-400">{description}</p>
+        <p className="mt-2 text-sm text-ink-muted">{description}</p>
 
-        {footer && <div className="mt-4 font-mono text-xs text-slate-500">{footer}</div>}
+        {footer && <div className="mt-4 text-xs text-ink-muted">{footer}</div>}
 
         <button
           onClick={onClose}
-          className="mt-6 w-full rounded-md border border-line py-2 text-sm text-slate-300 transition-colors hover:border-queue hover:text-queue"
+          className="mt-6 w-full rounded-lg border border-hairline py-2 text-sm text-ink transition-colors hover:border-brand hover:text-brand"
         >
           Tutup
         </button>

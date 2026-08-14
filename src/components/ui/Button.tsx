@@ -16,13 +16,12 @@ export default function Button({
   ...rest
 }: ButtonProps) {
   const base =
-    "relative inline-flex w-full items-center justify-center gap-2 rounded-md px-5 py-3 font-display text-sm font-semibold tracking-wide transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50";
+    "relative inline-flex w-full items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50";
 
   const variants: Record<string, string> = {
-    primary:
-      "bg-queue text-void shadow-glow-queue hover:bg-queue-soft hover:-translate-y-0.5 active:translate-y-0",
+    primary: "bg-brand text-white hover:opacity-90",
     ghost:
-      "border border-line bg-transparent text-slate-200 hover:border-queue hover:text-queue",
+      "border border-hairline bg-transparent text-ink hover:border-brand hover:text-brand",
   };
 
   return (
@@ -33,7 +32,7 @@ export default function Button({
     >
       {isLoading ? (
         <>
-          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-void/40 border-t-void" />
+          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
           Memproses...
         </>
       ) : (
