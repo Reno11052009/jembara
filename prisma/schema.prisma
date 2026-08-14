@@ -7,6 +7,12 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  STUDENT
+  UMKM
+  ADMIN
+}
+
 model user {
   id        String   @id @default(uuid()) @db.Uuid
   email     String   @unique
@@ -85,10 +91,4 @@ model admin {
   updatedAt  DateTime @updatedAt @db.Timestamp(6)
   user_id    String   @unique @db.Uuid
   user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-}
-
-enum Role {
-  STUDENT
-  UMKM
-  ADMIN
 }

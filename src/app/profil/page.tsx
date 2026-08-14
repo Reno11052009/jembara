@@ -12,7 +12,7 @@ export default async function ProfilePage() {
             {/* Logo */}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-orange-500 rounded-md"></div>
-              <span className="font-extrabold text-xl tracking-tight">
+              <span className="font-extrabold font-unbounded text-xl tracking-tight">
                 Skill<span className="text-orange-500">Bridge</span>
               </span>
             </div>
@@ -31,19 +31,19 @@ export default async function ProfilePage() {
         <div className="flex flex-col lg:flex-row gap-6">
           
           {/* Left Sidebar */}
-          <div className="w-full lg:w-1/3 flex flex-col gap-6">
+          <div className="w-full lg:w-1/3 flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
             
             {/* Profile Card */}
             <ProfileCard />
 
             {/* Skills Card */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h3 className="font-bold text-lg mb-4">Keahlian & Tools</h3>
+              <h3 className="font-bold font-unbounded text-lg mb-4">Keahlian & Tools</h3>
               <div className="flex flex-wrap gap-2">
                 {['Figma', 'UI/UX Design', 'Wireframing', 'React.js', 'Tailwind CSS', 'JavaScript', 'User Research'].map((skill) => (
                   <span 
                     key={skill} 
-                    className="px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-700 text-xs font-medium rounded-md"
+                    className="px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-700 font-geist text-xs font-medium rounded-md"
                   >
                     {skill}
                   </span>
@@ -57,15 +57,15 @@ export default async function ProfilePage() {
             
             {/* About Section */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:p-8">
-              <h3 className="font-bold text-xl mb-3">Tentang Chello</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <h3 className="font-bold font-unbounded text-xl mb-3">Tentang Chello</h3>
+              <p className="text-gray-600 font-geist text-sm leading-relaxed">
                 Saya adalah siswa Ilmu Komputer di SMK PGRI 03 Malang yang fokus mendalami dunia UI/UX Design dan Frontend Web Development. Senang berkolaborasi dengan UMKM dalam membangun solusi produk digital yang rapi, cepat, dan fungsional.
               </p>
             </div>
 
             {/* Portfolio Section */}
             <div>
-              <h3 className="font-bold text-xl mb-4 ml-1">Portofolio Pilihan</h3>
+              <h3 className="font-bold font-unbounded text-xl mb-4 ml-1">Portofolio Pilihan</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {/* Portfolio Item 1 */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden group cursor-pointer hover:shadow-md transition-shadow">
@@ -74,8 +74,8 @@ export default async function ProfilePage() {
                     <img src="" alt="Web Toko Sepatu" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                   <div className="p-4">
-                    <h4 className="font-bold text-gray-900 mb-1">Redesign Web Toko Sepatu</h4>
-                    <p className="text-xs text-gray-500">UI/UX & Frontend</p>
+                    <h4 className="font-bold font-unbounded text-gray-900 mb-1">Redesign Web Toko Sepatu</h4>
+                    <p className="text-xs font-geist text-gray-500">UI/UX & Frontend</p>
                   </div>
                 </div>
 
@@ -85,8 +85,8 @@ export default async function ProfilePage() {
                     <img src="" alt="Apps Pemesanan Laundry" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                   <div className="p-4">
-                    <h4 className="font-bold text-gray-900 mb-1">Apps Pemesanan Laundry</h4>
-                    <p className="text-xs text-gray-500">Mobile UI Design</p>
+                    <h4 className="font-bold font-unbounded text-gray-900 mb-1">Apps Pemesanan Laundry</h4>
+                    <p className="text-xs font-geist text-gray-500">Mobile UI Design</p>
                   </div>
                 </div>
 
@@ -96,8 +96,8 @@ export default async function ProfilePage() {
                     <img src="" alt="Landing Page Event" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                   <div className="p-4">
-                    <h4 className="font-bold text-gray-900 mb-1">Landing Page Event UMKM</h4>
-                    <p className="text-xs text-gray-500">Web Development</p>
+                    <h4 className="font-bold font-unbounded text-gray-900 mb-1">Landing Page Event UMKM</h4>
+                    <p className="text-xs font-geist text-gray-500">Web Development</p>
                   </div>
                 </div>
 
@@ -107,8 +107,8 @@ export default async function ProfilePage() {
                     <img src="" alt="Sistem Kasir Pintar" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                   <div className="p-4">
-                    <h4 className="font-bold text-gray-900 mb-1">Sistem Kasir Pintar (Web)</h4>
-                    <p className="text-xs text-gray-500">Frontend Dev</p>
+                    <h4 className="font-bold font-unbounded text-gray-900 mb-1">Sistem Kasir Pintar (Web)</h4>
+                    <p className="text-xs font-geist text-gray-500">Frontend Dev</p>
                   </div>
                 </div>
               </div>
@@ -116,15 +116,15 @@ export default async function ProfilePage() {
 
             {/* Reviews Section */}
             <div className="mt-4">
-              <h3 className="font-bold text-xl mb-4 ml-1">Ulasan Klien UMKM</h3>
+              <h3 className="font-bold font-unbounded text-xl mb-4 ml-1">Ulasan Klien UMKM</h3>
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:p-8 flex flex-col gap-6">
                 
                 {/* Review 1 */}
                 <div className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h4 className="font-bold text-gray-900">Bpk. Cholik</h4>
-                      <p className="text-xs text-gray-500">Owner Toko Sepatu Jaya</p>
+                      <h4 className="font-bold font-unbounded text-gray-900">Bpk. Cholik</h4>
+                      <p className="text-xs font-geist text-gray-500">Owner Toko Sepatu Jaya</p>
                     </div>
                     <div className="flex items-center gap-1 text-sm font-bold">
                       <Star className="w-4 h-4 text-orange-500" fill="currentColor" />
@@ -132,7 +132,7 @@ export default async function ProfilePage() {
                     </div>
                   </div>
                   <p className="text-gray-600 text-sm">
-                    &quot;Kerjanya luar biasa cepat tanggap dan mengerti apa yang kami mau. Web toko kami sekarang terlihat modern dan keren sekali!&quot;
+                    "Kerjanya luar biasa cepat tanggap dan mengerti apa yang kami mau. Web toko kami sekarang terlihat modern dan keren sekali!"
                   </p>
                 </div>
 
@@ -140,8 +140,8 @@ export default async function ProfilePage() {
                 <div>
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h4 className="font-bold text-gray-900">Ibu Chotijah</h4>
-                      <p className="text-xs text-gray-500">Manager Laundry Bersih</p>
+                      <h4 className="font-bold font-unbounded text-gray-900">Ibu Chotijah</h4>
+                      <p className="text-xs font-geist text-gray-500">Manager Laundry Bersih</p>
                     </div>
                     <div className="flex items-center gap-1 text-sm font-bold">
                       <Star className="w-4 h-4 text-orange-500" fill="currentColor" />
@@ -149,7 +149,7 @@ export default async function ProfilePage() {
                     </div>
                   </div>
                   <p className="text-gray-600 text-sm">
-                    &quot;Desain UI aplikasinya sangat user-friendly untuk pelanggan kami yang rata-rata ibu-ibu. Kerjasama yang sangat menyenangkan!&quot;
+                    "Desain UI aplikasinya sangat user-friendly untuk pelanggan kami yang rata-rata ibu-ibu. Kerjasama yang sangat menyenangkan!"
                   </p>
                 </div>
 
