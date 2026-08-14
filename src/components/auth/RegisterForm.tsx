@@ -10,6 +10,7 @@ import {
   validatePassword,
   validateConfirmPassword,
 } from "@/lib/validation";
+import { registerAction } from "@/app/actions/auth";
 
 const initialData: RegisterFormData = {
   fullName: "",
@@ -21,11 +22,13 @@ const initialData: RegisterFormData = {
 export default function RegisterForm() {
   const [formData, setFormData] = useState<RegisterFormData>(initialData);
   const [errors, setErrors] = useState<RegisterFormErrors>({});
+  const [serverError, setServerError] = useState<string | null>(null);
   const [status, setStatus] = useState<FormStatus>("idle");
 
   function handleChange(field: keyof RegisterFormData, value: string) {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
+    if (serverError) setServerError(null);
   }
 
   function validate(): RegisterFormErrors {
@@ -52,12 +55,15 @@ export default function RegisterForm() {
     }
 
     setStatus("submitting");
-    try {
-      // TODO: ganti dengan pemanggilan API register yang sebenarnya
-      await new Promise((resolve) => setTimeout(resolve, 900));
-      setStatus("success");
-    } catch {
+    setServerError(null);
+
+    const result = await registerAction(formData);
+
+    if (result?.error) {
+      setServerError(result.error);
       setStatus("error");
+    } else {
+      setStatus("success");
     }
   }
 
@@ -121,6 +127,12 @@ export default function RegisterForm() {
       {status === "success" && (
         <p className="text-xs text-success">
           Akun dibuat. Menyiapkan profil kamu...
+        </p>
+      )}
+
+      {serverError && (
+        <p className="text-xs text-danger">
+          {serverError}
         </p>
       )}
 

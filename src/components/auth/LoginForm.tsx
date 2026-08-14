@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import { LoginFormData, LoginFormErrors, FormStatus } from "@/types/auth";
 import { validateEmail, validatePassword } from "@/lib/validation";
+import { loginAction } from "@/app/actions/auth";
 
 export default function LoginForm() {
   const [formData, setFormData] = useState<LoginFormData>({
@@ -13,12 +14,14 @@ export default function LoginForm() {
     password: "",
   });
   const [errors, setErrors] = useState<LoginFormErrors>({});
+  const [serverError, setServerError] = useState<string | null>(null);
   const [status, setStatus] = useState<FormStatus>("idle");
   const [modalOpen, setModalOpen] = useState(false);
 
   function handleChange(field: keyof LoginFormData, value: string) {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
+    if (serverError) setServerError(null);
   }
 
   function validate(): LoginFormErrors {
@@ -40,13 +43,15 @@ export default function LoginForm() {
     }
 
     setStatus("submitting");
-    try {
-      // TODO: ganti dengan pemanggilan API auth yang sebenarnya
-      await new Promise((resolve) => setTimeout(resolve, 900));
-      setStatus("success");
-    } catch {
+    setServerError(null);
+
+    const result = await loginAction(formData);
+
+    if (result?.error) {
+      setServerError(result.error);
       setStatus("error");
-      setModalOpen(true);
+    } else {
+      setStatus("success");
     }
   }
 
@@ -75,6 +80,12 @@ export default function LoginForm() {
         {status === "success" && (
           <p className="text-xs text-success">
             Masuk berhasil. Mengarahkan ke dashboard...
+          </p>
+        )}
+
+        {serverError && (
+          <p className="text-xs text-danger">
+            {serverError}
           </p>
         )}
 
