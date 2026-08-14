@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Chakra_Petch, Inter, JetBrains_Mono } from "next/font/google";
+import { Chakra_Petch, Inter, JetBrains_Mono, Geist, Unbounded } from "next/font/google";
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import "./global.css";
 
@@ -20,6 +20,16 @@ const jetbrains = JetBrains_Mono({
   variable: "--font-jetbrains",
 });
 
+const unbounded = Unbounded({
+  subsets: ["latin"],
+  variable: "--font-unbounded",
+});
+
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist",
+});
+
 export const metadata: Metadata = {
   title: "SkillBridge",
   description: "Cari kerja, mulai matchmaking-mu.",
@@ -33,7 +43,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${chakra.variable} ${inter.variable} ${jetbrains.variable}`}
+      className={`${chakra.variable} ${inter.variable} ${jetbrains.variable} ${unbounded.variable} ${geist.variable}`}
     >
       <body>
         <SmoothScroll>{children}</SmoothScroll>
