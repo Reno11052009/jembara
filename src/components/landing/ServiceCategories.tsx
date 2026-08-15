@@ -20,7 +20,7 @@ export default function ServiceCategories() {
         <h2 className="mt-2 font-display text-3xl font-black text-black">
           Layanan Digital Paling Dicari
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-sm text-ink-muted">
+        <p className="mx-auto mt-3 max-w-xl text-sm text-ink-muted" font-body>
           Temukan talenta terbaik berdasarkan keahlian spesifik yang
           dibutuhkan bisnis Anda.
         </p>
@@ -40,7 +40,7 @@ export default function ServiceCategories() {
                   <h3 className="font-display font-black text-ink">
                     {category.title}
                   </h3>
-                  <p className="font-roboto text-sm text-ink-muted">
+                  <p className="font-body text-sm text-ink-muted">
                     {category.activeProjectsLabel}
                   </p>
                 </div>

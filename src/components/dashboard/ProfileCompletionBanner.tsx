@@ -31,7 +31,7 @@ export default function ProfileCompletionBanner({
           </div>
         </div>
 
-        <Button variant="primary" className="whitespace-nowrap">
+        <Button variant="primary" className="whitespace-nowrap font-body font-black text-sm">
           LENGKAPI SEKARANG
         </Button>
       </div>

@@ -31,7 +31,7 @@ export default function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="text-sm text-black hover:text-brand transition-colors duration-200 ease-out font-black"
+              className="text-sm text-black hover:text-brand transition-colors duration-200 ease-out font-body font-black"
             >
               {link.label}
             </a>
@@ -44,7 +44,7 @@ export default function Navbar() {
           </Link>
           <Link
             href="/register"
-            className="rounded-full bg-ink px-5 py-2.5 text-sm font-black text-white hover:opacity-90"
+            className="rounded-full bg-ink px-5 py-2.5 text-sm font-body font-black text-white hover:opacity-90"
           >
             DAFTAR SEKARANG
           </Link>

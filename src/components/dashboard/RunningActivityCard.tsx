@@ -9,13 +9,13 @@ export default function RunningActivityCard({
 }: RunningActivityCardProps) {
   return (
     <div className="rounded-xl border border-hairline bg-card p-5">
-      <h3 className="text-2xl font-display font-black text-ink">Aktivitas Project Berjalan</h3>
+      <h3 className="text-lg font-display font-black text-ink">Aktivitas Project Berjalan</h3>
 
       <div className="mt-4 flex flex-col gap-4">
         {activities.map((activity) => (
           <div key={activity.id} className="rounded-lg bg-canvas p-4">
             <div className="flex items-start justify-between gap-2">
-              <p className="truncate text-xl font-display font-black text-ink">
+              <p className="truncate text-base font-display font-black text-ink">
                 {activity.title}
               </p>
               <span

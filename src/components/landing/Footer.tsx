@@ -15,7 +15,7 @@ export default function Footer() {
               Jembatan <span className="text-brand">Karya</span>
             </span>
           </div>
-          <p className="mt-3 text-sm text-ink-muted">
+          <p className="mt-3 text-sm font-body text-ink-muted">
             Pemberdayaan UMKM lokal Indonesia melalui inovasi, edukasi, dan
             kolaborasi talenta muda berdaya saing global.
           </p>
@@ -29,7 +29,7 @@ export default function Footer() {
             <ul className="mt-3 flex flex-col gap-2">
               {companyLinks.map((link) => (
                 <li key={link}>
-                  <a href="#" className="text-sm text-ink-muted hover:text-brand">
+                  <a href="#" className="text-sm font-body text-ink-muted hover:text-brand">
                     {link}
                   </a>
                 </li>
@@ -54,7 +54,7 @@ export default function Footer() {
       </div>
 
       <div className="mx-auto mt-10 flex max-w-5xl flex-col items-center justify-between gap-4 border-t border-hairline pt-6 sm:flex-row">
-        <p className="text-xs text-ink-muted">
+        <p className="text-xs font-body text-ink-muted">
           © 2026 Jembatan Karya Indonesia. Hak Cipta Dilindungi Undang-Undang.
         </p>
         <div className="flex gap-4 text-ink-muted">

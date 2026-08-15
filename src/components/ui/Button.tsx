@@ -4,7 +4,7 @@ import { ButtonHTMLAttributes } from "react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
-  variant?: "primary" | "ghost";
+  variant?: "primary" | "ghost" | "outline";
   fullWidth?: boolean;
 }
 
@@ -25,6 +25,8 @@ export default function Button({
     primary: "bg-brand text-white hover:opacity-90",
     ghost:
       "border border-hairline bg-transparent text-ink hover:border-brand hover:text-brand",
+    outline:
+      "border border-outline-black bg-transparent text-ink hover:border-brand hover:text-brand",
   };
 
   return (

@@ -19,7 +19,7 @@ export default function CtaSection() {
             <span className="text-brand">Jembatan Karya</span>?
           </span>
         </h2>
-        <p className="mt-4 text-lg text-slate-400">
+        <p className="mt-4 text-lg font-body text-slate-400">
           Daftarkan bisnis UMKM Anda atau profil mahasiswa bertalenta tinggi
           secara gratis sekarang juga.
         </p>
@@ -27,13 +27,13 @@ export default function CtaSection() {
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href="/register?role=umkm"
-            className="rounded-full bg-brand px-6 py-3 text-sm font-black text-white hover:opacity-90"
+            className="rounded-full bg-brand px-6 py-3 text-sm font-body font-black text-white hover:opacity-90"
           >
             DAFTAR SEBAGAI UMKM
           </Link>
           <Link
             href="/register?role=mahasiswa"
-            className="text-sm font-semibold text-white hover:text-brand"
+            className="text-sm font-body font-black uppercase text-white hover:text-brand"
           >
             Daftar Sebagai Mahasiswa
           </Link>

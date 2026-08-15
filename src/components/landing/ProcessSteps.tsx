@@ -14,13 +14,13 @@ export default function ProcessSteps() {
       }`}
     >
       <div className="mx-auto max-w-6xl text-center">
-        <p className="font-display text-xs font-black uppercase tracking-[0.15em] text-brand">
+        <p className="font-body text-xs font-black uppercase tracking-[0.15em] text-brand">
           Proses Sederhana
         </p>
         <h2 className="mt-2 font-display text-3xl font-black text-ink">
           Bagaimana Jembatan Karya Membantu Anda
         </h2>
-        <p className="font-roboto mx-auto mt-3 max-w-xl text-sm text-ink-muted">
+        <p className="font-body mx-auto mt-3 max-w-xl text-sm text-ink-muted">
           Dari pasang project hingga serah terima hasil kerja, semua
           dirancang aman dan transparan.
         </p>
@@ -37,7 +37,7 @@ export default function ProcessSteps() {
               <h3 className="font-display mt-3 text-base font-black text-ink">
                 {step.title}
               </h3>
-              <p className="font-roboto mt-2 text-sm text-ink-muted">
+              <p className="font-body mt-2 text-sm text-ink-muted">
                 {step.description}
               </p>
             </div>

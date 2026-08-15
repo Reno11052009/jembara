@@ -11,7 +11,7 @@ export default function RecentMessagesCard({
   return (
     <div className="rounded-xl border border-hairline bg-card p-5">
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-display font-black text-ink">Pesan Terbaru</h3>
+        <h3 className="text-lg font-display font-black text-ink">Pesan Terbaru</h3>
         <Link
           href="/dashboard/messages"
           className="text-sm font-medium text-brand hover:underline"
@@ -26,7 +26,7 @@ export default function RecentMessagesCard({
             <span className="h-12 w-12 shrink-0 rounded-full bg-hairline" />
             <div className="min-w-0">
               <div className="flex items-center justify-between gap-2">
-                <p className="truncate text-base font-display font-black text-ink">
+                <p className="truncate text-sm font-display font-black text-ink">
                   {message.senderName}
                 </p>
                 <span className="shrink-0 text-[12px] text-ink-muted">

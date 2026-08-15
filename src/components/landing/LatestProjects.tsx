@@ -26,7 +26,7 @@ export default function LatestProjects() {
         <h2 className="mt-2 font-display text-3xl font-black text-ink">
           Project Terbaru dari UMKM
         </h2>
-        <p className="font-roboto mx-auto mt-3 max-w-xl text-sm text-ink-muted">
+        <p className="font-body mx-auto mt-3 max-w-xl text-sm text-ink-muted">
           Lihat peluang kerja sama terbaru dan mulailah membangun portofolio
           hebat Anda hari ini.
         </p>
@@ -38,7 +38,7 @@ export default function LatestProjects() {
             className="rounded-xl border border-hairline bg-card p-6"
           >
             <div className="flex items-start justify-between gap-2">
-              <p className="font-roboto text-sm text-ink-muted">{project.clientName}</p>
+              <p className="font-body font-black text-sm text-ink-muted">{project.clientName}</p>
               {project.badge && (
                 <span
                   className={`font-display shrink-0 rounded-full px-2.5 py-1 text-xs font-black ${badgeStyles[project.badge]}`}
@@ -50,10 +50,10 @@ export default function LatestProjects() {
             
             <h3 className="mt-2 font-display text-base font-black text-ink">{project.title}</h3>
             
-            <p className="font-roboto mt-4 text-xs text-ink-muted">Estimasi Budget</p>
+            <p className="font-body mt-4 text-xs text-ink-muted">Estimasi Budget</p>
             <p className="font-display text-sm font-black text-brand">{project.budgetLabel}</p>
             
-            <div className="font-roboto mt-3 flex items-center gap-1.5 text-xs text-ink-muted">
+            <div className="font-body mt-3 flex items-center gap-1.5 text-xs text-ink">
               <Calendar size={12} />
               {project.durationLabel}
             </div>
@@ -62,7 +62,7 @@ export default function LatestProjects() {
               {project.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="font-roboto rounded-md bg-canvas px-2.5 py-1 text-xs text-ink-muted"
+                  className="font-roboto rounded-md bg-canvas px-2.5 py-1 text-xs text-ink"
                 >
                   {tag}
                 </span>

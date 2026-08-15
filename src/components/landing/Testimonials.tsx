@@ -29,12 +29,14 @@ export default function Testimonials() {
               key={index}
               className="rounded-xl border border-hairline bg-card p-6"
             >
-              <p className="text-lg text-black">&ldquo;{testimonial.quote}&rdquo;</p>
+              <p className="text-lg text-black" font-body>&ldquo;{testimonial.quote}&rdquo;</p>
               <div className="mt-4 flex items-center gap-3">
                 <div className="h-12 w-12 shrink-0 rounded-full bg-brand-soft" />
                 <div>
                   <p className="text-base font-display font-black text-ink">{testimonial.name}</p>
-                  <p className="text-sm text-ink-muted">{testimonial.role}</p>
+                  <p className="text-sm text-ink-muted" font-body>
+                    {testimonial.role}
+                  </p>
                 </div>
               </div>
             </div>

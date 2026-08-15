@@ -21,7 +21,7 @@ export default function TopTalent() {
         <h2 className="mt-2 font-display text-3xl font-black text-ink">
           Mahasiswa Terbaik Minggu Ini
         </h2> 
-        <p className="mx-auto mt-3 max-w-xl text-sm text-ink-muted">
+        <p className="mx-auto mt-3 max-w-xl text-sm text-ink-muted" font-body>
           Lihat profil mahasiswa berprestasi dengan rekam jejak penyelesaian
           project yang mengagumkan.
         </p>
@@ -33,7 +33,7 @@ export default function TopTalent() {
               className="rounded-xl border border-hairline bg-card p-10"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-18 w-18 shrink-0 items-center justify-center rounded-full bg-brand-soft text-2xl font-display font-black text-brand">
+                <div className="flex h-18 w-18 shrink-0 items-center justify-center rounded-full bg-brand-soft text-lg font-display font-black text-brand">
                   {talent.name
                     .split(" ")
                     .map((part) => part[0])
@@ -41,19 +41,21 @@ export default function TopTalent() {
                 </div>
                 <div>
                   <p className="font-display font-black text-ink">{talent.name}</p>
-                  <p className="text-base text-ink-muted">{talent.school}</p>
+                  <p className="text-base text-ink-muted" font-body>
+                    {talent.school}
+                  </p>
                 </div>
               </div>
 
               <p className="mt-4 text-base font-display font-black text-brand">
                 {talent.specialty}
               </p>
-              <div className="mt-1 flex items-center gap-1 text-sm text-ink-muted">
+              <div className="mt-1 flex items-center gap-1 text-sm text-ink-muted" font-body>
                 <Star size={16} className="fill-brand text-brand" />
                 {talent.rating.toFixed(1)} · {talent.completedLabel}
               </div>
 
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div className="mt-6 flex flex-wrap gap-3" font-body>
                 {talent.skills.map((skill) => (
                   <span
                     key={skill}
