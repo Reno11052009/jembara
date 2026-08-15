@@ -23,7 +23,7 @@ export default function Footer() {
 
         <div className="flex gap-16">
           <div>
-            <p className="text-xs font-display font-black uppercase tracking-[0.1em] text-black">
+            <p className="text-xs font-display font-black uppercase tracking-widest text-black">
               Perusahaan
             </p>
             <ul className="mt-3 flex flex-col gap-2">
@@ -37,7 +37,7 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <p className="text-xs font-display font-black uppercase tracking-[0.1em] text-black">
+            <p className="text-xs font-display font-black uppercase tracking-widest text-black">
               Fitur Utama
             </p>
             <ul className="mt-3 flex flex-col gap-2">
