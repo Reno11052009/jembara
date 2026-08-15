@@ -9,7 +9,7 @@ export default function StatsBar() {
     <section
       ref={ref}
       id="statistik"
-      className={`bg-ink px-6 py-14 transition-all duration-700 ease-out ${
+      className={`bg-black px-6 py-14 transition-all duration-700 ease-out ${
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
       }`}
     >
@@ -19,7 +19,7 @@ export default function StatsBar() {
             <p className="font-display text-3xl font-bold text-brand">
               {stat.value}
             </p>
-            <p className="mt-1 text-sm text-slate-400">{stat.label}</p>
+            <p className="mt-1 font-display text-sm  text-white">{stat.label}</p>
           </div>
         ))}
       </div>

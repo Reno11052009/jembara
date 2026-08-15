@@ -15,12 +15,12 @@ export default function TopTalent() {
       }`}
     >
       <div className="mx-auto max-w-5xl text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">
+        <p className="text-xs font-display font-black uppercase tracking-[0.15em] text-brand">
           Talenta Berbakat
         </p>
-        <h2 className="mt-2 font-display text-3xl font-bold text-ink">
+        <h2 className="mt-2 font-display text-3xl font-black text-ink">
           Mahasiswa Terbaik Minggu Ini
-        </h2>
+        </h2> 
         <p className="mx-auto mt-3 max-w-xl text-sm text-ink-muted">
           Lihat profil mahasiswa berprestasi dengan rekam jejak penyelesaian
           project yang mengagumkan.
@@ -30,34 +30,34 @@ export default function TopTalent() {
           {topTalents.map((talent) => (
             <div
               key={talent.id}
-              className="rounded-xl border border-hairline bg-card p-6"
+              className="rounded-xl border border-hairline bg-card p-10"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-semibold text-brand">
+                <div className="flex h-18 w-18 shrink-0 items-center justify-center rounded-full bg-brand-soft text-2xl font-display font-black text-brand">
                   {talent.name
                     .split(" ")
                     .map((part) => part[0])
                     .join("")}
                 </div>
                 <div>
-                  <p className="font-semibold text-ink">{talent.name}</p>
-                  <p className="text-xs text-ink-muted">{talent.school}</p>
+                  <p className="font-display font-black text-ink">{talent.name}</p>
+                  <p className="text-base text-ink-muted">{talent.school}</p>
                 </div>
               </div>
 
-              <p className="mt-4 text-sm font-semibold text-brand">
+              <p className="mt-4 text-base font-display font-black text-brand">
                 {talent.specialty}
               </p>
-              <div className="mt-1 flex items-center gap-1 text-xs text-ink-muted">
-                <Star size={12} className="fill-brand text-brand" />
+              <div className="mt-1 flex items-center gap-1 text-sm text-ink-muted">
+                <Star size={16} className="fill-brand text-brand" />
                 {talent.rating.toFixed(1)} · {talent.completedLabel}
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-6 flex flex-wrap gap-3">
                 {talent.skills.map((skill) => (
                   <span
                     key={skill}
-                    className="rounded-md bg-canvas px-2.5 py-1 text-xs text-ink-muted"
+                    className="rounded-md bg-canvas px-2.5 py-1 text-xs text-black"
                   >
                     {skill}
                   </span>

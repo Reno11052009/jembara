@@ -9,7 +9,7 @@ export default function PageHeader({ title, subtitle }: PageHeaderProps) {
   return (
     <div className="mb-6 flex items-start justify-between">
       <div>
-        <h1 className="font-display text-2xl font-bold text-ink">{title}</h1>
+        <h1 className="font-display text-2xl font-black text-ink">{title}</h1>
         <p className="mt-1 text-sm text-ink-muted">{subtitle}</p>
       </div>
       <div className="flex items-center gap-4">

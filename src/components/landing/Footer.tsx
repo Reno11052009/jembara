@@ -11,7 +11,7 @@ export default function Footer() {
         <div className="max-w-xs">
           <div className="flex items-center gap-2">
             <span className="h-6 w-6 rounded-md bg-brand" />
-            <span className="font-display text-lg font-bold text-ink">
+            <span className="font-display text-lg font-black text-ink">
               Jembatan <span className="text-brand">Karya</span>
             </span>
           </div>
@@ -23,7 +23,7 @@ export default function Footer() {
 
         <div className="flex gap-16">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-muted">
+            <p className="text-xs font-display font-black uppercase tracking-[0.1em] text-black">
               Perusahaan
             </p>
             <ul className="mt-3 flex flex-col gap-2">
@@ -37,7 +37,7 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-muted">
+            <p className="text-xs font-display font-black uppercase tracking-[0.1em] text-black">
               Fitur Utama
             </p>
             <ul className="mt-3 flex flex-col gap-2">

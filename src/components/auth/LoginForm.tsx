@@ -78,7 +78,7 @@ export default function LoginForm() {
           </p>
         )}
 
-        <Button type="submit" isLoading={status === "submitting"}>
+        <Button type="submit" isLoading={status === "submitting"} fullWidth>
           Masuk Antrean
         </Button>
       </form>

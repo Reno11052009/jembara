@@ -124,7 +124,7 @@ export default function RegisterForm() {
         </p>
       )}
 
-      <Button type="submit" isLoading={status === "submitting"}>
+      <Button type="submit" isLoading={status === "submitting"} fullWidth>
         Gabung Matchmaking
       </Button>
     </form>
