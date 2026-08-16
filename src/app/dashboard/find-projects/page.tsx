@@ -2,6 +2,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import FilterBar from "@/components/projects/FilterBar";
 import ProjectCard from "@/components/projects/ProjectCard";
 import { mockProjects } from "@/lib/mock-projects";
+import Footer from "@/components/landing/Footer";
 
 export default function FindProjectsPage() {
   return (
@@ -25,6 +26,9 @@ export default function FindProjectsPage() {
         {mockProjects.map((project) => (
           <ProjectCard key={project.id} project={project} />
         ))}
+      </div>
+      <div className="-mx-6 mt-10 sm:-mx-8">
+        <Footer />
       </div>
     </>
   );
