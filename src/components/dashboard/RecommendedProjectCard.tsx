@@ -27,11 +27,11 @@ export default function RecommendedProjectCard({
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-6 text-base">
           <div>
-            <p className="text-ink-muted" font-body>Budget</p>
+            <p className="text-ink-muted font-body">Budget</p>
             <p className="mt-0.5 font-black font-display text-base text-ink">{project.budgetLabel}</p>
           </div>
           <div>
-            <p className="text-ink-muted" font-body>
+            <p className="text-ink-muted font-body" >
               Deadline
             </p>
             <p className="mt-0.5 font-black font-display text-base text-ink">{project.deadlineLabel}</p>
@@ -41,7 +41,7 @@ export default function RecommendedProjectCard({
           {project.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-md bg-canvas px-2.5 py-1 text-sm text-ink" font-body
+              className="rounded-md bg-canvas px-2.5 py-1 text-sm text-ink font-body"
             >
               {tag}
             </span>

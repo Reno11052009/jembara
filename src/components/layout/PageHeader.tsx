@@ -15,7 +15,7 @@ export default function PageHeader({ title, subtitle }: PageHeaderProps) {
       <div className="flex items-center gap-4">
         <button
           aria-label="Notifikasi"
-          className="rounded-full p-2 text-ink-muted transition-colors hover:bg-black/5"
+          className="rounded-full p-2 text-ink transition-colors hover:bg-black/5"
         >
           <Bell size={20} />
         </button>
