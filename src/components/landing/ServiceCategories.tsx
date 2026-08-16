@@ -20,7 +20,7 @@ export default function ServiceCategories() {
         <h2 className="mt-2 font-display text-3xl font-black text-black">
           Layanan Digital Paling Dicari
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-sm text-ink-muted" font-body>
+        <p className="font-body mx-auto mt-3 max-w-xl text-sm text-ink-muted">
           Temukan talenta terbaik berdasarkan keahlian spesifik yang
           dibutuhkan bisnis Anda.
         </p>

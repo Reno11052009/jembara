@@ -21,7 +21,7 @@ export default function TopTalent() {
         <h2 className="mt-2 font-display text-3xl font-black text-ink">
           Mahasiswa Terbaik Minggu Ini
         </h2> 
-        <p className="mx-auto mt-3 max-w-xl text-sm text-ink-muted" font-body>
+        <p className="mx-auto mt-3 max-w-xl text-sm font-body text-ink-muted">
           Lihat profil mahasiswa berprestasi dengan rekam jejak penyelesaian
           project yang mengagumkan.
         </p>
@@ -41,7 +41,7 @@ export default function TopTalent() {
                 </div>
                 <div>
                   <p className="font-display font-black text-ink">{talent.name}</p>
-                  <p className="text-base text-ink-muted" font-body>
+                  <p className="text-base font-body text-ink-muted">
                     {talent.school}
                   </p>
                 </div>
@@ -50,12 +50,12 @@ export default function TopTalent() {
               <p className="mt-4 text-base font-display font-black text-brand">
                 {talent.specialty}
               </p>
-              <div className="mt-1 flex items-center gap-1 text-sm text-ink-muted" font-body>
+              <div className="mt-1 flex items-center gap-1 text-sm font-body text-ink-muted">
                 <Star size={16} className="fill-brand text-brand" />
                 {talent.rating.toFixed(1)} · {talent.completedLabel}
               </div>
 
-              <div className="mt-6 flex flex-wrap gap-3" font-body>
+              <div className="mt-6 flex flex-wrap gap-3 font-body">
                 {talent.skills.map((skill) => (
                   <span
                     key={skill}
