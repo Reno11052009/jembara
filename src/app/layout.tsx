@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { Unbounded, Geist, Geist_Mono } from "next/font/google";
+import { Unbounded } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import "./global.css";
 
@@ -9,31 +11,16 @@ const unbounded = Unbounded({
   variable: "--font-unbounded",
 });
 
-const geist = Geist({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-geist",
-});
-
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-geist-mono",
-});
-
 export const metadata: Metadata = {
   title: "Jembatan Karya",
   description: "Temukan talenta. Selesaikan project.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="id"
-      className={`${unbounded.variable} ${geist.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
-        <SmoothScroll>{children}</SmoothScroll>
+    <html lang="id">
+      <body className={`${unbounded.variable} ${GeistSans.variable} ${GeistMono.variable} font-body`}>
+        {children}
       </body>
     </html>
   );

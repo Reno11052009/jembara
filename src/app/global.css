@@ -21,8 +21,12 @@
   --color-danger-soft: #FEE2E2;
   --color-success: #16A34A;
 
-  --font-display: var(--font-unbounded), sans-serif;
+  /* --font-display: var(--font-unbounded), sans-serif;
   --font-body: var(--font-geist), sans-serif;
+  --font-mono: var(--font-geist-mono), monospace; */
+
+  --font-display: var(--font-unbounded), sans-serif;
+  --font-body: var(--font-geist-sans), sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
 
   --shadow-glow-queue: 0 0 0 1px rgba(124, 92, 255, 0.4), 0 0 24px rgba(124, 92, 255, 0.35);
