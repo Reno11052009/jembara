@@ -7,18 +7,18 @@ export default function Testimonials() {
   return (
     <section
       ref={ref}
-      className={`px-6 py-20 transition-all duration-700 ease-out ${
+      className={`px-6 py-20 font-sans transition-all duration-700 ease-out ${
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
       }`}
     >
-      <div className="mx-auto max-w-4xl text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">
+      <div className="mx-auto max-w-7xl text-center">
+        <p className="font-display text-lg font-black uppercase tracking-[0.15em] text-brand">
           Cerita Sukses
         </p>
-        <h2 className="mt-2 font-display text-3xl font-bold text-ink">
+        <h2 className="mt-2 font-display text-4xl font-black text-ink">
           Apa Kata Mereka Tentang Kami
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-sm text-ink-muted">
+        <p className="mx-auto mt-3 max-w-xl text-base text-ink-muted">
           Dari para pelaku usaha kecil hingga talenta muda masa depan negeri
           ini.
         </p>
@@ -29,12 +29,14 @@ export default function Testimonials() {
               key={index}
               className="rounded-xl border border-hairline bg-card p-6"
             >
-              <p className="text-sm text-ink-muted">&ldquo;{testimonial.quote}&rdquo;</p>
+              <p className="text-lg text-black font-body">&ldquo;{testimonial.quote}&rdquo;</p>
               <div className="mt-4 flex items-center gap-3">
-                <div className="h-9 w-9 shrink-0 rounded-full bg-brand-soft" />
+                <div className="h-12 w-12 shrink-0 rounded-full bg-brand-soft" />
                 <div>
-                  <p className="text-sm font-semibold text-ink">{testimonial.name}</p>
-                  <p className="text-xs text-ink-muted">{testimonial.role}</p>
+                  <p className="text-base font-display font-black text-ink">{testimonial.name}</p>
+                  <p className="text-sm font-body text-ink-muted">
+                    {testimonial.role}
+                  </p>
                 </div>
               </div>
             </div>

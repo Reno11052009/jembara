@@ -16,10 +16,10 @@ export default function StatsBar() {
       <div className="mx-auto grid max-w-5xl grid-cols-2 gap-8 text-center lg:grid-cols-4">
         {stats.map((stat) => (
           <div key={stat.label}>
-            <p className="font-display text-3xl font-bold text-brand">
+            <p className="font-display font-black text-3xl text-brand">
               {stat.value}
             </p>
-            <p className="mt-1 text-sm text-slate-400">{stat.label}</p>
+            <p className="mt-1 font-body text-sm  text-white">{stat.label}</p>
           </div>
         ))}
       </div>

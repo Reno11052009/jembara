@@ -11,7 +11,7 @@ import {
   validateConfirmPassword,
   validateAddress,
 } from "@/lib/validation";
-import { createClient } from "@/lib/client";
+import { registerAction } from "@/app/actions/auth";
 
 const initialData: RegisterFormData = {
   fullName: "",
@@ -25,13 +25,11 @@ export default function RegisterForm() {
   const router = useRouter();
   const [formData, setFormData] = useState<RegisterFormData>(initialData);
   const [errors, setErrors] = useState<RegisterFormErrors>({});
-  const [serverError, setServerError] = useState<string | null>(null);
   const [status, setStatus] = useState<FormStatus>("idle");
 
   function handleChange(field: keyof RegisterFormData, value: string) {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
-    if (serverError) setServerError(null);
   }
 
   function validate(): RegisterFormErrors {
@@ -60,25 +58,13 @@ export default function RegisterForm() {
     setStatus("submitting");
     setServerError(null);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
-      email: formData.email,
-      password: formData.password,
-      options: {
-        data: {
-          full_name: formData.fullName,
-          address: formData.address,
-        },
-      },
-    });
+    const result = await registerAction(formData);
 
-    if (error) {
-      setServerError(error.message);
+    if (result?.error) {
+      setServerError(result.error);
       setStatus("error");
     } else {
       setStatus("success");
-      router.push("/pilih-role");
-      router.refresh();
     }
   }
 
@@ -154,13 +140,7 @@ export default function RegisterForm() {
         </p>
       )}
 
-      {serverError && (
-        <p className="text-xs text-danger">
-          {serverError}
-        </p>
-      )}
-
-      <Button type="submit" isLoading={status === "submitting"}>
+      <Button type="submit" isLoading={status === "submitting"} fullWidth>
         Gabung Matchmaking
       </Button>
     </form>

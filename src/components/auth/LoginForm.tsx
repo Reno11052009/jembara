@@ -6,8 +6,8 @@ import InputField from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import { LoginFormData, LoginFormErrors, FormStatus } from "@/types/auth";
-import { validatePassword } from "@/lib/validation";
-import { createClient } from "@/lib/client";
+import { validateEmail, validatePassword } from "@/lib/validation";
+import { loginAction } from "@/app/actions/auth";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -16,14 +16,12 @@ export default function LoginForm() {
     password: "",
   });
   const [errors, setErrors] = useState<LoginFormErrors>({});
-  const [serverError, setServerError] = useState<string | null>(null);
   const [status, setStatus] = useState<FormStatus>("idle");
   const [modalOpen, setModalOpen] = useState(false);
 
   function handleChange(field: keyof LoginFormData, value: string) {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
-    if (serverError) setServerError(null);
   }
 
   function validate(): LoginFormErrors {
@@ -46,19 +44,13 @@ export default function LoginForm() {
     setStatus("submitting");
     setServerError(null);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email: formData.email,
-      password: formData.password,
-    });
+    const result = await loginAction(formData);
 
-    if (error) {
-      setServerError(error.message);
+    if (result?.error) {
+      setServerError(result.error);
       setStatus("error");
     } else {
       setStatus("success");
-      router.push("/dashboard");
-      router.refresh();
     }
   }
 
@@ -90,13 +82,7 @@ export default function LoginForm() {
           </p>
         )}
 
-        {serverError && (
-          <p className="text-xs text-danger">
-            {serverError}
-          </p>
-        )}
-
-        <Button type="submit" isLoading={status === "submitting"}>
+        <Button type="submit" isLoading={status === "submitting"} fullWidth>
           Masuk Antrean
         </Button>
       </form>

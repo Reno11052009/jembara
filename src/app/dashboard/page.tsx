@@ -1,32 +1,57 @@
-import { verifySession } from "@/lib/session";
-import { logoutAction } from "@/app/actions/auth";
-import Button from "@/components/ui/Button";
+import PageHeader from "@/components/layout/PageHeader";
+import Footer from "@/components/landing/Footer";
+import ProfileCompletionBanner from "@/components/dashboard/ProfileCompletionBanner";
+import StatCard from "@/components/dashboard/StatCard";
+import RecommendedProjectCard from "@/components/dashboard/RecommendedProjectCard";
+import RunningActivityCard from "@/components/dashboard/RunningActivityCard";
+import RecentMessagesCard from "@/components/dashboard/RecentMessagesCard";
+import {
+  profileCompletionPercent,
+  dashboardStats,
+  recommendedProjects,
+  runningActivities,
+  recentMessages,
+} from "@/lib/mock-dashboard";
 
-export default async function DashboardPage() {
-  const session = await verifySession();
-
+export default function DashboardPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-sand p-6">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm">
-        <h1 className="mb-2 text-2xl font-bold tracking-tight text-ink">Dashboard</h1>
-        <p className="mb-6 text-sm text-ink-muted">
-          Selamat datang kembali. Anda berhasil login!
-        </p>
-        
-        <div className="mb-6 rounded-lg bg-sand-muted p-4">
-          <p className="text-sm font-medium text-ink">User ID:</p>
-          <p className="text-xs text-ink-muted break-all">{session?.userId}</p>
-          
-          <p className="mt-3 text-sm font-medium text-ink">Role:</p>
-          <p className="text-xs text-ink-muted">{session?.role}</p>
+    <>
+      <PageHeader
+        title ="Halo, Chello! 👋"
+        subtitle="Berikut adalah update aktivitas project dan kecocokan hari ini."
+      />
+
+      <div className="flex flex-col gap-6">
+        <ProfileCompletionBanner percent={profileCompletionPercent} />
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {dashboardStats.map((stat) => (
+            <StatCard key={stat.id} stat={stat} />
+          ))}
         </div>
 
-        <form action={logoutAction}>
-          <Button type="submit" className="w-full">
-            Keluar
-          </Button>
-        </form>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="flex flex-col gap-4 lg:col-span-2">
+            <h2 className="text-xl font-display font-black text-ink">
+              Project yang Cocok Untukmu
+            </h2>
+            <div className="flex flex-col gap-5">
+              {recommendedProjects.map((project) => (
+                <RecommendedProjectCard key={project.id} project={project} />
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-6">
+            <RunningActivityCard activities={runningActivities} />
+            <RecentMessagesCard messages={recentMessages} />
+          </div>
+        </div>
       </div>
-    </div>
+
+      <div className="-mx-6 mt-10 sm:-mx-8">
+        <Footer />
+      </div>
+    </>
   );
 }

@@ -7,16 +7,19 @@ export default function CtaSection() {
   return (
     <section
       ref={ref}
-      className={`bg-ink px-6 py-20 text-center transition-all duration-700 ease-out ${
+      className={`bg-black px-6 py-20 text-center transition-all duration-700 ease-out ${
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
       }`}
     >
       <div className="mx-auto max-w-2xl">
-        <h2 className="font-display text-3xl font-bold text-white">
-          Siap Memulai Langkah Anda Bersama{" "}
-          <span className="text-brand">Jembatan Karya</span>?
+        <h2 className="font-display text-4xl font-black text-white">
+          Siap Memulai Langkah Anda
+          <span className="block">
+            Bersama{' '}
+            <span className="text-brand">Jembatan Karya</span>?
+          </span>
         </h2>
-        <p className="mt-4 text-sm text-slate-400">
+        <p className="mt-4 text-lg font-body text-slate-400">
           Daftarkan bisnis UMKM Anda atau profil mahasiswa bertalenta tinggi
           secara gratis sekarang juga.
         </p>
@@ -24,13 +27,13 @@ export default function CtaSection() {
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href="/register?role=umkm"
-            className="rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white hover:opacity-90"
+            className="rounded-full bg-brand px-6 py-3 text-sm font-body font-black text-white hover:opacity-90"
           >
-            Daftar Sebagai UMKM
+            DAFTAR SEBAGAI UMKM
           </Link>
           <Link
             href="/register?role=mahasiswa"
-            className="text-sm font-semibold text-white hover:text-brand"
+            className="text-sm font-body font-black uppercase text-white hover:text-brand"
           >
             Daftar Sebagai Mahasiswa
           </Link>

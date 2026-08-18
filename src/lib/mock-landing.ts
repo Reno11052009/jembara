@@ -57,21 +57,21 @@ export const topTalents: Talent[] = [
   },
   {
     id: "2",
-    name: "Chello Arta",
+    name: "My Reno Arsha",
     school: "SMK PGRI 03 Malang",
-    specialty: "Frontend Developer",
+    specialty: "Backend Developer",
     rating: 4.8,
     completedLabel: "9 Selesai",
     skills: ["React", "Tailwind CSS", "JavaScript"],
   },
   {
     id: "3",
-    name: "Chello Arta",
+    name: "Ozakae Corael",
     school: "SMK PGRI 03 Malang",
-    specialty: "Copywriter & Creator",
+    specialty: "Frontend & Creator",
     rating: 5.0,
     completedLabel: "15 Selesai",
-    skills: ["Content SEO", "Copywriting", "Branding"],
+    skills: ["Penguat Rupiah", "Web Design", "WordPress"],
   },
 ];
 
@@ -97,7 +97,7 @@ export const latestProjects: LandingProject[] = [
   {
     id: "3",
     clientName: "Kopi Seduh Rileks",
-    badge: "Popular",
+    badge: "Premium",
     title: "Sosial Media Management & Campaign",
     budgetLabel: "Rp 2.500.000",
     durationLabel: "14 Hari",

@@ -1,23 +1,24 @@
 import type { Metadata } from "next";
-import { Chakra_Petch, Inter, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import "./global.css";
 
-const chakra = Chakra_Petch({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-chakra",
+const unbounded = localFont({
+  src: "../fonts/Unbounded-Variable.ttf",
+  variable: "--font-unbounded",
+  weight: "200 900",
 });
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
+const geistSans = localFont({
+  src: "../fonts/Geist-Variable.woff2",
+  variable: "--font-geist-sans",
+  weight: "100 900",
 });
 
-const jetbrains = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-jetbrains",
+const geistMono = localFont({
+  src: "../fonts/GeistMono-Variable.woff2",
+  variable: "--font-geist-mono",
+  weight: "100 900",
 });
 
 export const metadata: Metadata = {
@@ -29,7 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="id"
-      className={`${chakra.variable} ${inter.variable} ${jetbrains.variable} h-full antialiased`}
+      className={`${unbounded.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <SmoothScroll>{children}</SmoothScroll>

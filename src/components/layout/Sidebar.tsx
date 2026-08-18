@@ -22,14 +22,14 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Find Projects", href: "/find-projects", icon: Search },
-  { label: "My Proposals", href: "/proposals", icon: FileText },
-  { label: "Active Projects", href: "/active-projects", icon: Briefcase },
-  { label: "Portfolio", href: "/portfolio", icon: ImageIcon },
-  { label: "Messages", href: "/messages", icon: MessageSquare },
-  { label: "Earnings", href: "/earnings", icon: Wallet },
-  { label: "Profile", href: "/profile", icon: User },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Find Projects", href: "/dashboard/find-projects", icon: Search },
+  { label: "My Proposals", href: "/dashboard/proposals", icon: FileText },
+  { label: "Active Projects", href: "/dashboard/active-projects", icon: Briefcase },
+  { label: "Portfolio", href: "/dashboard/portfolio", icon: ImageIcon },
+  { label: "Messages", href: "/dashboard/messages", icon: MessageSquare },
+  { label: "Earnings", href: "/dashboard/earnings", icon: Wallet },
+  { label: "Profile", href: "/dashboard/profile", icon: User },
+  { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export default function Sidebar() {
@@ -38,8 +38,8 @@ export default function Sidebar() {
   return (
     <aside className="hidden w-60 shrink-0 flex-col bg-sidebar px-4 py-6 lg:flex">
       <div className="mb-8 px-2">
-        <span className="font-display text-lg font-bold text-white">Jembatan</span>{" "}
-        <span className="font-display text-lg font-bold text-brand">Karya</span>
+        <span className="font-display text-lg font-bold text-white">Jem</span>
+        <span className="font-display text-lg font-bold text-brand">ara</span>
       </div>
 
       <nav className="flex flex-1 flex-col gap-1">

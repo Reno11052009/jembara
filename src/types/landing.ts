@@ -22,7 +22,7 @@ export interface Talent {
   skills: string[];
 }
 
-export type ProjectBadge = "Premium" | "Urgent" | "Popular";
+export type ProjectBadge = "Premium" | "Urgent";
 
 export interface LandingProject {
   id: string;
