@@ -39,7 +39,7 @@ export default function Sidebar() {
     <aside className="hidden w-60 shrink-0 flex-col bg-sidebar px-4 py-6 lg:flex">
       <div className="mb-8 px-2">
         <span className="font-display text-lg font-bold text-white">Jem</span>
-        <span className="font-display text-lg font-bold text-brand">ara</span>
+        <span className="font-display text-lg font-bold text-brand">bara</span>
       </div>
 
       <nav className="flex flex-1 flex-col gap-1">
