@@ -8,6 +8,7 @@ export interface RegisterFormData {
   email: string;
   password: string;
   confirmPassword: string;
+  address: string;
 }
 
 export type LoginFormErrors = Partial<Record<keyof LoginFormData, string>>;

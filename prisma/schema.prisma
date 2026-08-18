@@ -13,7 +13,163 @@ model user {
   name       String?
   no_telepon String?
   password   String
-  role       String   @default("STUDENT")
+  role       String   @default("STUDENT") // STUDENT, UMKM, ADMIN
   createdAt  DateTime @default(now()) @db.Timestamp(6)
   updateAt   DateTime @updatedAt @db.Timestamp(6)
+
+  student student?
+  umkm    umkm?
+  admin   admin?
+}
+
+model student {
+  id                 String   @id @default(uuid()) @db.Uuid
+  userId             String   @unique @db.Uuid
+  avatar             String?
+  bio                String?
+  school             String?
+  location           String?
+  tingkat_pendidikan String?
+  jurusan            String?
+  experience         Int      @default(0) // years or months
+  available          Boolean  @default(false)
+  rating             Float    @default(0)
+  total_project      Int      @default(0)
+  createdAt          DateTime @default(now()) @db.Timestamp(6)
+  updateAt           DateTime @updatedAt @db.Timestamp(6)
+
+  user       user            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills     student_skill[]
+  portfolios portfolio[]
+  proposals  proposal[]
+  projects   project[]       @relation("ProjectStudent")
+  reviews    review[]
+}
+
+model umkm {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @unique @db.Uuid
+  nama_usaha     String
+  deskripsi      String?
+  logo           String?
+  kategori_usaha String?
+  no_telepon     String?
+  location       String?
+  website        String?
+  createdAt      DateTime @default(now()) @db.Timestamp(6)
+  updateAt       DateTime @updatedAt @db.Timestamp(6)
+
+  user     user      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects project[]
+  reviews  review[]
+}
+
+model admin {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updateAt  DateTime @updatedAt @db.Timestamp(6)
+
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model skill {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  category  String?
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  studentSkills student_skill[]
+  projectSkills project_skill[]
+}
+
+model student_skill {
+  id         String   @id @default(uuid()) @db.Uuid
+  studentId  String   @db.Uuid
+  skillId    String   @db.Uuid
+  isVerified Boolean  @default(false)
+  createdAt  DateTime @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime @updatedAt @db.Timestamp(6)
+
+  student student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  skill   skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, skillId])
+}
+
+model project_skill {
+  id        String   @id @default(uuid()) @db.Uuid
+  projectId String   @db.Uuid
+  skillId   String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  project project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  skill   skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, skillId])
+}
+
+model portfolio {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String
+  description String?
+  link        String?
+  image       String?
+  studentId   String   @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime @updatedAt @db.Timestamp(6)
+
+  student student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model project {
+  id          String    @id @default(uuid()) @db.Uuid
+  title       String
+  description String
+  budget      Float?
+  deadline    DateTime?
+  status      String    @default("OPEN") // OPEN, PROPOSAL, IN_PROGRESS, REVIEW, COMPLETED
+  umkmId      String    @db.Uuid
+  studentId   String?   @db.Uuid
+  createdAt   DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamp(6)
+
+  umkm         umkm            @relation(fields: [umkmId], references: [id], onDelete: Cascade)
+  student      student?        @relation("ProjectStudent", fields: [studentId], references: [id], onDelete: SetNull)
+  skillsNeeded project_skill[]
+  proposals    proposal[]
+  review       review?
+}
+
+model proposal {
+  id          String   @id @default(uuid()) @db.Uuid
+  coverLetter String?
+  budgetMatch Boolean?
+  status      String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  projectId   String   @db.Uuid
+  studentId   String   @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime @updatedAt @db.Timestamp(6)
+
+  project project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  student student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, studentId])
+}
+
+model review {
+  id        String   @id @default(uuid()) @db.Uuid
+  rating    Float
+  comment   String?
+  projectId String   @unique @db.Uuid
+  studentId String   @db.Uuid
+  umkmId    String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  project project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  student student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  umkm    umkm    @relation(fields: [umkmId], references: [id], onDelete: Cascade)
 }

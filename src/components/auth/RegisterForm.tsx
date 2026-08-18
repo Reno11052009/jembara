@@ -1,25 +1,28 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import InputField from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { RegisterFormData, RegisterFormErrors, FormStatus } from "@/types/auth";
 import {
   validateFullName,
-  validateEmail,
   validatePassword,
   validateConfirmPassword,
+  validateAddress,
 } from "@/lib/validation";
-import { registerAction } from "@/app/actions/auth";
+import { createClient } from "@/lib/client";
 
 const initialData: RegisterFormData = {
   fullName: "",
   email: "",
   password: "",
   confirmPassword: "",
+  address: "",
 };
 
 export default function RegisterForm() {
+  const router = useRouter();
   const [formData, setFormData] = useState<RegisterFormData>(initialData);
   const [errors, setErrors] = useState<RegisterFormErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -34,12 +37,12 @@ export default function RegisterForm() {
   function validate(): RegisterFormErrors {
     return {
       fullName: validateFullName(formData.fullName),
-      email: validateEmail(formData.email),
       password: validatePassword(formData.password),
       confirmPassword: validateConfirmPassword(
         formData.password,
         formData.confirmPassword
       ),
+      address: validateAddress(formData.address),
     };
   }
 
@@ -57,13 +60,25 @@ export default function RegisterForm() {
     setStatus("submitting");
     setServerError(null);
 
-    const result = await registerAction(formData);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+      options: {
+        data: {
+          full_name: formData.fullName,
+          address: formData.address,
+        },
+      },
+    });
 
-    if (result?.error) {
-      setServerError(result.error);
+    if (error) {
+      setServerError(error.message);
       setStatus("error");
     } else {
       setStatus("success");
+      router.push("/pilih-role");
+      router.refresh();
     }
   }
 
@@ -104,6 +119,15 @@ export default function RegisterForm() {
         value={formData.email}
         error={errors.email}
         onChange={(e) => handleChange("email", e.target.value)}
+      />
+      <InputField
+        label="Alamat"
+        type="text"
+        autoComplete="street-address"
+        placeholder="Alamat lengkap (min. 5 karakter)"
+        value={formData.address}
+        error={errors.address}
+        onChange={(e) => handleChange("address", e.target.value)}
       />
       <InputField
         label="Password"

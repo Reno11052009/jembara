@@ -1,10 +1,3 @@
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-export function validateEmail(email: string): string | undefined {
-  if (!email.trim()) return "Email wajib diisi";
-  if (!EMAIL_REGEX.test(email)) return "Format email tidak valid";
-  return undefined;
-}
 
 export function validatePassword(password: string): string | undefined {
   if (!password) return "Password wajib diisi";
@@ -24,5 +17,11 @@ export function validateConfirmPassword(
 ): string | undefined {
   if (!confirmPassword) return "Konfirmasi password wajib diisi";
   if (password !== confirmPassword) return "Password tidak cocok";
+  return undefined;
+}
+
+export function validateAddress(address: string): string | undefined {
+  if (!address.trim()) return "Alamat wajib diisi";
+  if (address.trim().length < 5) return "Alamat terlalu pendek";
   return undefined;
 }

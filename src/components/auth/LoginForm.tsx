@@ -1,14 +1,16 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import InputField from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import { LoginFormData, LoginFormErrors, FormStatus } from "@/types/auth";
-import { validateEmail, validatePassword } from "@/lib/validation";
-import { loginAction } from "@/app/actions/auth";
+import { validatePassword } from "@/lib/validation";
+import { createClient } from "@/lib/client";
 
 export default function LoginForm() {
+  const router = useRouter();
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -26,7 +28,6 @@ export default function LoginForm() {
 
   function validate(): LoginFormErrors {
     return {
-      email: validateEmail(formData.email),
       password: validatePassword(formData.password),
     };
   }
@@ -45,13 +46,19 @@ export default function LoginForm() {
     setStatus("submitting");
     setServerError(null);
 
-    const result = await loginAction(formData);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({
+      email: formData.email,
+      password: formData.password,
+    });
 
-    if (result?.error) {
-      setServerError(result.error);
+    if (error) {
+      setServerError(error.message);
       setStatus("error");
     } else {
       setStatus("success");
+      router.push("/dashboard");
+      router.refresh();
     }
   }
 
