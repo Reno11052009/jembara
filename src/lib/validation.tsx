@@ -1,3 +1,8 @@
+export function validateEmail(email: string): string | undefined {
+  if (!email) return "Email wajib diisi";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Format email tidak valid";
+  return undefined;
+}
 
 export function validatePassword(password: string): string | undefined {
   if (!password) return "Password wajib diisi";

@@ -25,6 +25,7 @@ export default function RegisterForm() {
   const router = useRouter();
   const [formData, setFormData] = useState<RegisterFormData>(initialData);
   const [errors, setErrors] = useState<RegisterFormErrors>({});
+  const [serverError, setServerError] = useState<string | null>(null);
   const [status, setStatus] = useState<FormStatus>("idle");
 
   function handleChange(field: keyof RegisterFormData, value: string) {
@@ -137,6 +138,12 @@ export default function RegisterForm() {
       {status === "success" && (
         <p className="text-xs text-success">
           Akun dibuat. Menyiapkan profil kamu...
+        </p>
+      )}
+
+      {serverError && (
+        <p className="text-xs text-danger">
+          {serverError}
         </p>
       )}
 

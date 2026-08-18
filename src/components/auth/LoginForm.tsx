@@ -16,6 +16,7 @@ export default function LoginForm() {
     password: "",
   });
   const [errors, setErrors] = useState<LoginFormErrors>({});
+  const [serverError, setServerError] = useState<string | null>(null);
   const [status, setStatus] = useState<FormStatus>("idle");
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -79,6 +80,12 @@ export default function LoginForm() {
         {status === "success" && (
           <p className="text-xs text-success">
             Masuk berhasil. Mengarahkan ke dashboard...
+          </p>
+        )}
+
+        {serverError && (
+          <p className="text-xs text-danger">
+            {serverError}
           </p>
         )}
 

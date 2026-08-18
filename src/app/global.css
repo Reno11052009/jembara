@@ -65,3 +65,9 @@ body {
     transition-duration: 0.001ms !important;
   }
 }
+
+@layer base {
+  h1, h2, h3, h4, h5, h6, .font-bold, .font-semibold {
+    font-family: var(--font-display);
+  }
+}
