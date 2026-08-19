@@ -6,10 +6,11 @@ import { usePathname } from "next/navigation";
 import {
   Search,
   Briefcase,
-  Wallet,
   User,
   Settings,
 } from "lucide-react";
+import { Home, ListChecks, FolderOpen, MessageSquare, CreditCard } from "lucide-react";
+
 
 interface NavItem {
   label: string;
@@ -19,15 +20,15 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "Dasbor", href: "/dashboard", iconSrc: "/icons/home.png" },
-  { label: "Temu Projek", href: "/dashboard/find-projects", icon: Search },
-  { label: "Proposalku", href: "/dashboard/proposals", iconSrc: "/icons/list.png" },
-  { label: "Projek Aktif", href: "/dashboard/active-projects", icon: Briefcase },
-  { label: "Portfolio", href: "/dashboard/portfolio", iconSrc: "/icons/folder-open.png" },
-  { label: "Pesanan", href: "/dashboard/messages", iconSrc: "/icons/Vector.png" },
-  { label: "Pendapatan", href: "/dashboard/earnings", icon: Wallet },
-  { label: "Profil", href: "/dashboard/profile", icon: User },
-  { label: "Pengaturan", href: "/dashboard/settings", icon: Settings },
+  { label: "Dashboard", href: "/dashboard", icon: Home },
+  { label: "Find Projects", href: "/dashboard/find-projects", icon: Search },
+  { label: "My Proposals", href: "/dashboard/proposals", icon: ListChecks },
+  { label: "Active Projects", href: "/dashboard/active-projects", icon: Briefcase },
+  { label: "Portfolio", href: "/dashboard/portfolio", icon: FolderOpen },
+  { label: "Messages", href: "/dashboard/messages", icon: MessageSquare },
+  { label: "Earnings", href: "/dashboard/earnings", icon: CreditCard },
+  { label: "Profile", href: "/dashboard/profile", icon: User },
+  { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export default function Sidebar() {
