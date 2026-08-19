@@ -33,11 +33,7 @@ export default function RecentMessagesCard({
                   {message.timeLabel}
                 </span>
               </div>
-<<<<<<< HEAD
               <p className="mt-0.5 truncate text-xs text-ink-muted">
-=======
-              <p className="mt-0.5 truncate text-[12px] text-ink-muted">
->>>>>>> f2215037afbe121d812a2551ba7c90a85650df80
                 {message.snippet}
               </p>
             </div>

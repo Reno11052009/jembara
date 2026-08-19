@@ -38,9 +38,9 @@ export default function RunningActivityCard({
                   style={{ width: `${activity.progressPercent}%` }}
                 />
               </div>
-            </div>
-          );
-        })}
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
