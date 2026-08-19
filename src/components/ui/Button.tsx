@@ -26,7 +26,7 @@ export default function Button({
     ghost:
       "border border-hairline bg-transparent text-ink hover:border-brand hover:text-brand",
     outline:
-      "border border-outline-black bg-transparent text-ink hover:border-brand hover:text-brand",
+      "border border-ink bg-transparent text-ink hover:border-brand hover:text-brand",
   };
 
   return (

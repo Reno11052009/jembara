@@ -50,9 +50,8 @@ export default function LoginForm() {
     if (result?.error) {
       setServerError(result.error);
       setStatus("error");
-    } else if (result?.success) {
+    } else {
       setStatus("success");
-      router.push("/dashboard");
     }
   }
 
