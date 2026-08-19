@@ -11,10 +11,10 @@ export default function RecentMessagesCard({
   return (
     <div className="rounded-xl border border-hairline bg-card p-5">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-display font-black text-ink">Pesan Terbaru</h3>
+        <h3 className="text-sm font-display font-black text-ink">Pesan Terbaru</h3>
         <Link
           href="/dashboard/messages"
-          className="text-sm font-medium text-brand hover:underline"
+          className="text-xs font-medium text-brand hover:underline"
         >
           Lihat Semua
         </Link>
@@ -22,18 +22,22 @@ export default function RecentMessagesCard({
 
       <div className="mt-4 flex flex-col gap-4">
         {messages.map((message) => (
-          <div key={message.id} className="flex items-start gap-3">
-            <span className="h-12 w-12 shrink-0 rounded-full bg-hairline" />
+          <div key={message.id} className="flex items-start gap-3 rounded-lg bg-canvas p-4">
+            <span className="h-8 w-8 shrink-0 rounded-full bg-hairline" />
             <div className="min-w-0">
               <div className="flex items-center justify-between gap-2">
                 <p className="truncate text-sm font-display font-black text-ink">
                   {message.senderName}
                 </p>
-                <span className="shrink-0 text-[12px] text-ink-muted">
+                <span className="shrink-0 text-[11px] text-ink-muted">
                   {message.timeLabel}
                 </span>
               </div>
+<<<<<<< HEAD
               <p className="mt-0.5 truncate text-xs text-ink-muted">
+=======
+              <p className="mt-0.5 truncate text-[12px] text-ink-muted">
+>>>>>>> f2215037afbe121d812a2551ba7c90a85650df80
                 {message.snippet}
               </p>
             </div>

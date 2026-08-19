@@ -13,6 +13,7 @@ export default function RecommendedProjectCard({
     <div className="rounded-xl border border-hairline bg-card p-3">
       <div className="flex items-start justify-between gap-3">
         <div>
+<<<<<<< HEAD
           <h3 className="font-display text-lg font-black text-ink">
             {project.title}
           </h3>
@@ -20,6 +21,17 @@ export default function RecommendedProjectCard({
         </div>
         <span className="flex shrink-0 items-center gap-1 rounded-full bg-brand-soft px-2.5 py-1 text-sm font-semibold text-brand">
           <Flame size={16} />
+=======
+          <h3 className="font-display text-base font-black text-ink">
+            {project.title}
+          </h3>
+          <p className="mt-1 font-body text-base font-regular leading-none tracking-normal text-ink-muted">
+            {project.companyName}
+          </p>
+        </div>
+        <span className="mr-3 flex h-10px w-40px shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full bg-brand-soft px-3 py-1.5 text-xs leading-none        font-black font-display text-brand">
+          <Flame size={14} />
+>>>>>>> f2215037afbe121d812a2551ba7c90a85650df80
           {project.matchPercent}% Match
         </span>
       </div>
@@ -27,11 +39,19 @@ export default function RecommendedProjectCard({
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-6 text-sm">
           <div>
+<<<<<<< HEAD
             <p className="text-ink-muted font-body">Budget</p>
             <p className="mt-0.5 font-black font-display text-sm text-ink">{project.budgetLabel}</p>
           </div>
           <div>
             <p className="text-ink-muted font-body">
+=======
+            <p className="text-ink-muted font-body text-xs">Budget</p>
+            <p className="mt-0.5 font-black font-display text-sm text-ink">{project.budgetLabel}</p>
+          </div>
+          <div>
+            <p className="text-ink-muted font-body text-xs">
+>>>>>>> f2215037afbe121d812a2551ba7c90a85650df80
               Deadline
             </p>
             <p className="mt-0.5 font-black font-display text-sm text-ink">{project.deadlineLabel}</p>
@@ -49,8 +69,8 @@ export default function RecommendedProjectCard({
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <Button variant="outline">LAMAR PROJECT</Button>
+      <div className="mt-4 flex items-center justify-start gap-3">
+        <Button variant="outline" className="h-9.75 w-45 rounded-full border-2 px-6 py-3 text-sm"> LAMAR PROJECT </Button>
         <span className="text-sm text-ink-muted">{project.postedLabel}</span>
       </div>
     </div>

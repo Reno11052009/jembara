@@ -12,7 +12,7 @@ export default function PilihRolePage() {
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Card Student */}
-          <div className="flex h-full flex-col group relative rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:border-brand hover:shadow-md">
+          <div className="group relative rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:border-brand hover:shadow-md">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand group-hover:bg-brand group-hover:text-white transition-colors">
               <User size={24} />
             </div>
@@ -20,7 +20,7 @@ export default function PilihRolePage() {
             <p className="mb-6 text-sm text-zinc-500">
               Saya ingin mencari pengalaman, mengerjakan project nyata, dan membangun portfolio.
             </p>
-            <form action={selectRoleAction} className="mt-auto">
+            <form action={selectRoleAction}>
               <input type="hidden" name="role" value="STUDENT" />
               <button
                 type="submit"
@@ -32,7 +32,7 @@ export default function PilihRolePage() {
           </div>
 
           {/* Card UMKM */}
-          <div className="flex h-full flex-col group relative rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:border-brand hover:shadow-md">
+          <div className="group relative rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:border-brand hover:shadow-md">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand group-hover:bg-brand group-hover:text-white transition-colors">
               <Store size={24} />
             </div>
@@ -40,7 +40,7 @@ export default function PilihRolePage() {
             <p className="mb-6 text-sm text-zinc-500">
               Saya butuh bantuan pelajar bertalenta untuk menyelesaikan masalah digital bisnis saya.
             </p>
-            <form action={selectRoleAction} className="mt-auto">
+            <form action={selectRoleAction}>
               <input type="hidden" name="role" value="UMKM" />
               <button
                 type="submit"

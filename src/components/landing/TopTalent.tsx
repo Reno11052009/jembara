@@ -14,7 +14,7 @@ export default function TopTalent() {
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
       }`}
     >
-      <div className="mx-auto max-w-5xl text-center">
+      <div className="mx-auto max-w-7xl text-center">
         <p className="text-xs font-display font-black uppercase tracking-[0.15em] text-brand">
           Talenta Berbakat
         </p>
@@ -33,7 +33,7 @@ export default function TopTalent() {
               className="rounded-xl border border-hairline bg-card p-10"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-18 w-18 shrink-0 items-center justify-center rounded-full bg-brand-soft text-lg font-display font-black text-brand">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand-soft text-base font-display font-black text-brand">
                   {talent.name
                     .split(" ")
                     .map((part) => part[0])
@@ -47,7 +47,7 @@ export default function TopTalent() {
                 </div>
               </div>
 
-              <p className="mt-4 text-base font-display font-black text-brand">
+              <p className="mt-4 text-base font-body font-medium text-brand">
                 {talent.specialty}
               </p>
               <div className="mt-1 flex items-center gap-1 text-sm font-body text-ink-muted">

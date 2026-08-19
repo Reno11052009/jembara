@@ -15,7 +15,7 @@ export default function StatCard({ stat }: StatCardProps) {
           <Icon size={16} />
         </span>
       </div>
-      <p className="mt-3 font-display text-2xl font-black text-ink">
+      <p className="mt-3 font-display text-xl font-black text-ink">
         {stat.value}
       </p>
     </div>

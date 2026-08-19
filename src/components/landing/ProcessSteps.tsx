@@ -13,7 +13,7 @@ export default function ProcessSteps() {
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
       }`}
     >
-      <div className="mx-auto max-w-6xl text-center">
+      <div className="mx-auto max-w-7xl text-center">
         <p className="font-body text-xs font-black uppercase tracking-[0.15em] text-brand">
           Proses Sederhana
         </p>
@@ -29,7 +29,7 @@ export default function ProcessSteps() {
           {processSteps.map((step) => (
             <div
               key={step.number}
-              className="rounded-xl border border-hairline bg-card p-6 text-left"
+              className="rounded-xl bg-card p-6 text-left shadow-sm"
             >
               <p className="font-display text-4xl font-black text-brand">
                 {step.number}

@@ -91,7 +91,7 @@ export default function FilterBar() {
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 text-ink">
           {filterGroups.map((group) => (
             <FilterDropdown
               key={group.label}
@@ -102,12 +102,12 @@ export default function FilterBar() {
         </div>
 
         <div className="flex items-center gap-2 text-sm" ref={sortRef}>
-          <span className="text-ink font-body">Urutkan:</span>
+          <span className="text-ink font-body">Urutkan :</span>
 
           <div className="relative">
             <button
               onClick={() => setIsSortOpen((prev) => !prev)}
-              className={`flex items-center gap-1.5 rounded-xl border bg-card px-3.5 py-2 transition-colors ${
+              className={`flex items-center gap-1.5 rounded-[99px] border bg-card px-3.5 py-2 transition-colors font-body font-semibold ${
                 isSortOpen
                   ? "border-brand text-brand"
                   : "border-hairline text-ink hover:border-brand hover:text-brand"
@@ -123,7 +123,7 @@ export default function FilterBar() {
             </button>
 
             {isSortOpen && (
-              <div className="absolute right-0 top-full z-10 mt-2 w-56 overflow-hidden rounded-2xl border font-body text-ink border-hairline bg-card py-2 shadow-xl">
+              <div className="absolute right-0 top-full z-10 mt-2 w-56 overflow-hidden rounded-[99px] border font-body text-ink border-hairline bg-card py-2 shadow-xl">
                 {sortOptions.map((option) => {
                   const Icon = option.icon;
                   const isSelected = option.label === sortBy.label;
