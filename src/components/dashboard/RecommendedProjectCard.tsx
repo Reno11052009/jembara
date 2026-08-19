@@ -13,19 +13,21 @@ export default function RecommendedProjectCard({
     <div className="rounded-xl border border-hairline bg-card p-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-display text-lg font-black text-ink">
+          <h3 className="font-display text-base font-black text-ink">
             {project.title}
           </h3>
-          <p className="mt-1 text-sm font-body text-ink-muted">{project.companyName}</p>
+          <p className="mt-1 font-body text-base font-regular leading-none tracking-normal text-ink-muted">
+            {project.companyName}
+          </p>
         </div>
-        <span className="flex shrink-0 items-center gap-1 rounded-full bg-brand-soft px-2.5 py-1 text-sm font-semibold text-brand">
-          <Flame size={16} />
+        <span className="mr-3 flex h-10px w-40px shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full bg-brand-soft px-3 py-1.5 text-xs leading-none        font-black font-display text-brand">
+          <Flame size={14} />
           {project.matchPercent}% Match
         </span>
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-6 text-sm">
+        <div className="flex gap-6 text-base">
           <div>
             <p className="text-ink-muted font-body text-xs">Budget</p>
             <p className="mt-0.5 font-black font-display text-sm text-ink">{project.budgetLabel}</p>

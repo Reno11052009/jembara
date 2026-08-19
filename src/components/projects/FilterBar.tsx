@@ -123,7 +123,7 @@ export default function FilterBar() {
             </button>
 
             {isSortOpen && (
-              <div className="absolute right-0 top-full z-10 mt-2 w-56 overflow-hidden rounded-[99px] border font-body text-ink border-hairline bg-card py-2 shadow-xl">
+              <div className="absolute right-0 top-full z-10 mt-2 w-56 overflow-hidden rounded-2xl border font-body text-ink border-hairline bg-card py-2 shadow-xl">
                 {sortOptions.map((option) => {
                   const Icon = option.icon;
                   const isSelected = option.label === sortBy.label;

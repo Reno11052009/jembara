@@ -12,16 +12,12 @@ import {
   runningActivities,
   recentMessages,
 } from "@/lib/mock-dashboard";
-import { verifySession } from "@/lib/session";
 
-export default async function DashboardPage() {
-  const session = await verifySession();
-  const userName = session?.name || "Pengguna";
-
+export default function DashboardPage() {
   return (
     <>
       <PageHeader
-        title={`Halo, ${userName}! 👋`}
+        title ="Halo, Chello! 👋"
         subtitle="Berikut adalah update aktivitas project dan kecocokan hari ini."
       />
 
@@ -39,7 +35,7 @@ export default async function DashboardPage() {
             <h2 className="text-lg font-display font-black text-ink">
               Project yang Cocok Untukmu
             </h2>
-            <div className="mt-5 flex flex-col gap-7">
+            <div className="flex flex-col gap-7">
               {recommendedProjects.map((project) => (
                 <RecommendedProjectCard key={project.id} project={project} />
               ))}

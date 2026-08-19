@@ -7,6 +7,7 @@ import { createSession, deleteSession, verifySession } from "@/lib/session";
 import { LoginFormData, RegisterFormData } from "@/types/auth";
 import { validateEmail, validatePassword, validateFullName } from "@/lib/validation";
 
+<<<<<<< HEAD
 console.log("Prisma instance loaded in auth.ts:", !!prisma.user);
 
 export async function loginAction(formData: LoginFormData): Promise<{ error?: string, success?: boolean }> {
@@ -56,6 +57,19 @@ export async function registerAction(formData: RegisterFormData): Promise<{ erro
     console.error("Register error:", error);
     return { error: "Gagal mendaftarkan akun" };
   }
+=======
+export async function loginAction(formData: LoginFormData): Promise<{ error?: string } | never> {
+  // Database connection temporarily disabled
+  const { email } = formData;
+  await createSession("mock-user-id", "STUDENT");
+  redirect("/dashboard");
+}
+
+export async function registerAction(formData: RegisterFormData): Promise<{ error?: string } | never> {
+  // Database connection temporarily disabled
+  await createSession("mock-user-id", "STUDENT");
+  redirect("/pilih-role");
+>>>>>>> 6b377d4e35d41ab9957334ec63bf9f6dcb17e899
 }
 
 export async function logoutAction() {

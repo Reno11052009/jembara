@@ -4,10 +4,15 @@ import { ArrowLeft, Star } from "lucide-react";
 import { getCachedProfileData } from "@/lib/profile";
 
 export default async function ProfilePage() {
+<<<<<<< HEAD
     const profile = await getCachedProfileData();
     
     return (
         <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-12 -m-6 sm:-m-8">
+=======
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-12">
+>>>>>>> 6b377d4e35d41ab9957334ec63bf9f6dcb17e899
       {/* Navbar */}
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-10 px-6 py-4">
         <div className="max-w-7xl mx-auto">
@@ -19,9 +24,12 @@ export default async function ProfilePage() {
                 Skill<span className="text-orange-500">Bridge</span>
               </span>
             </div>
-            
+
             {/* Back to Dashboard */}
-            <Link href="/dashboard" className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900">
+            <Link
+              href="/dashboard"
+              className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900"
+            >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Kembali ke Dashboard
             </Link>
@@ -32,8 +40,8 @@ export default async function ProfilePage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         <div className="flex flex-col lg:flex-row gap-6">
-          
           {/* Left Sidebar */}
+<<<<<<< HEAD
           <div className="w-full lg:w-1/3"> 
              <div className="sticky top-24 flex flex-col gap-6">
 
@@ -59,12 +67,16 @@ export default async function ProfilePage() {
                   </span>
                 ))}
               </div>
+=======
+          <div className="w-full lg:w-1/3">
+            <div className="sticky top-24 flex flex-col gap-6">
+              <ProfileCard />
+>>>>>>> 6b377d4e35d41ab9957334ec63bf9f6dcb17e899
             </div>
           </div>
-        </div>
+
           {/* Right Content */}
           <div className="w-full lg:w-2/3 flex flex-col gap-6">
-            
             {/* About Section */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:p-8">
               <h3 className="font-bold text-xl mb-3">Tentang {profile.name.split(' ')[0]}</h3>
@@ -127,7 +139,6 @@ export default async function ProfilePage() {
             <div className="mt-4">
               <h3 className="font-bold text-xl mb-4 ml-1">Ulasan Klien UMKM</h3>
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:p-8 flex flex-col gap-6">
-                
                 {/* Review 1 */}
                 <div className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
                   <div className="flex justify-between items-start mb-3">
@@ -161,10 +172,8 @@ export default async function ProfilePage() {
                     &quot;Desain UI aplikasinya sangat user-friendly untuk pelanggan kami yang rata-rata ibu-ibu. Kerjasama yang sangat menyenangkan!&quot;
                   </p>
                 </div>
-
               </div>
             </div>
-
           </div>
         </div>
       </div>

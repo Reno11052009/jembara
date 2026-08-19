@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Bell } from "lucide-react";
 
 interface PageHeaderProps {
@@ -27,10 +28,15 @@ export default function PageHeader({ title, subtitle, userName = "User" }: PageH
         >
           <Bell size={20} />
         </button>
-        {/* Avatar inisial */}
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-display font-black text-brand">
+
+        {/* Avatar inisial yang bisa diklik menuju profil */}
+        <Link
+          href="dashboard/profile"
+          aria-label="Buka profil"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-display font-black text-brand transition-opacity hover:opacity-80"
+        >
           {initials}
-        </div>
+        </Link>
       </div>
     </div>
   );
