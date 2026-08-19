@@ -3,9 +3,17 @@ import { Bell } from "lucide-react";
 interface PageHeaderProps {
   title: string;
   subtitle: string;
+  userName?: string;
 }
 
-export default function PageHeader({ title, subtitle }: PageHeaderProps) {
+export default function PageHeader({ title, subtitle, userName = "User" }: PageHeaderProps) {
+  const initials = userName
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <div className="mb-6 flex items-start justify-between">
       <div>
@@ -19,8 +27,10 @@ export default function PageHeader({ title, subtitle }: PageHeaderProps) {
         >
           <Bell size={20} />
         </button>
-        {/* TODO: ganti dengan foto profil user sebenarnya */}
-        <div className="h-9 w-9 overflow-hidden rounded-full bg-hairline" />
+        {/* Avatar inisial */}
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-display font-black text-brand">
+          {initials}
+        </div>
       </div>
     </div>
   );

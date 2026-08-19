@@ -19,7 +19,7 @@ export default function LatestProjects() {
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
       }`}
     >
-      <div className="mx-auto max-w-5xl text-center">
+      <div className="mx-auto max-w-7xl text-center">
         <p className="font-display text-xs font-black uppercase tracking-[0.15em] text-brand">
           Daftar Project
         </p>
@@ -35,7 +35,7 @@ export default function LatestProjects() {
         {latestProjects.map((project) => (
           <div
             key={project.id}
-            className="rounded-xl border border-hairline bg-card p-6"
+            className="rounded-xl border border-hairline bg-[#F9F9F9] p-6"
           >
             <div className="flex items-start justify-between gap-2">
               <p className="font-body font-black text-sm text-ink-muted">{project.clientName}</p>

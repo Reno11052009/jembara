@@ -27,10 +27,10 @@ export default function FilterDropdown({ label, options }: FilterDropdownProps) 
     <div className="relative" ref={ref}>
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`flex items-center gap-1.5 rounded-xl border bg-card px-3.5 py-2 text-sm transition-colors ${
+        className={`flex items-center gap-1.5 rounded-[99px] border bg-card px-3.5 py-2 text-sm transition-colors text-body font-medium ${
           isOpen || selected
             ? "border-brand text-brand"
-            : "border-hairline text-ink-muted hover:border-brand hover:text-brand"
+            : "border-hairline text-ink hover:border-brand hover:text-brand"
         }`}
       >
         {selected ?? label}

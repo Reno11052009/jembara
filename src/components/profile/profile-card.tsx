@@ -2,14 +2,14 @@ import { CircleCheck, MapPin, GraduationCap, Star } from "lucide-react";
 
 export default function ProfileCard() {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center sticky top-24">
       <img 
         src="https://ui-avatars.com/api/?name=Chello+Arta&background=random" 
         alt="Profile" 
         className="w-24 h-24 rounded-full object-cover mb-4 ring-4 ring-gray-50"
       />
       <h2 className="text-xl font-bold">Chello Arta</h2>
-      <p className="text-sm text-gray-500 mb-3">UI/UX Designer & Frontend Dev</p>
+      <p className="text-sm text-gray-500 mb-3">UI/UX Designer & Frontend Developer</p>
       
       <div className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 text-xs font-semibold rounded-full mb-6">
         <CircleCheck className="w-3.5 h-3.5" />

@@ -13,7 +13,7 @@ export default function ServiceCategories() {
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
       }`}
     >
-      <div className="mx-auto max-w-5xl text-center">
+      <div className="mx-auto max-w-7xl text-center">
         <p className="text-xs font-display font-black uppercase tracking-[0.15em] text-brand">
           Kategori Populer
         </p>
@@ -25,19 +25,19 @@ export default function ServiceCategories() {
           dibutuhkan bisnis Anda.
         </p>
 
-        <div className="mt-12 grid grid-cols-1 gap-6 text-left sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid grid-cols-3 gap-5 text-left">
           {serviceCategories.map((category) => {
             const Icon = category.icon;
             return (
               <div
                 key={category.title}
-                className="flex items-center gap-4 rounded-xl border border-hairline bg-gray-100 p-7"
+                className="flex items-center gap-5 rounded-2xl border border-hairline bg-gray-100 p-6"
               >
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-brand text-white">
-                  <Icon size={22} />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-brand text-white">
+                  <Icon size={20} />
                 </div>
                 <div>
-                  <h3 className="font-display font-black text-ink">
+                  <h3 className="font-display font-black text-ink text-base">
                     {category.title}
                   </h3>
                   <p className="font-body text-sm text-ink-muted">
@@ -47,7 +47,7 @@ export default function ServiceCategories() {
               </div>
             );
           })}
-        </div>
+        </div>  
       </div>
     </section>
   );

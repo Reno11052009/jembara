@@ -32,10 +32,10 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="flex flex-col gap-4 lg:col-span-2">
-            <h2 className="text-xl font-display font-black text-ink">
+            <h2 className="text-lg font-display font-black text-ink">
               Project yang Cocok Untukmu
             </h2>
-            <div className="flex flex-col gap-5">
+            <div className="mt-5 flex flex-col gap-7">
               {recommendedProjects.map((project) => (
                 <RecommendedProjectCard key={project.id} project={project} />
               ))}
