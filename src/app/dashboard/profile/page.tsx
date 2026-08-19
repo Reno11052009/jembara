@@ -4,15 +4,10 @@ import { ArrowLeft, Star } from "lucide-react";
 import { getCachedProfileData } from "@/lib/profile";
 
 export default async function ProfilePage() {
-<<<<<<< HEAD
     const profile = await getCachedProfileData();
     
     return (
         <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-12 -m-6 sm:-m-8">
-=======
-  return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-12">
->>>>>>> 6b377d4e35d41ab9957334ec63bf9f6dcb17e899
       {/* Navbar */}
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-10 px-6 py-4">
         <div className="max-w-7xl mx-auto">
@@ -41,7 +36,6 @@ export default async function ProfilePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Left Sidebar */}
-<<<<<<< HEAD
           <div className="w-full lg:w-1/3"> 
              <div className="sticky top-24 flex flex-col gap-6">
 
@@ -52,26 +46,8 @@ export default async function ProfilePage() {
               location={profile.location}
               education={profile.education}
               avatarUrl={profile.avatarUrl}
+              skills={profile.skills}
             />
-
-            {/* Skills Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sticky top-24">
-              <h3 className="font-bold text-lg mb-4">Keahlian & Tools</h3>
-              <div className="flex flex-wrap gap-2">
-                {profile.skills.map((skill) => (
-                  <span 
-                    key={skill} 
-                    className="px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-700 text-xs font-medium rounded-md"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-=======
-          <div className="w-full lg:w-1/3">
-            <div className="sticky top-24 flex flex-col gap-6">
-              <ProfileCard />
->>>>>>> 6b377d4e35d41ab9957334ec63bf9f6dcb17e899
             </div>
           </div>
 
