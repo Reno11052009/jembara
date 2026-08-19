@@ -7,19 +7,55 @@ import { createSession, deleteSession, verifySession } from "@/lib/session";
 import { LoginFormData, RegisterFormData } from "@/types/auth";
 import { validateEmail, validatePassword, validateFullName } from "@/lib/validation";
 
-export async function loginAction(formData: LoginFormData): Promise<{ error?: string } | never> {
-  // Database connection temporarily disabled
-  const { email } = formData;
-  // Derive a display name from the email prefix until DB is enabled
-  const name = email.split("@")[0];
-  await createSession("mock-user-id", "STUDENT", name);
-  redirect("/dashboard");
+console.log("Prisma instance loaded in auth.ts:", !!prisma.user);
+
+export async function loginAction(formData: LoginFormData): Promise<{ error?: string, success?: boolean }> {
+  const { email, password } = formData;
+  if (!email || !password) return { error: "Email dan password wajib diisi" };
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) return { error: "Email tidak ditemukan" };
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) return { error: "Password salah" };
+
+    await createSession(user.id, user.role, user.name || "");
+    return { success: true };
+  } catch (error) {
+    console.error("Login error:", error);
+    return { error: "Terjadi kesalahan pada server" };
+  }
 }
 
-export async function registerAction(formData: RegisterFormData): Promise<{ error?: string } | never> {
-  // Database connection temporarily disabled
-  await createSession("mock-user-id", "STUDENT", formData.fullName);
-  redirect("/pilih-role");
+export async function registerAction(formData: RegisterFormData): Promise<{ error?: string, success?: boolean }> {
+  const { fullName, email, password, address } = formData;
+
+  if (validateEmail(email) || validatePassword(password) || validateFullName(fullName)) {
+    return { error: "Data tidak valid" };
+  }
+
+  try {
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) return { error: "Email sudah terdaftar" };
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({
+      data: {
+        name: fullName,
+        email,
+        password: hashedPassword,
+        location: address,
+        role: "STUDENT"
+      }
+    });
+
+    await createSession(user.id, user.role, user.name || "");
+    return { success: true };
+  } catch (error) {
+    console.error("Register error:", error);
+    return { error: "Gagal mendaftarkan akun" };
+  }
 }
 
 export async function logoutAction() {
@@ -31,12 +67,33 @@ export async function selectRoleAction(formData: FormData) {
   const role = formData.get("role") as string;
   const session = await verifySession();
 
-  if (!session) {
-    // Jika belum ada session (misal baru register via supabase client), buat session baru
+  if (session && session.userId && session.userId !== "mock-user-id") {
+    try {
+      await prisma.user.update({
+        where: { id: session.userId },
+        data: { role }
+      });
+      
+      if (role === "STUDENT") {
+        const student = await prisma.student.findUnique({ where: { userId: session.userId } });
+        if (!student) {
+          await prisma.student.create({ data: { userId: session.userId } });
+        }
+      } else if (role === "UMKM") {
+        const umkm = await prisma.umkm.findUnique({ where: { userId: session.userId } });
+        if (!umkm) {
+          await prisma.umkm.create({ data: { userId: session.userId, nama_usaha: session.name || "Usaha Baru" } });
+        }
+      }
+
+      await createSession(session.userId, role, session.name || "");
+    } catch (error) {
+      console.error("Select role error:", error);
+    }
+  } else if (!session) {
     await createSession("mock-user-id", role);
   } else {
-    // Update session dengan role baru
-    await createSession(session.userId, role);
+    await createSession(session.userId, role, session.name || "");
   }
 
   redirect("/dashboard");

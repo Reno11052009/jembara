@@ -1,14 +1,17 @@
 import Link from "next/link";
 import ProfileCard from "@/components/profile/profile-card";
 import { ArrowLeft, Star } from "lucide-react";
+import { getCachedProfileData } from "@/lib/profile";
 
 export default async function ProfilePage() {
+    const profile = await getCachedProfileData();
+    
     return (
-        <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-12">
+        <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-12 -m-6 sm:-m-8">
       {/* Navbar */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+      <nav className="bg-white border-b border-gray-200 sticky top-0 z-10 px-6 py-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center">
             {/* Logo */}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-orange-500 rounded-md"></div>
@@ -35,13 +38,19 @@ export default async function ProfilePage() {
              <div className="sticky top-24 flex flex-col gap-6">
 
             {/* Profile Card */}
-            <ProfileCard />
+            <ProfileCard 
+              name={profile.name}
+              headline={profile.headline}
+              location={profile.location}
+              education={profile.education}
+              avatarUrl={profile.avatarUrl}
+            />
 
             {/* Skills Card */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sticky top-24">
               <h3 className="font-bold text-lg mb-4">Keahlian & Tools</h3>
               <div className="flex flex-wrap gap-2">
-                {['Figma', 'UI/UX Design', 'Wireframing', 'React.js', 'Tailwind CSS', 'JavaScript', 'User Research'].map((skill) => (
+                {profile.skills.map((skill) => (
                   <span 
                     key={skill} 
                     className="px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-700 text-xs font-medium rounded-md"
@@ -58,9 +67,9 @@ export default async function ProfilePage() {
             
             {/* About Section */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:p-8">
-              <h3 className="font-bold text-xl mb-3">Tentang Chello</h3>
+              <h3 className="font-bold text-xl mb-3">Tentang {profile.name.split(' ')[0]}</h3>
               <p className="text-gray-600 text-sm leading-relaxed">
-                Saya adalah siswa Ilmu Komputer di SMK PGRI 03 Malang yang fokus mendalami dunia UI/UX Design dan Frontend Web Development. Senang berkolaborasi dengan UMKM dalam membangun solusi produk digital yang rapi, cepat, dan fungsional.
+                {profile.about}
               </p>
             </div>
 
@@ -71,7 +80,6 @@ export default async function ProfilePage() {
                 {/* Portfolio Item 1 */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden group cursor-pointer hover:shadow-md transition-shadow">
                   <div className="h-48 bg-gray-200 relative overflow-hidden">
-                    {/* Ganti dengan <Image /> Next.js untuk production */}
                     <img src="" alt="Web Toko Sepatu" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                   <div className="p-4">

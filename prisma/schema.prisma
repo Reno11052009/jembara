@@ -13,6 +13,9 @@ model user {
   name       String?
   no_telepon String?
   password   String
+  avatar     String?
+  bio        String?
+  location   String?
   role       String   @default("STUDENT") // STUDENT, UMKM, ADMIN
   createdAt  DateTime @default(now()) @db.Timestamp(6)
   updateAt   DateTime @updatedAt @db.Timestamp(6)
@@ -25,10 +28,7 @@ model user {
 model student {
   id                 String   @id @default(uuid()) @db.Uuid
   userId             String   @unique @db.Uuid
-  avatar             String?
-  bio                String?
   school             String?
-  location           String?
   tingkat_pendidikan String?
   jurusan            String?
   experience         Int      @default(0) // years or months
@@ -50,11 +50,7 @@ model umkm {
   id             String   @id @default(uuid()) @db.Uuid
   userId         String   @unique @db.Uuid
   nama_usaha     String
-  deskripsi      String?
-  logo           String?
   kategori_usaha String?
-  no_telepon     String?
-  location       String?
   website        String?
   createdAt      DateTime @default(now()) @db.Timestamp(6)
   updateAt       DateTime @updatedAt @db.Timestamp(6)

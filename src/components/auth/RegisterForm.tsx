@@ -64,8 +64,9 @@ export default function RegisterForm() {
     if (result?.error) {
       setServerError(result.error);
       setStatus("error");
-    } else {
+    } else if (result?.success) {
       setStatus("success");
+      router.push("/pilih-role");
     }
   }
 
