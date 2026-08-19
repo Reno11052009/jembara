@@ -15,11 +15,11 @@ export default function RunningActivityCard({
         {activities.map((activity) => (
           <div key={activity.id} className="rounded-lg bg-canvas p-4">
             <div className="flex items-start justify-between gap-2">
-              <p className="truncate text-base font-display font-black text-ink">
+              <p className="truncate text-sm font-display font-black text-ink">
                 {activity.title}
               </p>
               <span
-                className={`shrink-0 rounded-full px-2 py-0.5 text-[13px] font-medium ${
+                className={`shrink-0 rounded-full px-2 py-0.5 text-[12px] font-medium ${
                   activity.status === "completed"
                     ? "bg-success/10 text-success"
                     : "bg-brand-soft text-brand"
@@ -28,7 +28,7 @@ export default function RunningActivityCard({
                 {activity.status === "completed" ? "Completed" : "In Progress"}
               </span>
             </div>
-            <p className="mt-0.5 text-sm text-ink-muted">{activity.clientName}</p>
+            <p className="mt-0.5 text-xs text-ink-muted">{activity.clientName}</p>
             {typeof activity.progressPercent === "number" && (
               <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-hairline">
                 <div

@@ -1,6 +1,6 @@
 <div align="center">
   
-  # [NAMA PROYEK] 
+  # Jembara
   ### [Tagline Singkat dan Menarik]
   
   [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Visit_Site-success?style=for-the-badge)](https://[URL_DEMO])
@@ -37,9 +37,9 @@
 |------|-------|--------|
 | **[Nama Lengkap 1]** | Project Lead & Full Stack Developer | [GitHub](https://github.com/[username1]) |
 | **[Nama Lengkap 2]** | Frontend Developer | [GitHub](https://github.com/[username2]) |
-| **[Nama Lengkap 3]** | Backend Developer | [GitHub](https://github.com/[username3]) |
-| **[Nama Lengkap 4]** | UI/UX Designer | [GitHub](https://github.com/[username4]) |
-| **[Nama Lengkap 4]** | UI/UX Designer | [@username4](https://github.com/[username4]) |
+| **Arsya Mayreno Arnaldo** | Backend Developer | [GitHub](https://github.com/Reno11052009) |
+| **Chello Arta Sukma Hadinata** | UI/UX Designer | [GitHub](https://github.com/[username4]) |
+| **[Nama Lengkap 4]** | UI/UX Designer | [@username4](https://github.com/[username4]) 
 
 ---
 
@@ -85,7 +85,7 @@
 
 ### Live Demo
 
-🔗 **[Kunjungi Website](https://[URL_DEMO])**
+🔗 **[Kunjungi Website](https://jembara.web.id)**
 
 ### Screenshot Aplikasi
 
@@ -112,27 +112,27 @@
 
 #### Frontend
 ```
-Framework    : [React / Next.js / Vue / dll]
-UI Library   : [Tailwind CSS / Material-UI / Chakra UI / dll]
-State Mgmt   : [Redux / Zustand / Context API / dll]
-Validation   : [Zod / Yup / React Hook Form / dll]
+Framework    : Next.js 16 (App Router)
+UI Library   : Tailwind CSS v4, Lucide React, React Icons
+State Mgmt   : React Hooks / Context API
+Validation   : Custom Validation
 ```
 
 #### Backend
 ```
-Runtime      : [Node.js / Bun / Deno / dll]
-Framework    : [Express / Fastify / Hono / dll]
-Database     : [PostgreSQL / MongoDB / MySQL / dll]
-ORM          : [Prisma / Drizzle / TypeORM / dll]
-Auth         : [JWT / NextAuth / Clerk / dll]
+Runtime      : Node.js
+Framework    : Next.js Server Actions
+Database     : PostgreSQL
+ORM          : Prisma ORM v7
+Auth         : Supabase Auth & Custom JWT (jose)
 ```
 
 #### DevOps & Tools
 ```
-Deployment   : [Vercel / Netlify / Railway / dll]
-CI/CD        : [GitHub Actions / Vercel / dll]
-Testing      : [Jest / Vitest / Playwright / dll]
-Monitoring   : [Sentry / LogRocket / dll]
+Deployment   : Vercel
+CI/CD        : Vercel
+Testing      : Vitest
+Monitoring   : -
 ```
 
 ### Alasan Pemilihan Teknologi
@@ -148,9 +148,12 @@ Monitoring   : [Sentry / LogRocket / dll]
 ```json
 {
   "dependencies": {
-    "[package-1]": "^x.x.x",
-    "[package-2]": "^x.x.x",
-    "[package-3]": "^x.x.x"
+    "next": "16.3.0",
+    "react": "19.2.8",
+    "@prisma/client": "^7.9.1",
+    "@supabase/supabase-js": "^2.112.3",
+    "lucide-react": "^1.31.0",
+    "lenis": "^1.3.26"
   }
 }
 ```
@@ -205,8 +208,8 @@ Pastikan Anda telah menginstall:
 #### 1️⃣ Clone Repository
 
 ```bash
-git clone https://github.com/[username]/[repo-name].git
-cd [repo-name]
+git clone https://github.com/Reno11052009/jembara
+cd jembara
 ```
 
 #### 2️⃣ Install Dependencies
@@ -228,7 +231,9 @@ Buat file `.env` di root directory:
 
 ```env
 # Database
-DATABASE_URL="[connection_string]"
+DIRECT_URL="[connection string]"
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 
 # Authentication
 JWT_SECRET="[your_jwt_secret]"
@@ -246,10 +251,13 @@ PORT=3000
 
 ```bash
 # Jalankan migrasi database
-npm run db:migrate
+npx prisma migrate dev
+
+# atau
+npx prisma db push
 
 # Seed data (opsional)
-npm run db:seed
+npx prisma db seed
 ```
 
 #### 5️⃣ Run Development Server

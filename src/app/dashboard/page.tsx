@@ -12,12 +12,16 @@ import {
   runningActivities,
   recentMessages,
 } from "@/lib/mock-dashboard";
+import { verifySession } from "@/lib/session";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const session = await verifySession();
+  const userName = session?.name || "Pengguna";
+
   return (
     <>
       <PageHeader
-        title ="Halo, Chello! 👋"
+        title={`Halo, ${userName}! 👋`}
         subtitle="Berikut adalah update aktivitas project dan kecocokan hari ini."
       />
 

@@ -10,13 +10,15 @@ import { validateEmail, validatePassword, validateFullName } from "@/lib/validat
 export async function loginAction(formData: LoginFormData): Promise<{ error?: string } | never> {
   // Database connection temporarily disabled
   const { email } = formData;
-  await createSession("mock-user-id", "STUDENT");
+  // Derive a display name from the email prefix until DB is enabled
+  const name = email.split("@")[0];
+  await createSession("mock-user-id", "STUDENT", name);
   redirect("/dashboard");
 }
 
 export async function registerAction(formData: RegisterFormData): Promise<{ error?: string } | never> {
   // Database connection temporarily disabled
-  await createSession("mock-user-id", "STUDENT");
+  await createSession("mock-user-id", "STUDENT", formData.fullName);
   redirect("/pilih-role");
 }
 
