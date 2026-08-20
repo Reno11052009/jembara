@@ -8,7 +8,7 @@ export default function RunningActivityCard({
   activities,
 }: RunningActivityCardProps) {
   return (
-    <div className="rounded-xl border border-hairline bg-card p-2">
+    <div className="rounded-xl border border-hairline bg-card p-4">
       <h3 className="text-sm font-display font-black text-ink">Aktivitas Project Berjalan</h3>
 
       <div className="mt-2 flex flex-col gap-4">
