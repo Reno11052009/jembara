@@ -1,16 +1,21 @@
 import Link from "next/link";
 import GoBackLink from "@/components/errors/GoBackLink";
 
-export default function NotFoundContent() {
+export default function ForbiddenContent() {
   return (
-    <div className="mx-auto flex max-w-xl flex-col items-center px-6 text-center">
-      <p className="font-display text-8xl font-black leading-none text-brand">404</p>
+    <div className="mx-auto flex max-w-md flex-col items-center px-6 text-center">
+      <p className="font-display text-8xl font-black leading-none">
+        <span className="text-ink">4</span>
+        <span className="text-brand">0</span>
+        <span className="text-ink">3</span>
+      </p>
 
       <h1 className="mt-6 font-display text-3xl font-black text-ink">
-        Halaman Tidak Ditemukan
+        Akses Ditolak
       </h1>
       <p className="mt-3 font-body text-sm text-ink-muted">
-        Maaf, halaman yang kamu cari tidak tersedia atau telah dipindahkan.
+        Kamu tidak memiliki izin untuk mengakses halaman ini.
+        Pastikan kamu sudah login dengan akun yang benar.
       </p>
 
       <Link
