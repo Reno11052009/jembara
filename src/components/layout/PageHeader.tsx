@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell } from "lucide-react";
+import NotificationMenu from "@/components/layout/NotificationMenu";
 
 export interface PageHeaderProps {
   title: string;
@@ -28,12 +28,7 @@ export default function PageHeader({
         <p className="mt-1 text-sm text-ink-muted">{subtitle}</p>
       </div>
       <div className="flex items-center gap-4">
-        <button
-          aria-label="Notifikasi"
-          className="rounded-full p-2 text-ink transition-colors hover:bg-black/5"
-        >
-          <Bell size={20} />
-        </button>
+        <NotificationMenu />
 
         {/* Avatar inisial yang bisa diklik menuju profil */}
         <Link

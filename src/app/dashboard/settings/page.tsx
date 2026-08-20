@@ -1,10 +1,13 @@
-import ComingSoon from "@/components/layout/ComingSoon";
+import { getCachedProfileData } from "@/lib/profile";
+import SettingsView from "@/components/settings/SettingsView";
 
-export default function SettingsPage() {
-  return (
-    <ComingSoon
-      title="Settings"
-      subtitle="Atur preferensi akun dan notifikasi kamu."
-    />
-  );
+export const metadata = {
+  title: "Settings | JemBara",
+  description: "Kelola akun dan preferensi kamu di JemBara.",
+};
+
+export default async function SettingsPage() {
+  const profileData = await getCachedProfileData();
+
+  return <SettingsView initialData={profileData} />;
 }

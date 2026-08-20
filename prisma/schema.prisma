@@ -27,6 +27,7 @@ model user {
   student student?
   umkm    umkm?
   admin   admin?
+  notifications notification[]
 }
 
 model student {
@@ -35,6 +36,7 @@ model student {
   school             String?
   tingkat_pendidikan String?
   jurusan            String?
+  semester           Int?
   experience         Int      @default(0) // years or months
   available          Boolean  @default(false)
   rating             Float    @default(0)
@@ -71,6 +73,22 @@ model admin {
   updateAt  DateTime @updatedAt @db.Timestamp(6)
 
   user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  type      String   @default("INFO")
+  title     String
+  message   String
+  href      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
 }
 
 model skill {

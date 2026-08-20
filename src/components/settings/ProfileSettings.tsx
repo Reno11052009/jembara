@@ -216,8 +216,13 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
               <div>
                 <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Semester</label>
                 <input
-                  type="text"
-                  defaultValue="6"
+                  type="number"
+                  name="semester"
+                  defaultValue={initialData.semester ?? ""}
+                  min={1}
+                  max={20}
+                  step={1}
+                  placeholder="Contoh: 6"
                   className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-[#FF6B35] focus:outline-none focus:ring-1 focus:ring-[#FF6B35]"
                 />
               </div>
@@ -293,7 +298,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
         {/* Link Portfolio & Sosial Media Card */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 lg:p-7 shadow-sm flex flex-col gap-5">
           <h3 className="text-lg font-bold text-gray-900 mb-1">Link Portfolio & Sosial Media</h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
             {/* Portfolio */}
             <div>
@@ -309,19 +314,19 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                   placeholder="chello.design"
                   className="w-full py-2.5 pr-10 text-sm text-gray-900 bg-transparent focus:outline-none"
                 />
-              <div className="absolute right-3.5 text-gray-400 hover:text-gray-600 cursor-pointer transition">
-                <Pencil className="w-4 h-4" />
+                <div className="absolute right-3.5 text-gray-400 hover:text-gray-600 cursor-pointer transition">
+                  <Pencil className="w-4 h-4" />
+                </div>
               </div>
             </div>
-          </div>
-          
-          {/* GitHub */}
-          <div>
-            <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Github</label>
-            <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-[#FF6B35] focus-within:ring-1 focus-within:ring-[#FF6B35]">
-              <div className="pl-3.5 pr-2 text-gray-400">
-                <FaGithub className="w-4 h-4" />
-              </div>
+
+            {/* GitHub */}
+            <div>
+              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Github</label>
+              <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-[#FF6B35] focus-within:ring-1 focus-within:ring-[#FF6B35]">
+                <div className="pl-3.5 pr-2 text-gray-400">
+                  <FaGithub className="w-4 h-4" />
+                </div>
                 <input
                   type="text"
                   name="github"
@@ -329,19 +334,19 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                   placeholder="github.com/chello"
                   className="w-full py-2.5 pr-10 text-sm text-gray-900 bg-transparent focus:outline-none"
                 />
-              <div className="absolute right-3.5 text-gray-400 hover:text-gray-600 cursor-pointer transition">
-                <Pencil className="w-4 h-4" />
+                <div className="absolute right-3.5 text-gray-400 hover:text-gray-600 cursor-pointer transition">
+                  <Pencil className="w-4 h-4" />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* LinkedIn */}
-          <div>
-            <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Linkedin</label>
-            <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-[#FF6B35] focus-within:ring-1 focus-within:ring-[#FF6B35]">
-              <div className="pl-3.5 pr-2 text-gray-400">
-                <FaLinkedin className="w-4 h-4" />
-              </div>
+            {/* LinkedIn */}
+            <div>
+              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Linkedin</label>
+              <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-[#FF6B35] focus-within:ring-1 focus-within:ring-[#FF6B35]">
+                <div className="pl-3.5 pr-2 text-gray-400">
+                  <FaLinkedin className="w-4 h-4" />
+                </div>
                 <input
                   type="text"
                   name="linkedin"
@@ -349,19 +354,19 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                   placeholder="linkedin.com/in/chello"
                   className="w-full py-2.5 pr-10 text-sm text-gray-900 bg-transparent focus:outline-none"
                 />
-              <div className="absolute right-3.5 text-gray-400 hover:text-gray-600 cursor-pointer transition">
-                <Pencil className="w-4 h-4" />
+                <div className="absolute right-3.5 text-gray-400 hover:text-gray-600 cursor-pointer transition">
+                  <Pencil className="w-4 h-4" />
+                </div>
               </div>
             </div>
-          </div>
-          
-          {/* Behance */}
-          <div>
-            <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Behance</label>
-            <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-[#FF6B35] focus-within:ring-1 focus-within:ring-[#FF6B35]">
-              <div className="pl-3.5 pr-2 text-gray-400">
-                <FaBehance className="w-4 h-4" />
-              </div>
+
+            {/* Behance */}
+            <div>
+              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Behance</label>
+              <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-[#FF6B35] focus-within:ring-1 focus-within:ring-[#FF6B35]">
+                <div className="pl-3.5 pr-2 text-gray-400">
+                  <FaBehance className="w-4 h-4" />
+                </div>
                 <input
                   type="text"
                   name="behance"
@@ -369,16 +374,16 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                   placeholder="behance.net/chello"
                   className="w-full py-2.5 pr-10 text-sm text-gray-900 bg-transparent focus:outline-none"
                 />
-              <div className="absolute right-3.5 text-gray-400 hover:text-gray-600 cursor-pointer transition">
-                <Pencil className="w-4 h-4" />
+                <div className="absolute right-3.5 text-gray-400 hover:text-gray-600 cursor-pointer transition">
+                  <Pencil className="w-4 h-4" />
+                </div>
               </div>
             </div>
           </div>
-          </div>
 
           <div className="flex justify-end mt-2">
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isLoading}
               className="bg-white border-2 border-[#FF6B35] text-[#FF6B35] hover:bg-orange-50 font-bold text-sm px-8 py-2 rounded-full transition disabled:opacity-70"
             >

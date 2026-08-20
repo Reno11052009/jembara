@@ -23,6 +23,7 @@ export async function updateProfileAction(formData: FormData) {
   const location = formData.get("location") as string;
   const tingkat_pendidikan = formData.get("tingkat_pendidikan") as string;
   const school = formData.get("school") as string;
+  const semesterValue = formData.get("semester");
   const about = formData.get("about") as string;
   const phone = formData.get("phone") as string;
   const portfolioUrl = formData.get("portfolioUrl") as string;
@@ -34,6 +35,18 @@ export async function updateProfileAction(formData: FormData) {
   const skillsArray = skillsString ? skillsString.split(",").map(s => s.trim()).filter(Boolean) : [];
 
   const avatarBase64 = formData.get("avatarBase64") as string;
+
+  let semester: number | null | undefined;
+  if (semesterValue === null) {
+    semester = undefined;
+  } else if (typeof semesterValue === "string" && semesterValue.trim() === "") {
+    semester = null;
+  } else {
+    semester = Number(semesterValue);
+    if (!Number.isInteger(semester) || semester < 1 || semester > 20) {
+      return { error: "Semester harus berupa angka antara 1 dan 20" };
+    }
+  }
 
   try {
     // 1. Update User table
@@ -63,12 +76,14 @@ export async function updateProfileAction(formData: FormData) {
           jurusan: headline,
           school: school,
           tingkat_pendidikan: tingkat_pendidikan,
+          ...(semester !== undefined ? { semester } : {}),
         },
         create: {
           userId: session.userId,
           jurusan: headline,
           school: school,
           tingkat_pendidikan: tingkat_pendidikan,
+          ...(semester !== undefined ? { semester } : {}),
         }
       });
 
