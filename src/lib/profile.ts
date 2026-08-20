@@ -5,7 +5,7 @@ import prisma from "./prisma";
 // Gunakan React cache untuk menghindari pemanggilan berulang dalam satu request cycle
 export const getCachedProfileData = cache(async () => {
   const session = await verifySession();
-  const name = session?.name || "Pengguna Baru";
+  const name = session?.name;
   
   // Coba ambil data dari database jika userId valid
   if (session?.userId && session.userId !== "mock-user-id") {
