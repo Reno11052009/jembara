@@ -9,7 +9,7 @@ export default function RecentMessagesCard({
   messages,
 }: RecentMessagesCardProps) {
   return (
-    <div className="rounded-xl border border-hairline bg-card p-2">
+    <div className="rounded-xl border border-hairline bg-card p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-display font-black text-ink">Pesan Terbaru</h3>
         <Link
@@ -37,7 +37,7 @@ export default function RecentMessagesCard({
               </div>
 
               <div className="min-w-0">
-                <div className="flex items-center justify-between gap-62">
+                <div className="flex items-center justify-between gap-2">
                   <p className="truncate text-xs font-display font-black text-ink">
                     {message.senderName}
                   </p>

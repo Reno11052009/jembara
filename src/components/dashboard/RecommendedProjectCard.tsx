@@ -16,11 +16,11 @@ export default function RecommendedProjectCard({
           <h3 className="font-display text-base font-black text-ink">
             {project.title}
           </h3>
-          <p className="mt-1 font-body text-base font-regular leading-none tracking-normal text-ink-muted">
+          <p className="mt-1 text-sm font-body font-normal text-ink-muted">
             {project.companyName}
           </p>
         </div>
-        <span className="mr-3 flex h-10px w-40px shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full bg-brand-soft px-3 py-1.5 text-xs leading-none        font-black font-display text-brand">
+        <span className="mr-3 flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full bg-brand-soft px-3 py-1.5 text-xs leading-none font-black font-display text-brand">
           <Flame size={14} />
           {project.matchPercent}% Match
         </span>
