@@ -3,11 +3,18 @@
 import prisma from "@/lib/prisma";
 import { verifySession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 export async function updateProfileAction(formData: FormData) {
   const session = await verifySession();
   if (!session || !session.userId || session.userId === "mock-user-id") {
+    throw new Error("Unauthorized");
+  }
+
+  const authenticatedUser = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { role: true },
+  });
+  if (!authenticatedUser || !["STUDENT", "UMKM"].includes(authenticatedUser.role)) {
     throw new Error("Unauthorized");
   }
 
@@ -30,7 +37,7 @@ export async function updateProfileAction(formData: FormData) {
 
   try {
     // 1. Update User table
-    const updateData: any = {
+    const updateData = {
       name,
       location,
       bio: about,
@@ -39,10 +46,8 @@ export async function updateProfileAction(formData: FormData) {
       github: github || null,
       linkedin: linkedin || null,
       behance: behance || null,
+      ...(avatarBase64 ? { avatar: avatarBase64 } : {}),
     };
-    if (avatarBase64) {
-      updateData.avatar = avatarBase64;
-    }
 
     await prisma.user.update({
       where: { id: session.userId },
@@ -50,7 +55,7 @@ export async function updateProfileAction(formData: FormData) {
     });
 
     // 2. Update Student / UMKM specific tables
-    if (session.role === "STUDENT") {
+    if (authenticatedUser.role === "STUDENT") {
       // Perbarui jurusan & sekolah di model student
       const student = await prisma.student.upsert({
         where: { userId: session.userId },
@@ -89,7 +94,7 @@ export async function updateProfileAction(formData: FormData) {
         });
       }
 
-    } else if (session.role === "UMKM") {
+    } else if (authenticatedUser.role === "UMKM") {
       await prisma.umkm.upsert({
         where: { userId: session.userId },
         update: {

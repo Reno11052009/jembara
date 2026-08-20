@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { Camera, Globe, Pencil, X } from "lucide-react";
 import Swal from "sweetalert2";
 import { updateProfileAction } from "@/app/actions/profile";
+import { useRouter } from "next/navigation";
 import { FaBehance, FaGithub, FaLinkedin } from "react-icons/fa"; // Behance, Github, Linkedin from react-icons
 import Image from "next/image";
 
@@ -13,6 +14,7 @@ export default function ProfileSettings({ initialData }: { initialData: any }) {
   const [avatarBase64, setAvatarBase64] = useState<string | null>(null);
   const [skills, setSkills] = useState<string[]>(initialData.skills || []);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -94,6 +96,8 @@ export default function ProfileSettings({ initialData }: { initialData: any }) {
         title: 'Berhasil!',
         text: 'Profil Anda telah diperbarui.',
         confirmButtonColor: '#FF6B35'
+      }).then(() => {
+        router.refresh();
       });
     } catch (err: any) {
       Swal.fire({
