@@ -1,5 +1,5 @@
 import { Construction } from "lucide-react";
-import PageHeader from "@/components/layout/PageHeader";
+import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 
 interface ComingSoonProps {
   title: string;
@@ -9,7 +9,7 @@ interface ComingSoonProps {
 export default function ComingSoon({ title, subtitle }: ComingSoonProps) {
   return (
     <>
-      <PageHeader title={title} subtitle={subtitle} />
+      <DashboardPageHeader title={title} subtitle={subtitle} />
       <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-hairline bg-card px-6 py-20 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-soft text-brand">
           <Construction size={24} />

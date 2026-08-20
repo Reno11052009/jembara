@@ -7,8 +7,9 @@ import { updateProfileAction } from "@/app/actions/profile";
 import { useRouter } from "next/navigation";
 import { FaBehance, FaGithub, FaLinkedin } from "react-icons/fa"; // Behance, Github, Linkedin from react-icons
 import Image from "next/image";
+import type { ProfileData } from "@/lib/profile";
 
-export default function ProfileSettings({ initialData }: { initialData: any }) {
+export default function ProfileSettings({ initialData }: { initialData: ProfileData }) {
   const [isLoading, setIsLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string>(initialData.avatarUrl);
   const [avatarBase64, setAvatarBase64] = useState<string | null>(null);
@@ -99,11 +100,11 @@ export default function ProfileSettings({ initialData }: { initialData: any }) {
       }).then(() => {
         router.refresh();
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       Swal.fire({
         icon: 'error',
         title: 'Gagal',
-        text: err.message || 'Gagal menyimpan perubahan.',
+        text: err instanceof Error ? err.message : 'Gagal menyimpan perubahan.',
         confirmButtonColor: '#FF6B35'
       });
     } finally {
@@ -200,8 +201,8 @@ export default function ProfileSettings({ initialData }: { initialData: any }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
-            <div className="md:col-span-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
               <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Jurusan</label>
               <input
                 type="text"
@@ -210,22 +211,25 @@ export default function ProfileSettings({ initialData }: { initialData: any }) {
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-[#FF6B35] focus:outline-none focus:ring-1 focus:ring-[#FF6B35]"
               />
             </div>
-            <div className="md:col-span-3">
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Semester</label>
-              <input
-                type="text"
-                defaultValue="6"
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-[#FF6B35] focus:outline-none focus:ring-1 focus:ring-[#FF6B35]"
-              />
-            </div>
-            <div className="md:col-span-4">
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Lokasi</label>
-              <input
-                type="text"
-                name="location"
-                defaultValue={initialData.location}
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-[#FF6B35] focus:outline-none focus:ring-1 focus:ring-[#FF6B35]"
-              />
+            
+            <div className="grid grid-cols-2 gap-5">
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Semester</label>
+                <input
+                  type="text"
+                  defaultValue="6"
+                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-[#FF6B35] focus:outline-none focus:ring-1 focus:ring-[#FF6B35]"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Lokasi</label>
+                <input
+                  type="text"
+                  name="location"
+                  defaultValue={initialData.location}
+                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-[#FF6B35] focus:outline-none focus:ring-1 focus:ring-[#FF6B35]"
+                />
+              </div>
             </div>
           </div>
 
@@ -239,7 +243,15 @@ export default function ProfileSettings({ initialData }: { initialData: any }) {
             />
           </div>
 
-          {/* Tombol dipindah ke bawah agar mencakup semua */}
+          <div className="flex justify-end mt-2">
+            <button 
+              type="submit" 
+              disabled={isLoading}
+              className="bg-[#FF6B35] hover:bg-[#e85a26] text-white font-bold text-sm px-6 py-2.5 rounded-full shadow-sm transition disabled:opacity-70"
+            >
+              {isLoading ? "Menyimpan..." : "Simpan Perubahan"}
+            </button>
+          </div>
         </div>
 
         {/* Skill & Keahlian Card */}
@@ -363,17 +375,16 @@ export default function ProfileSettings({ initialData }: { initialData: any }) {
             </div>
           </div>
           </div>
-        </div>
 
-        {/* Global Save Button for Form */}
-        <div className="flex justify-end">
-          <button 
-            type="submit" 
-            disabled={isLoading}
-            className="bg-[#FF6B35] hover:bg-[#e85a26] text-white font-bold text-sm px-8 py-3 rounded-full shadow-sm transition disabled:opacity-70 w-full sm:w-auto"
-          >
-            {isLoading ? "Menyimpan..." : "Simpan Semua Perubahan"}
-          </button>
+          <div className="flex justify-end mt-2">
+            <button 
+              type="submit" 
+              disabled={isLoading}
+              className="bg-white border-2 border-[#FF6B35] text-[#FF6B35] hover:bg-orange-50 font-bold text-sm px-8 py-2 rounded-full transition disabled:opacity-70"
+            >
+              {isLoading ? "..." : "Simpan"}
+            </button>
+          </div>
         </div>
       </form>
     </div>

@@ -1,13 +1,19 @@
 import Link from "next/link";
 import { Bell } from "lucide-react";
 
-interface PageHeaderProps {
+export interface PageHeaderProps {
   title: string;
   subtitle: string;
   userName?: string;
+  avatarUrl?: string;
 }
 
-export default function PageHeader({ title, subtitle, userName = "User" }: PageHeaderProps) {
+export default function PageHeader({
+  title,
+  subtitle,
+  userName = "User",
+  avatarUrl,
+}: PageHeaderProps) {
   const initials = userName
     .split(" ")
     .map((part) => part[0])
@@ -31,11 +37,19 @@ export default function PageHeader({ title, subtitle, userName = "User" }: PageH
 
         {/* Avatar inisial yang bisa diklik menuju profil */}
         <Link
-          href="dashboard/profile"
+          href="/dashboard/profile"
           aria-label="Buka profil"
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-display font-black text-brand transition-opacity hover:opacity-80"
         >
-          {initials}
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={`Foto profil ${userName}`}
+              className="h-full w-full rounded-full object-cover"
+            />
+          ) : (
+            initials
+          )}
         </Link>
       </div>
     </div>

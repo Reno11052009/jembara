@@ -79,4 +79,6 @@ export const getCachedProfileData = cache(async () => {
     behance: "behance.net/chello",
   };
 });
+
+export type ProfileData = Awaited<ReturnType<typeof getCachedProfileData>>;
 // HMR trigger 2

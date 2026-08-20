@@ -1,4 +1,4 @@
-import PageHeader from "@/components/layout/PageHeader";
+import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import ActiveProjectsView from "@/components/active-projects/ActiveProjectsView";
 import MonthlyActivityCard from "@/components/active-projects/MonthlyActivityCard";
 import CollaborationTipsCard from "@/components/active-projects/CollaborationTipsCard";
@@ -12,7 +12,7 @@ import {
 export default function ActiveProjectsPage() {
   return (
     <>
-      <PageHeader
+      <DashboardPageHeader
         title="Active Projects"
         subtitle="Pantau dan selesaikan project kolaborasi berjalan Anda."
       />

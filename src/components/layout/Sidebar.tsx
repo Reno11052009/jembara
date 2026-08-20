@@ -37,10 +37,10 @@ export default function Sidebar() {
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col self-start bg-sidebar lg:flex">
       <div className="flex h-full flex-col px-4 py-6">
-        <div className="mb-8 px-2">
+        <Link href="/" className="mb-8 px-2">
           <span className="font-display text-lg font-bold text-white">Jem</span>
           <span className="font-display text-lg font-bold text-brand">Bara</span>
-        </div>
+        </Link>
 
         <nav className="flex flex-col gap-1">
           {navItems.map((item) => {

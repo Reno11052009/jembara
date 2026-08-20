@@ -1,4 +1,4 @@
-import PageHeader from "@/components/layout/PageHeader";
+import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import Footer from "@/components/landing/Footer";
 import ProfileCompletionBanner from "@/components/dashboard/ProfileCompletionBanner";
 import StatCard from "@/components/dashboard/StatCard";
@@ -16,7 +16,7 @@ import {
 export default function DashboardPage() {
   return (
     <>
-      <PageHeader
+      <DashboardPageHeader
         title ="Halo, Chello! 👋"
         subtitle="Berikut adalah update aktivitas project dan kecocokan hari ini."
       />

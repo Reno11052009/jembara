@@ -1,41 +1,26 @@
-import Link from "next/link";
 import ProfileCard from "@/components/profile/profile-card";
-import { ArrowLeft, Star } from "lucide-react";
+import { Star } from "lucide-react";
+import PageHeader from "@/components/layout/PageHeader";
+import { getCachedProfileData } from "@/lib/profile";
 
 export default async function ProfilePage() {
-  return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-12">
-      {/* Navbar */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-orange-500 rounded-md"></div>
-              <span className="font-extrabold text-xl tracking-tight">
-                Skill<span className="text-orange-500">Bridge</span>
-              </span>
-            </div>
+  const profileData = await getCachedProfileData();
 
-            {/* Back to Dashboard */}
-            <Link
-              href="/dashboard"
-              className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Kembali ke Dashboard
-            </Link>
-          </div>
-        </div>
-      </nav>
+  return (
+    <>
+      <PageHeader
+        title="Profil"
+        subtitle="Lihat bagaimana profil publik Anda tampil di mata orang lain."
+        userName="Pengguna"
+        avatarUrl={profileData.avatarUrl}
+      />
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left Sidebar */}
-          <div className="w-full lg:w-1/3">
-            <div className="sticky top-24 flex flex-col gap-6">
-              <ProfileCard />
+      <div className="flex flex-col lg:flex-row gap-6 mt-6">
+        {/* Left Sidebar */}
+        <div className="w-full lg:w-1/3">
+          <div className="sticky top-24 flex flex-col gap-6">
+              <ProfileCard avatarUrl={profileData.avatarUrl} />
             </div>
           </div>
 
@@ -141,7 +126,6 @@ export default async function ProfilePage() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </>
   );
 }

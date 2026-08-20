@@ -8,11 +8,14 @@ import StatsBar from "@/components/landing/StatsBar";
 import Testimonials from "@/components/landing/Testimonials";
 import CtaSection from "@/components/landing/CtaSection";
 import Footer from "@/components/landing/Footer";
+import { verifySession } from "@/lib/session";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const session = await verifySession();
+
   return (
     <>
-      <Navbar />
+      <Navbar sessionName={session?.name ?? null} />
       <Hero />
       <ProcessSteps />
       <ServiceCategories />

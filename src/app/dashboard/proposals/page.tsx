@@ -1,4 +1,4 @@
-import PageHeader from "@/components/layout/PageHeader";
+import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import ProposalStatsGrid from "@/components/proposals/ProposalStatsGrid";
 import ProposalsView from "@/components/proposals/ProposalView";
 import { proposalStats, proposalTabCounts, proposals } from "@/lib/mock-proposal";
@@ -6,7 +6,7 @@ import { proposalStats, proposalTabCounts, proposals } from "@/lib/mock-proposal
 export default function ProposalsPage() {
   return (
     <>
-      <PageHeader
+      <DashboardPageHeader
         title="My Proposals"
         subtitle="Kelola dan pantau status pengajuan proposal project Anda."
       />

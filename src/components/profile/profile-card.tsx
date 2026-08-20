@@ -14,13 +14,18 @@ const skills = [
 interface ProfileCardProps {
   isPublic?: boolean;
   name?: string;
+  avatarUrl?: string;
 }
 
-export default function ProfileCard({ isPublic = false, name = "Chello Arta" }: ProfileCardProps = {}) {
+export default function ProfileCard({
+  isPublic = false,
+  name = "Chello Arta",
+  avatarUrl = "https://ui-avatars.com/api/?name=Chello+Arta&background=random",
+}: ProfileCardProps = {}) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center sticky top-24">
       <img
-        src="https://ui-avatars.com/api/?name=Chello+Arta&background=random"
+        src={avatarUrl}
         alt="Profile"
         className="w-24 h-24 rounded-full object-cover mb-4 ring-4 ring-gray-50"
       />

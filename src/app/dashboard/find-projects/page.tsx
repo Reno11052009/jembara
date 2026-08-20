@@ -1,4 +1,4 @@
-import PageHeader from "@/components/layout/PageHeader";
+import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import FilterBar from "@/components/projects/FilterBar";
 import ProjectCard from "@/components/projects/ProjectCard";
 import { mockProjects } from "@/lib/mock-projects";
@@ -7,7 +7,7 @@ import Footer from "@/components/landing/Footer";
 export default function FindProjectsPage() {
   return (
     <>
-      <PageHeader
+      <DashboardPageHeader
         title="Find Projects"
         subtitle="Temukan project yang sesuai dengan skill kamu."
       />
