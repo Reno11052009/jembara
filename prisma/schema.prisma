@@ -16,8 +16,12 @@ model user {
   avatar     String?
   bio        String?
   location   String?
-  role       String   @default("STUDENT") // STUDENT, UMKM, ADMIN
-  createdAt  DateTime @default(now()) @db.Timestamp(6)
+  role         String   @default("STUDENT") // STUDENT, UMKM, ADMIN
+  portfolioUrl String?
+  github       String?
+  linkedin     String?
+  behance      String?
+  createdAt    DateTime @default(now()) @db.Timestamp(6)
   updateAt   DateTime @updatedAt @db.Timestamp(6)
 
   student student?

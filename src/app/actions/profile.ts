@@ -17,6 +17,11 @@ export async function updateProfileAction(formData: FormData) {
   const tingkat_pendidikan = formData.get("tingkat_pendidikan") as string;
   const school = formData.get("school") as string;
   const about = formData.get("about") as string;
+  const phone = formData.get("phone") as string;
+  const portfolioUrl = formData.get("portfolioUrl") as string;
+  const github = formData.get("github") as string;
+  const linkedin = formData.get("linkedin") as string;
+  const behance = formData.get("behance") as string;
   // skills dipisahkan dengan koma
   const skillsString = formData.get("skills") as string;
   const skillsArray = skillsString ? skillsString.split(",").map(s => s.trim()).filter(Boolean) : [];
@@ -29,6 +34,11 @@ export async function updateProfileAction(formData: FormData) {
       name,
       location,
       bio: about,
+      no_telepon: phone || null,
+      portfolioUrl: portfolioUrl || null,
+      github: github || null,
+      linkedin: linkedin || null,
+      behance: behance || null,
     };
     if (avatarBase64) {
       updateData.avatar = avatarBase64;
@@ -100,5 +110,6 @@ export async function updateProfileAction(formData: FormData) {
   }
 
   revalidatePath("/dashboard/profile");
+  revalidatePath("/dashboard/settings");
   return { success: true };
 }

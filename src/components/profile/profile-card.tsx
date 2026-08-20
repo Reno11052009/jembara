@@ -51,7 +51,7 @@ export default function ProfileCard({
       </div>
 
       {!isPublic ? (
-        <Link href="/dashboard/profile/edit" className="w-full block bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-4 rounded-lg transition-colors text-center">
+        <Link href="/dashboard/settings" className="w-full block bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-4 rounded-lg transition-colors text-center">
           EDIT PROFIL
         </Link>
       ) : (

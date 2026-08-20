@@ -46,6 +46,12 @@ export const getCachedProfileData = cache(async () => {
           about: user.bio || `Halo, saya ${user.name || name}.`,
           skills: skills.length > 0 ? skills : ["Figma", "UI/UX Design", "Wireframing", "React.js", "Tailwind CSS", "JavaScript"],
           avatarUrl: user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || name)}&background=random`,
+          email: user.email,
+          phone: user.no_telepon || "",
+          portfolioUrl: user.portfolioUrl || "",
+          github: user.github || "",
+          linkedin: user.linkedin || "",
+          behance: user.behance || "",
         };
       }
     } catch (error) {
@@ -65,6 +71,12 @@ export const getCachedProfileData = cache(async () => {
     about: `Halo, saya ${name}. Saya fokus mendalami dunia UI/UX Design dan Frontend Web Development. Senang berkolaborasi dengan UMKM dalam membangun solusi produk digital yang rapi, cepat, dan fungsional.`,
     skills: ["Figma", "UI/UX Design", "Wireframing", "React.js", "Tailwind CSS", "JavaScript", "User Research"],
     avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
+    email: "chello@email.com",
+    phone: "+62 812-3456-7890",
+    portfolioUrl: "chello.design",
+    github: "github.com/chello",
+    linkedin: "linkedin.com/in/chello",
+    behance: "behance.net/chello",
   };
 });
 // HMR trigger 2
