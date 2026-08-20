@@ -1,8 +1,10 @@
-import SettingsView from "@/components/settings/SettingsView";
-import { getCachedProfileData } from "@/lib/profile";
+import ComingSoon from "@/components/layout/ComingSoon";
 
-export default async function SettingsPage() {
-  const profileData = await getCachedProfileData();
-  
-  return <SettingsView initialData={profileData} />;
+export default function SettingsPage() {
+  return (
+    <ComingSoon
+      title="Settings"
+      subtitle="Atur preferensi akun dan notifikasi kamu."
+    />
+  );
 }

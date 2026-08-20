@@ -1,5 +1,4 @@
 import { CircleCheck, MapPin, University, Star } from "lucide-react";
-import Link from "next/link";
 
 const skills = [
   "Figma",
@@ -11,6 +10,7 @@ const skills = [
   "User Research",
 ];
 
+<<<<<<< HEAD
 interface ProfileCardProps {
   isPublic?: boolean;
   name?: string;
@@ -22,6 +22,9 @@ export default function ProfileCard({
   name = "Chello Arta",
   avatarUrl = "https://ui-avatars.com/api/?name=Chello+Arta&background=random",
 }: ProfileCardProps = {}) {
+=======
+export default function ProfileCard() {
+>>>>>>> a40cd1722b134509343d99287fd9e6c5d5a61295
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center sticky top-24">
       <img
@@ -52,15 +55,9 @@ export default function ProfileCard({
         </div>
       </div>
 
-      {!isPublic ? (
-        <Link href="/dashboard/settings" className="w-full block bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-4 rounded-lg transition-colors text-center">
-          EDIT PROFIL
-        </Link>
-      ) : (
-        <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-4 rounded-lg transition-colors">
-          HUBUNGI & REKRUT {name.split(' ')[0].toUpperCase()}
-        </button>
-      )}
+      <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-4 rounded-lg transition-colors">
+        HUBUNGI & REKRUT CHELLO
+      </button>
 
       {/* Keahlian & Tools dipindah ke bawah tombol */}
       <div className="w-full text-left mt-6">
