@@ -117,7 +117,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
       {/* Header Avatar Card */}
       <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm flex items-center gap-5">
         <div 
-          className="relative group cursor-pointer w-[72px] h-[72px] shrink-0" 
+          className="relative group cursor-pointer w-18 h-18 shrink-0" 
           onClick={() => fileInputRef.current?.click()}
         >
           <div className="w-full h-full rounded-full overflow-hidden border border-gray-200">
@@ -163,7 +163,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                 type="text"
                 name="name"
                 defaultValue={initialData.name}
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-[#FF6B35] focus:outline-none focus:ring-1 focus:ring-[#FF6B35]"
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                 required
               />
             </div>
@@ -173,7 +173,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                 type="email"
                 defaultValue={initialData.email || ""}
                 placeholder="contoh@email.com"
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-[#FF6B35] focus:outline-none focus:ring-1 focus:ring-[#FF6B35]"
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                 disabled
               />
             </div>
@@ -187,7 +187,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                 name="phone"
                 defaultValue={initialData.phone || ""}
                 placeholder="+62 812-3456-7890"
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-[#FF6B35] focus:outline-none focus:ring-1 focus:ring-[#FF6B35]"
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               />
             </div>
             <div>
@@ -196,7 +196,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                 type="text"
                 name="school"
                 defaultValue={initialData.school}
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-[#FF6B35] focus:outline-none focus:ring-1 focus:ring-[#FF6B35]"
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               />
             </div>
           </div>
@@ -208,7 +208,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                 type="text"
                 name="headline"
                 defaultValue={initialData.headline}
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-[#FF6B35] focus:outline-none focus:ring-1 focus:ring-[#FF6B35]"
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               />
             </div>
             
@@ -223,7 +223,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                   max={20}
                   step={1}
                   placeholder="Contoh: 6"
-                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-[#FF6B35] focus:outline-none focus:ring-1 focus:ring-[#FF6B35]"
+                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                 />
               </div>
               <div>
@@ -232,7 +232,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                   type="text"
                   name="location"
                   defaultValue={initialData.location}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-[#FF6B35] focus:outline-none focus:ring-1 focus:ring-[#FF6B35]"
+                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                 />
               </div>
             </div>
@@ -244,7 +244,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
               name="about"
               rows={2}
               defaultValue={initialData.about}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-[#FF6B35] focus:outline-none focus:ring-1 focus:ring-[#FF6B35] resize-y min-h-[46px]"
+              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand resize-y min-h-11.5"
             />
           </div>
 
@@ -252,7 +252,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
             <button 
               type="submit" 
               disabled={isLoading}
-              className="bg-[#FF6B35] hover:bg-[#e85a26] text-white font-bold text-sm px-6 py-2.5 rounded-full shadow-sm transition disabled:opacity-70"
+              className="bg-brand hover:bg-brand-dark text-white font-bold text-sm px-6 py-2.5 rounded-full shadow-sm transition disabled:opacity-70"
             >
               {isLoading ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
@@ -303,7 +303,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
             {/* Portfolio */}
             <div>
               <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Portfolio URL</label>
-              <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-[#FF6B35] focus-within:ring-1 focus-within:ring-[#FF6B35]">
+              <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
                 <div className="pl-3.5 pr-2 text-gray-400">
                   <Globe className="w-4 h-4" />
                 </div>
@@ -323,7 +323,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
             {/* GitHub */}
             <div>
               <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Github</label>
-              <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-[#FF6B35] focus-within:ring-1 focus-within:ring-[#FF6B35]">
+              <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
                 <div className="pl-3.5 pr-2 text-gray-400">
                   <FaGithub className="w-4 h-4" />
                 </div>
@@ -343,7 +343,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
             {/* LinkedIn */}
             <div>
               <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Linkedin</label>
-              <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-[#FF6B35] focus-within:ring-1 focus-within:ring-[#FF6B35]">
+              <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
                 <div className="pl-3.5 pr-2 text-gray-400">
                   <FaLinkedin className="w-4 h-4" />
                 </div>
@@ -363,7 +363,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
             {/* Behance */}
             <div>
               <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Behance</label>
-              <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-[#FF6B35] focus-within:ring-1 focus-within:ring-[#FF6B35]">
+              <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
                 <div className="pl-3.5 pr-2 text-gray-400">
                   <FaBehance className="w-4 h-4" />
                 </div>
@@ -385,7 +385,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
             <button
               type="submit"
               disabled={isLoading}
-              className="bg-white border-2 border-[#FF6B35] text-[#FF6B35] hover:bg-orange-50 font-bold text-sm px-8 py-2 rounded-full transition disabled:opacity-70"
+              className="bg-white border-2 border-brand text-brand hover:bg-brand-light font-bold text-sm px-8 py-2 rounded-full transition disabled:opacity-70"
             >
               {isLoading ? "..." : "Simpan"}
             </button>

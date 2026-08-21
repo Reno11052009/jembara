@@ -3,6 +3,10 @@
 import { useState } from "react";
 import PageHeader from "@/components/layout/PageHeader";
 import ProfileSettings from "./ProfileSettings";
+import SecuritySettingsView from "@/components/security/Securitysettingsview";
+import NotificationSettingsCard from "./NotificationSettingsCard";
+import PaymentSettingsView from "./PaymentSettingsView";
+import PrivacySettingsView from "./PrivacySettingsView";
 import type { ProfileData } from "@/lib/profile";
 
 const tabs = [
@@ -36,8 +40,8 @@ export default function SettingsView({ initialData }: { initialData: ProfileData
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex w-full items-center pl-6 pr-4 py-3 text-left text-sm font-medium rounded-r-2xl transition-colors ${
                   activeTab === tab.id
-                    ? "bg-[#FFF3ED] text-[#FF6B35] font-bold border-l-[4px] border-[#FF6B35]"
-                    : "text-gray-700 hover:bg-gray-50 border-l-[4px] border-transparent"
+                    ? "bg-[#FFF3ED] text-brand font-bold border-l-4p border-brand"
+                    : "text-gray-700 hover:bg-gray-50 border-l-4 border-transparent"
                 }`}
               >
                 {tab.label}
@@ -49,11 +53,15 @@ export default function SettingsView({ initialData }: { initialData: ProfileData
         {/* Content Area */}
         <div className="flex-1 min-w-0">
           {activeTab === "profil" && <ProfileSettings initialData={initialData} />}
-          {activeTab !== "profil" && (
+          {activeTab === "keamanan" && <SecuritySettingsView />}
+          {activeTab === "notifikasi" && <NotificationSettingsCard />}
+          {activeTab === "pembayaran" && <PaymentSettingsView />}
+          {activeTab === "privasi" && <PrivacySettingsView />}
+          {activeTab === "bahasa" && (
             <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm text-center flex flex-col items-center justify-center h-64">
               <h3 className="text-lg font-bold text-gray-900 mb-2">Segera Hadir</h3>
               <p className="text-gray-500 text-sm">
-                Fitur pengaturan {tabs.find((t) => t.id === activeTab)?.label} sedang dalam tahap pengembangan.
+                Fitur pengaturan Bahasa & Tampilan sedang dalam tahap pengembangan.
               </p>
             </div>
           )}
