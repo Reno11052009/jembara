@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import SmoothScroll from "@/components/providers/SmoothScroll";
+import { PreferencesProvider } from "@/contexts/PreferencesContext";
 import "./global.css";
 
 const unbounded = localFont({
@@ -30,10 +31,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="id"
+      suppressHydrationWarning
       className={`${unbounded.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <SmoothScroll>{children}</SmoothScroll>
+        <PreferencesProvider>
+          <SmoothScroll>{children}</SmoothScroll>
+        </PreferencesProvider>
       </body>
     </html>
   );

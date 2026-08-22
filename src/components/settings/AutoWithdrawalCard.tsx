@@ -5,6 +5,7 @@ import Input from "@/components/ui/Input";
 
 export default function AutoWithdrawalCard() {
   const [minWithdrawal, setMinWithdrawal] = useState("Rp 500.000");
+  const [autoWithdrawalEnabled, setAutoWithdrawalEnabled] = useState(false);
 
   return (
     <section className="rounded-xl border border-[#ECECEC] bg-white p-6">
@@ -14,8 +15,8 @@ export default function AutoWithdrawalCard() {
 
       <div className="mb-5">
         <Input
-          type="text"
           label="MINIMAL JUMLAH PENARIKAN"
+          type="text"
           value={minWithdrawal}
           onChange={(e) => setMinWithdrawal(e.target.value)}
         />
@@ -32,9 +33,21 @@ export default function AutoWithdrawalCard() {
           </p>
         </div>
 
-        <div className="relative shrink-0 w-12 h-7 rounded-full bg-neutral-300">
-          <span className="absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow" />
-        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={autoWithdrawalEnabled}
+          onClick={() => setAutoWithdrawalEnabled((prev) => !prev)}
+          className={`relative shrink-0 w-12 h-7 rounded-full transition-colors duration-200 ${
+            autoWithdrawalEnabled ? "bg-orange-500" : "bg-neutral-300"
+          }`}
+        >
+          <span
+            className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
+              autoWithdrawalEnabled ? "translate-x-5" : "translate-x-0"
+            }`}
+          />
+        </button>
       </div>
     </section>
   );
