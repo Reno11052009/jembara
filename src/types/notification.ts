@@ -7,3 +7,13 @@ export interface HeaderNotification {
   isRead: boolean;
   createdAt: string;
 }
+
+export interface NotificationPreferences {
+  proposalMasuk: boolean;
+  pesanBaru: boolean;
+  pembayaran: boolean;
+  updateProyek: boolean;
+  promosiInfo: boolean;
+}
+
+export type NotificationPreferenceKey = keyof NotificationPreferences;

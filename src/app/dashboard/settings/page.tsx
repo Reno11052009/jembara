@@ -1,4 +1,5 @@
 import { getCachedProfileData } from "@/lib/profile";
+import { getCurrentNotificationPreferences } from "@/lib/notification-preferences";
 import SettingsView from "@/components/settings/SettingsView";
 
 export const metadata = {
@@ -7,7 +8,15 @@ export const metadata = {
 };
 
 export default async function SettingsPage() {
-  const profileData = await getCachedProfileData();
+  const [profileData, notificationPreferences] = await Promise.all([
+    getCachedProfileData(),
+    getCurrentNotificationPreferences(),
+  ]);
 
-  return <SettingsView initialData={profileData} />;
+  return (
+    <SettingsView
+      initialData={profileData}
+      initialNotificationPreferences={notificationPreferences}
+    />
+  );
 }

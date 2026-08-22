@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { verifySession } from "@/lib/session";
+import { createUserNotification } from "@/lib/notifications";
 import { revalidatePath } from "next/cache";
 
 export async function updateProfileAction(formData: FormData) {
@@ -129,6 +130,19 @@ export async function updateProfileAction(formData: FormData) {
     return { error: "Gagal memperbarui profil" };
   }
 
+  try {
+    await createUserNotification({
+      userId: session.userId,
+      type: "INFO",
+      title: "Profil berhasil diperbarui",
+      message: "Perubahan profil Anda telah tersimpan di JemBara.",
+      href: "/dashboard/profile",
+    });
+  } catch (error) {
+    console.error("Failed to create profile notification:", error);
+  }
+
+  revalidatePath("/dashboard");
   revalidatePath("/dashboard/profile");
   revalidatePath("/dashboard/settings");
   return { success: true };

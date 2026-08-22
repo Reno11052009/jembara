@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { updateNotificationPreferencesAction } from "@/app/actions/notification-preferences";
+import type {
+  NotificationPreferenceKey,
+  NotificationPreferences,
+} from "@/types/notification";
 
-type NotificationKey =
-  | "proposalMasuk"
-  | "pesanBaru"
-  | "pembayaran"
-  | "updateProyek"
-  | "promosiInfo";
-
-const notificationItems: { key: NotificationKey; title: string; description: string }[] = [
+const notificationItems: {
+  key: NotificationPreferenceKey;
+  title: string;
+  description: string;
+}[] = [
   {
     key: "proposalMasuk",
     title: "Proposal Masuk",
@@ -37,19 +39,43 @@ const notificationItems: { key: NotificationKey; title: string; description: str
   },
 ];
 
-const defaultState: Record<NotificationKey, boolean> = {
-  proposalMasuk: true,
-  pesanBaru: true,
-  pembayaran: true,
-  updateProyek: false,
-  promosiInfo: false,
-};
+interface NotificationSettingsCardProps {
+  initialPreferences: NotificationPreferences;
+}
 
-export default function NotificationSettingsCard() {
-  const [settings, setSettings] = useState(defaultState);
+export default function NotificationSettingsCard({
+  initialPreferences,
+}: NotificationSettingsCardProps) {
+  const [settings, setSettings] = useState(initialPreferences);
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-  const toggle = (key: NotificationKey) => {
+  const toggle = (key: NotificationPreferenceKey) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+    setFeedback(null);
+  };
+
+  const handleSave = () => {
+    startTransition(async () => {
+      const result = await updateNotificationPreferencesAction(settings);
+
+      if (!result.success) {
+        setFeedback({
+          type: "error",
+          message: result.error,
+        });
+        return;
+      }
+
+      setSettings(result.preferences);
+      setFeedback({
+        type: "success",
+        message: "Pengaturan notifikasi tersimpan.",
+      });
+    });
   };
 
   return (
@@ -92,12 +118,24 @@ export default function NotificationSettingsCard() {
         ))}
       </div>
 
-      <div className="flex justify-end mt-6">
+      <div className="flex flex-wrap items-center justify-end gap-4 mt-6">
+        {feedback && (
+          <p
+            role="status"
+            className={`font-body text-sm ${
+              feedback.type === "success" ? "text-emerald-600" : "text-red-600"
+            }`}
+          >
+            {feedback.message}
+          </p>
+        )}
         <button
           type="button"
-          className="font-body text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 transition-colors rounded-full px-6 py-3"
+          onClick={handleSave}
+          disabled={isPending}
+          className="font-body text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60 transition-colors rounded-full px-6 py-3"
         >
-          Simpan Perubahan
+          {isPending ? "Menyimpan..." : "Simpan Perubahan"}
         </button>
       </div>
     </section>

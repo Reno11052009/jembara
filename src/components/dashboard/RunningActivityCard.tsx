@@ -12,6 +12,11 @@ export default function RunningActivityCard({
       <h3 className="text-sm font-display font-black text-ink">Aktivitas Project Berjalan</h3>
 
       <div className="mt-2 flex flex-col gap-4">
+        {activities.length === 0 && (
+          <p className="rounded-lg bg-canvas p-4 text-sm text-ink-muted">
+            Belum ada aktivitas proyek.
+          </p>
+        )}
         {activities.map((activity) => {
           const progress =
             typeof activity.progressPercent === "number"
@@ -42,18 +47,24 @@ export default function RunningActivityCard({
                       : "bg-brand-soft text-brand"
                   }`}
                 >
-                  {activity.status === "completed" ? "Completed" : "In Progress"}
+                  {activity.status === "completed"
+                    ? "Completed"
+                    : activity.status === "review"
+                      ? "In Review"
+                      : "In Progress"}
                 </span>
               </div>
                 
               <div className="mt-2 flex items-center gap-3">
                 <p className="shrink-0 text-sm text-ink-muted">{activity.clientName}</p>
-                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-hairline">
-                  <div
-                    className={`h-full rounded-full ${progressColor}`}
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
+                {typeof activity.progressPercent === "number" && (
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-hairline">
+                    <div
+                      className={`h-full rounded-full ${progressColor}`}
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           );

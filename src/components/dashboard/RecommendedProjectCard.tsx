@@ -1,6 +1,6 @@
 import { Flame } from "lucide-react";
+import Link from "next/link";
 import { RecommendedProject } from "@/types/dashboard";
-import Button from "@/components/ui/Button";
 
 interface RecommendedProjectCardProps {
   project: RecommendedProject;
@@ -22,7 +22,7 @@ export default function RecommendedProjectCard({
         </div>
         <span className="mr-3 flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full bg-brand-soft px-3 py-1.5 text-xs leading-none font-black font-display text-brand">
           <Flame size={14} />
-          {project.matchPercent}% Match
+          {project.matchPercent}% Skill Match
         </span>
       </div>
 
@@ -52,7 +52,12 @@ export default function RecommendedProjectCard({
       </div>
 
       <div className="mt-4 flex items-center justify-start gap-3">
-        <Button variant="outline" className="h-9.75 w-45 rounded-full border-2 px-6 py-3 text-sm"> LAMAR PROJECT </Button>
+        <Link
+          href="/dashboard/find-projects"
+          className="inline-flex h-9.75 w-45 items-center justify-center rounded-full border-2 border-ink px-6 py-3 text-sm font-semibold text-ink transition-colors hover:border-brand hover:text-brand"
+        >
+          LIHAT PROJECT
+        </Link>
         <span className="text-sm text-ink-muted">{project.postedLabel}</span>
       </div>
     </div>

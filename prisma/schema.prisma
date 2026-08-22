@@ -28,6 +28,7 @@ model user {
   umkm    umkm?
   admin   admin?
   notifications notification[]
+  notificationPreference notification_preference?
 }
 
 model student {
@@ -89,6 +90,20 @@ model notification {
   user user @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead, createdAt])
+}
+
+model notification_preference {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @unique @db.Uuid
+  proposalMasuk  Boolean  @default(true)
+  pesanBaru      Boolean  @default(true)
+  pembayaran     Boolean  @default(true)
+  updateProyek   Boolean  @default(true)
+  promosiInfo    Boolean  @default(false)
+  createdAt      DateTime @default(now()) @db.Timestamp(6)
+  updatedAt      DateTime @updatedAt @db.Timestamp(6)
+
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model skill {
