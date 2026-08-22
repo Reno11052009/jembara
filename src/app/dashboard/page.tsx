@@ -31,7 +31,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="flex flex-col gap-4 lg:col-span-2">
+          <div className="flex flex-col gap-6.5 lg:col-span-2">
             <h2 className="text-lg font-display font-black text-ink">
               Project yang Cocok Untukmu
             </h2>

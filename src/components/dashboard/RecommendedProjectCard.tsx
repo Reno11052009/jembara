@@ -11,7 +11,7 @@ export default function RecommendedProjectCard({
 }: RecommendedProjectCardProps) {
   return (
     <div className="rounded-xl border border-hairline bg-card p-3">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex  items-start justify-between gap-3">
         <div>
           <h3 className="font-display text-base font-black text-ink">
             {project.title}

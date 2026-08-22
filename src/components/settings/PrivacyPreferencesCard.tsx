@@ -1,6 +1,21 @@
-import { privacyPreferences } from "@/lib/mock-privacy-settings";
+"use client";
+
+import { useState } from "react";
+import { privacyPreferences as initialPreferences } from "@/lib/mock-privacy-settings";
 
 export default function PrivacyPreferencesCard() {
+  const [preferences, setPreferences] = useState(initialPreferences);
+
+  const toggle = (id: string) => {
+    setPreferences((prev) =>
+      prev.map((preference) =>
+        preference.id === id
+          ? { ...preference, enabled: !preference.enabled }
+          : preference
+      )
+    );
+  };
+
   return (
     <section className="rounded-xl border border-[#ECECEC] bg-white p-6">
       <h2 className="font-display text-lg font-bold text-neutral-900 mb-2">
@@ -8,11 +23,11 @@ export default function PrivacyPreferencesCard() {
       </h2>
 
       <div>
-        {privacyPreferences.map((preference, index) => (
+        {preferences.map((preference, index) => (
           <div
             key={preference.id}
             className={`flex items-start justify-between gap-6 py-5 first:pt-0 last:pb-0 ${
-              index === privacyPreferences.length - 1
+              index === preferences.length - 1
                 ? ""
                 : "border-b border-[#ECECEC]"
             }`}
@@ -26,17 +41,21 @@ export default function PrivacyPreferencesCard() {
               </p>
             </div>
 
-            <div
-              className={`relative shrink-0 w-12 h-7 rounded-full ${
+            <button
+              type="button"
+              role="switch"
+              aria-checked={preference.enabled}
+              onClick={() => toggle(preference.id)}
+              className={`relative shrink-0 w-12 h-7 rounded-full transition-colors duration-200 ${
                 preference.enabled ? "bg-orange-500" : "bg-neutral-300"
               }`}
             >
               <span
-                className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow ${
+                className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all duration-200 ${
                   preference.enabled ? "left-6" : "left-1"
                 }`}
               />
-            </div>
+            </button>
           </div>
         ))}
       </div>

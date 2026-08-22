@@ -1,6 +1,11 @@
+"use client";
+
+import { useState } from "react";
 import { profileVisibilityOptions, defaultProfileVisibility } from "@/lib/mock-privacy-settings";
 
 export default function ProfileVisibilityCard() {
+  const [selected, setSelected] = useState(defaultProfileVisibility);
+
   return (
     <section className="rounded-xl border border-[#ECECEC] bg-white p-6">
       <h2 className="font-display text-lg font-bold text-neutral-900 mb-5">
@@ -9,12 +14,17 @@ export default function ProfileVisibilityCard() {
 
       <div className="flex flex-col gap-5">
         {profileVisibilityOptions.map((option) => {
-          const isSelected = option.id === defaultProfileVisibility;
+          const isSelected = option.id === selected;
 
           return (
-            <div key={option.id} className="flex items-start gap-3">
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => setSelected(option.id)}
+              className="flex items-start gap-3 text-left"
+            >
               <span
-                className={`mt-0.5 shrink-0 w-4 h-4 rounded-full border flex items-center justify-center ${
+                className={`mt-0.5 shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
                   isSelected ? "border-orange-500" : "border-neutral-300"
                 }`}
               >
@@ -25,7 +35,7 @@ export default function ProfileVisibilityCard() {
 
               <div>
                 <p
-                  className={`font-body text-sm font-semibold mb-1 ${
+                  className={`font-body text-sm font-semibold mb-1 transition-colors ${
                     isSelected ? "text-orange-600" : "text-neutral-900"
                   }`}
                 >
@@ -35,7 +45,7 @@ export default function ProfileVisibilityCard() {
                   {option.description}
                 </p>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>

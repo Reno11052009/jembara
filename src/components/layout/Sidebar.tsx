@@ -10,29 +10,30 @@ import {
   Settings,
 } from "lucide-react";
 import { Home, ListChecks, FolderOpen, MessageSquare, CreditCard } from "lucide-react";
-
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface NavItem {
-  label: string;
+  key: "dashboard" | "findProjects" | "myProposals" | "activeProjects" | "portfolio" | "messages" | "earnings" | "profile" | "settings";
   href: string;
   icon?: React.ElementType;
   iconSrc?: string;
 }
 
 const navItems: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: Home },
-  { label: "Find Projects", href: "/dashboard/find-projects", icon: Search },
-  { label: "My Proposals", href: "/dashboard/proposals", icon: ListChecks },
-  { label: "Active Projects", href: "/dashboard/active-projects", icon: Briefcase },
-  { label: "Portfolio", href: "/dashboard/portfolio", icon: FolderOpen },
-  { label: "Messages", href: "/dashboard/messages", icon: MessageSquare },
-  { label: "Earnings", href: "/dashboard/earnings", icon: CreditCard },
-  { label: "Profile", href: "/dashboard/profile", icon: User },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
+  { key: "dashboard", href: "/dashboard", icon: Home },
+  { key: "findProjects", href: "/dashboard/find-projects", icon: Search },
+  { key: "myProposals", href: "/dashboard/proposals", icon: ListChecks },
+  { key: "activeProjects", href: "/dashboard/active-projects", icon: Briefcase },
+  { key: "portfolio", href: "/dashboard/portfolio", icon: FolderOpen },
+  { key: "messages", href: "/dashboard/messages", icon: MessageSquare },
+  { key: "earnings", href: "/dashboard/earnings", icon: CreditCard },
+  { key: "profile", href: "/dashboard/profile", icon: User },
+  { key: "settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { dict } = usePreferences();
 
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col self-start bg-sidebar lg:flex">
@@ -73,7 +74,7 @@ export default function Sidebar() {
                 ) : (
                   Icon && <Icon size={18} className="shrink-0" />
                 )}
-                {item.label}
+                {dict.sidebar[item.key]}
               </Link>
             );
           })}
