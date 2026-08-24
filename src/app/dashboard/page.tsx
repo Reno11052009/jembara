@@ -16,6 +16,7 @@ import RecommendedProjectCard from "@/components/dashboard/RecommendedProjectCar
 import RunningActivityCard from "@/components/dashboard/RunningActivityCard";
 import ManagedProjectCard from "@/components/dashboard/ManagedProjectCard";
 import RecentNotificationsCard from "@/components/dashboard/RecentNotificationsCard";
+import OwnerDashboardView from "@/components/dashboard/umkm/OwnerDashboardView";
 import { getDashboardData } from "@/lib/dashboard";
 
 const metricIcons = {
@@ -37,6 +38,14 @@ const dashboardSubtitles = {
 
 export default async function DashboardPage() {
   const dashboard = await getDashboardData();
+
+  // The UMKM owner dashboard mockup uses a different data model (Lowongan/Pelamar)
+  // than the shared getDashboardData() pipeline below (Proyek/Proposal), so it's
+  // rendered as its own self-contained view for now. See OwnerDashboardView for details.
+  if (dashboard.role === "UMKM") {
+    return <OwnerDashboardView />;
+  }
+
   const firstName = dashboard.userName.trim().split(/\s+/)[0] || "Pengguna";
 
   return (

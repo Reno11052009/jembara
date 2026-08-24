@@ -1,24 +1,16 @@
-"use client";
 import { testimonials } from "@/lib/mock-landing";
-import { useReveal } from "@/hooks/useReveal";
 
 export default function Testimonials() {
-  const { ref, isVisible } = useReveal<HTMLElement>();
   return (
-    <section
-      ref={ref}
-      className={`px-6 py-20 font-sans transition-all duration-700 ease-out ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-      }`}
-    >
+    <section className="animate-reveal px-6 py-20 font-sans">
       <div className="mx-auto max-w-7xl text-center">
-        <p className="font-display text-lg font-black uppercase tracking-[0.15em] text-brand">
+        <p className="animate-reveal animate-reveal-d1 font-display text-lg font-black uppercase tracking-[0.15em] text-brand">
           Cerita Sukses
         </p>
-        <h2 className="mt-2 font-display text-4xl font-black text-ink">
+        <h2 className="animate-reveal animate-reveal-d2 mt-2 font-display text-4xl font-black text-ink">
           Apa Kata Mereka Tentang Kami
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-base text-ink-muted">
+        <p className="animate-reveal animate-reveal-d3 mx-auto mt-3 max-w-xl text-base text-ink-muted">
           Dari para pelaku usaha kecil hingga talenta muda masa depan negeri
           ini.
         </p>
@@ -27,7 +19,7 @@ export default function Testimonials() {
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
-              className="rounded-xl border border-hairline bg-card p-6"
+              className={`animate-reveal animate-reveal-d${Math.min(index + 1, 6)} rounded-xl border border-hairline bg-card p-6`}
             >
               <p className="text-lg text-black font-body">&ldquo;{testimonial.quote}&rdquo;</p>
               <div className="mt-4 flex items-center gap-3">

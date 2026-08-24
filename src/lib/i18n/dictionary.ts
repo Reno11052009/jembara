@@ -17,6 +17,10 @@ export interface Dictionary {
     earnings: string;
     profile: string;
     settings: string;
+    cariTalent: string;
+    pasangLowongan: string;
+    lowonganSaya: string;
+    pelamar: string;
   };
   settings: {
     pageTitle: string;
@@ -61,6 +65,10 @@ const dictionary: Record<Language, Dictionary> = {
       earnings: "Pendapatan",
       profile: "Profil",
       settings: "Pengaturan",
+      cariTalent: "Cari Talent",
+      pasangLowongan: "Pasang Lowongan",
+      lowonganSaya: "Lowongan Saya",
+      pelamar: "Pelamar",
     },
     settings: {
       pageTitle: "Pengaturan",
@@ -103,6 +111,10 @@ const dictionary: Record<Language, Dictionary> = {
       earnings: "Earnings",
       profile: "Profile",
       settings: "Settings",
+      cariTalent: "Find Talent",
+      pasangLowongan: "Post a Job",
+      lowonganSaya: "My Listings",
+      pelamar: "Applicants",
     },
     settings: {
       pageTitle: "Settings",
@@ -145,6 +157,10 @@ const dictionary: Record<Language, Dictionary> = {
       earnings: "収益",
       profile: "プロフィール",
       settings: "設定",
+      cariTalent: "人材を探す",
+      pasangLowongan: "求人を投稿",
+      lowonganSaya: "自分の求人",
+      pelamar: "応募者",
     },
     settings: {
       pageTitle: "設定",

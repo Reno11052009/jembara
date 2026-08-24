@@ -8,18 +8,33 @@ import {
   Briefcase,
   User,
   Settings,
+  Users,
+  PlusCircle,
 } from "lucide-react";
-import { Home, ListChecks, FolderOpen, MessageSquare, CreditCard } from "lucide-react";
+import { Home, ListChecks, FolderOpen, MessageSquare, CreditCard, FileText } from "lucide-react";
 import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface NavItem {
-  key: "dashboard" | "findProjects" | "myProposals" | "activeProjects" | "portfolio" | "messages" | "earnings" | "profile" | "settings";
+  key:
+    | "dashboard"
+    | "findProjects"
+    | "myProposals"
+    | "activeProjects"
+    | "portfolio"
+    | "messages"
+    | "earnings"
+    | "profile"
+    | "settings"
+    | "cariTalent"
+    | "pasangLowongan"
+    | "lowonganSaya"
+    | "pelamar";
   href: string;
   icon?: React.ElementType;
   iconSrc?: string;
 }
 
-const navItems: NavItem[] = [
+const studentNavItems: NavItem[] = [
   { key: "dashboard", href: "/dashboard", icon: Home },
   { key: "findProjects", href: "/dashboard/find-projects", icon: Search },
   { key: "myProposals", href: "/dashboard/proposals", icon: ListChecks },
@@ -31,9 +46,27 @@ const navItems: NavItem[] = [
   { key: "settings", href: "/dashboard/settings", icon: Settings },
 ];
 
+// NOTE: cariTalent / pasangLowongan / lowonganSaya / pelamar pages don't exist yet —
+// hrefs below are placeholders, update once those pages are built.
+const umkmNavItems: NavItem[] = [
+  { key: "dashboard", href: "/dashboard", icon: Home },
+  { key: "cariTalent", href: "/dashboard/cari-talent", icon: Users },
+  { key: "pasangLowongan", href: "/dashboard/pasang-lowongan", icon: PlusCircle },
+  { key: "lowonganSaya", href: "/dashboard/lowongan-saya", icon: ListChecks },
+  { key: "pelamar", href: "/dashboard/pelamar", icon: FileText },
+  { key: "activeProjects", href: "/dashboard/active-projects", icon: Briefcase },
+  { key: "messages", href: "/dashboard/messages", icon: MessageSquare },
+  { key: "settings", href: "/dashboard/settings", icon: Settings },
+];
+
 export default function Sidebar({ role }: { role: string }) {
   const pathname = usePathname();
   const { dict } = usePreferences();
+
+  const navItems =
+    role === "UMKM"
+      ? umkmNavItems
+      : studentNavItems.filter((item) => item.key !== "myProposals" || role === "STUDENT");
 
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col self-start bg-sidebar lg:flex">
@@ -44,9 +77,7 @@ export default function Sidebar({ role }: { role: string }) {
         </Link>
 
         <nav className="flex flex-col gap-1">
-          {navItems
-            .filter((item) => item.key !== "myProposals" || role === "STUDENT")
-            .map((item) => {
+          {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
             return (
@@ -79,7 +110,7 @@ export default function Sidebar({ role }: { role: string }) {
                 {dict.sidebar[item.key]}
               </Link>
             );
-            })}
+          })}
         </nav>
       </div>
     </aside>

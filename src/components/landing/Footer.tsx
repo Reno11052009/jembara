@@ -7,7 +7,7 @@ const featureLinks = ["Cari Talenta", "Cari Project", "Testimoni", "Hubungi CS"]
 export default function Footer() {
   return (
     <footer className="mx-6 my-10 rounded-2xl border border-hairline bg-white px-10 py-12 text-ink sm:mx-10">
-      <div className="mx-auto flex max-w-7xl flex-col justify-between gap-10 sm:flex-row">
+      <div className="mx-auto flex max-w-8xl flex-col justify-between gap-10 sm:flex-row">
         <div className="max-w-xs">
           <div className="flex items-center gap-2">
             <span className="h-6 w-6 rounded-md bg-brand" />
@@ -53,7 +53,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="mx-auto mt-10 flex justify-between max-w-7xl flex-col items-center gap-4 sm:flex-row">
+      <div className="mx-auto mt-10 flex justify-between max-w-8xl flex-col items-center gap-4 sm:flex-row">
         <p className="text-xs font-body text-ink-muted">
           © 2026 Jembatan Karya Indonesia. Hak Cipta Dilindungi Undang-Undang.
         </p>

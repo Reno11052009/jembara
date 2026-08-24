@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import {
   Bell,
   BriefcaseBusiness,
@@ -70,12 +70,15 @@ function formatRelativeTime(value: string) {
 export default function NotificationMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<HeaderNotification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  // Lazy fetch: hanya fetch saat pertama kali dibuka, bukan saat mount
+  const hasFetched = useRef(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const unreadCount = notifications.filter((notification) => !notification.isRead).length;
 
   const loadNotifications = useCallback(async () => {
+    setIsLoading(true);
     try {
       setNotifications(await getNotificationsAction());
       setLoadError(null);
@@ -86,26 +89,17 @@ export default function NotificationMenu() {
     }
   }, []);
 
-  useEffect(() => {
-    let active = true;
-
-    getNotificationsAction()
-      .then((nextNotifications) => {
-        if (!active) return;
-        setNotifications(nextNotifications);
-        setLoadError(null);
-      })
-      .catch(() => {
-        if (active) setLoadError("Notifikasi belum dapat dimuat.");
-      })
-      .finally(() => {
-        if (active) setIsLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
+  const handleToggle = useCallback(() => {
+    setIsOpen((current) => {
+      const next = !current;
+      // Fetch hanya saat pertama kali dibuka
+      if (next && !hasFetched.current) {
+        hasFetched.current = true;
+        void loadNotifications();
+      }
+      return next;
+    });
+  }, [loadNotifications]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -164,7 +158,7 @@ export default function NotificationMenu() {
         aria-label={`Notifikasi${unreadCount > 0 ? `, ${unreadCount} belum dibaca` : ""}`}
         aria-expanded={isOpen}
         aria-controls="header-notification-menu"
-        onClick={() => setIsOpen((current) => !current)}
+        onClick={handleToggle}
         className="relative rounded-full p-2 text-ink transition-colors hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
       >
         <Bell size={20} />

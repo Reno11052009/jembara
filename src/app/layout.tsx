@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import SmoothScroll from "@/components/providers/SmoothScroll";
 import { PreferencesProvider } from "@/contexts/PreferencesContext";
 import "./global.css";
 
@@ -35,9 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${unbounded.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <PreferencesProvider>
-          <SmoothScroll>{children}</SmoothScroll>
-        </PreferencesProvider>
+        <PreferencesProvider>{children}</PreferencesProvider>
       </body>
     </html>
   );
