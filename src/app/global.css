@@ -39,13 +39,13 @@ body {
 }
 
 html {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-brand) var(--color-canvas);
+  scrollbar-width: none;
+  -ms-overflow-style: none
+  /* scrollbar-color: var(--color-brand) var(--color-canvas); */
 }
 
 *::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  display: none
 }
 
 *::-webkit-scrollbar-track {

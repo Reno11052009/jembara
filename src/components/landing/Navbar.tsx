@@ -143,7 +143,7 @@ export default function Navbar({ sessionName }: NavbarProps) {
               </Link>
               <Link
                 href="/register"
-                className="rounded-full bg-ink px-5 py-2.5 text-sm font-body font-black text-white hover:opacity-90"
+                className="flex items-center justify-center rounded-full bg-ink px-5 py-2.5 text-sm font-body font-black text-white hover:opacity-90"
               >
                 DAFTAR SEKARANG
               </Link>
