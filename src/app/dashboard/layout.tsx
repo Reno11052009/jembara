@@ -3,7 +3,7 @@ import AppShell from "@/components/layout/AppShell";
 import { requireAuthenticatedSession } from "@/lib/auth-guard";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  await requireAuthenticatedSession();
+  const session = await requireAuthenticatedSession();
 
-  return <AppShell>{children}</AppShell>;
+  return <AppShell role={session.role}>{children}</AppShell>;
 }

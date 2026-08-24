@@ -1,16 +1,14 @@
 "use client";
 
-import { ProposalStatus } from "@/types/proposal";
-
-type FilterValue = "Semua" | ProposalStatus;
+import type { ProposalFilter } from "@/types/proposal";
 
 interface ProposalFilterTabsProps {
-  active: FilterValue;
-  counts: Record<FilterValue, number>;
-  onChange: (value: FilterValue) => void;
+  active: ProposalFilter;
+  counts: Record<ProposalFilter, number>;
+  onChange: (value: ProposalFilter) => void;
 }
 
-const tabs: FilterValue[] = ["Semua", "Pending", "Accepted", "Rejected"];
+const tabs: ProposalFilter[] = ["Semua", "Pending", "Accepted", "Rejected"];
 
 export default function ProposalFilterTabs({
   active,

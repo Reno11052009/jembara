@@ -31,7 +31,7 @@ const navItems: NavItem[] = [
   { key: "settings", href: "/dashboard/settings", icon: Settings },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ role }: { role: string }) {
   const pathname = usePathname();
   const { dict } = usePreferences();
 
@@ -44,7 +44,9 @@ export default function Sidebar() {
         </Link>
 
         <nav className="flex flex-col gap-1">
-          {navItems.map((item) => {
+          {navItems
+            .filter((item) => item.key !== "myProposals" || role === "STUDENT")
+            .map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
             return (
@@ -77,7 +79,7 @@ export default function Sidebar() {
                 {dict.sidebar[item.key]}
               </Link>
             );
-          })}
+            })}
         </nav>
       </div>
     </aside>

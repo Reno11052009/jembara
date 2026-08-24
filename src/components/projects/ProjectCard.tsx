@@ -1,14 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Bookmark, TrendingUp } from "lucide-react";
+import { Bookmark, BriefcaseBusiness, TrendingUp } from "lucide-react";
 import { Project } from "@/types/project";
 
 interface ProjectCardProps {
   project: Project;
+  showStudentFeatures?: boolean;
 }
 
-export default function ProjectCard({ project }: ProjectCardProps) {
+export default function ProjectCard({
+  project,
+  showStudentFeatures = true,
+}: ProjectCardProps) {
   const [isSaved, setIsSaved] = useState(false);
 
   return (
@@ -17,10 +21,17 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         <h3 className="font-display text-base font-black text-ink">
           {project.title}
         </h3>
-        <span className="flex shrink-0 items-center gap-1 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-display font-black text-brand">
-          <TrendingUp size={14} />
-          {project.matchPercent}% Match
-        </span>
+        {showStudentFeatures ? (
+          <span className="flex shrink-0 items-center gap-1 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-display font-black text-brand">
+            <TrendingUp size={14} />
+            {project.skillMatchPercent}% Skill Match
+          </span>
+        ) : (
+          <span className="flex shrink-0 items-center gap-1 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-display font-black text-brand">
+            <BriefcaseBusiness size={14} />
+            Project OPEN
+          </span>
+        )}
       </div>
 
       <p className="mt-0 text-sm font-body text-ink-muted">{project.companyName}</p>
@@ -51,18 +62,20 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             <p className="text-ink-muted">Lokasi</p>
             <p className="mt-0.5 font-display font-black text-ink text-base">{project.locationLabel}</p>
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex justify-between text-xs text-ink-muted">
-              <span>Kecocokan Skill</span>
-              <span className="ml-1 font-body font-bold text-brand">{project.skillMatchPercent}%</span>
+          {showStudentFeatures && (
+            <div className="min-w-0 flex-1">
+              <div className="flex justify-between text-xs text-ink-muted">
+                <span>{project.skillMatchReason}</span>
+                <span className="ml-1 font-body font-bold text-brand">{project.skillMatchPercent}%</span>
+              </div>
+              <div className="mt-1 h-2 w-70 overflow-hidden rounded-full bg-[#EAEAEA]">
+                <div
+                  className="h-full rounded-full bg-brand"
+                  style={{ width: `${project.skillMatchPercent}%` }}
+                />
+              </div>
             </div>
-             <div className="mt-1 h-2 w-70 overflow-hidden rounded-full bg-[#EAEAEA]">
-              <div
-                className="h-full rounded-full bg-brand"
-                style={{ width: `${project.skillMatchPercent}%` }}
-              />
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -70,18 +83,20 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         <button className="rounded-[99px] bg-brand px-6 py-2.5 text-sm font-display font-bold uppercase text-white transition-opacity hover:opacity-90">
           Lihat Project
         </button>
-        <button
-          aria-label={isSaved ? "Hapus dari simpanan" : "Simpan project"}
-          aria-pressed={isSaved}
-          onClick={() => setIsSaved((prev) => !prev)}
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-            isSaved
-              ? "border-brand bg-brand-soft text-brand"
-              : "border-hairline-ink text-ink hover:border-brand hover:text-brand"
-          }`}
-        >
-          <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} />
-        </button>
+        {showStudentFeatures && (
+          <button
+            aria-label={isSaved ? "Hapus dari simpanan" : "Simpan project"}
+            aria-pressed={isSaved}
+            onClick={() => setIsSaved((prev) => !prev)}
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+              isSaved
+                ? "border-brand bg-brand-soft text-brand"
+                : "border-hairline-ink text-ink hover:border-brand hover:text-brand"
+            }`}
+          >
+            <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} />
+          </button>
+        )}
       </div>
     </div>
   );

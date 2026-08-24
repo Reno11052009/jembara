@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { verifySession } from "@/lib/session";
 import { createUserNotification } from "@/lib/notifications";
 import { revalidatePath } from "next/cache";
+import { educationUsesSemester } from "@/lib/education";
 
 export async function updateProfileAction(formData: FormData) {
   const session = await verifySession();
@@ -38,7 +39,9 @@ export async function updateProfileAction(formData: FormData) {
   const avatarBase64 = formData.get("avatarBase64") as string;
 
   let semester: number | null | undefined;
-  if (semesterValue === null) {
+  if (!educationUsesSemester(tingkat_pendidikan)) {
+    semester = null;
+  } else if (semesterValue === null) {
     semester = undefined;
   } else if (typeof semesterValue === "string" && semesterValue.trim() === "") {
     semester = null;

@@ -22,6 +22,7 @@ export default async function ProfilePage() {
         <div className="w-full lg:w-1/3">
           <ProfileCard
             name={profileData.name}
+            role={profileData.role}
             avatarUrl={profileData.avatarUrl}
             headline={profileData.headline}
             location={profileData.location}
@@ -51,6 +52,8 @@ export default async function ProfilePage() {
                     <>
                       <div className="h-48 bg-gray-100 relative overflow-hidden">
                         {portfolio.image ? (
+                          // Gambar portofolio dapat berupa data URL dari profil pengguna.
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={portfolio.image}
                             alt={portfolio.title}

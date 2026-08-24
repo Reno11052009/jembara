@@ -6,16 +6,28 @@ import Swal from "sweetalert2";
 import { updateProfileAction } from "@/app/actions/profile";
 import { useRouter } from "next/navigation";
 import { FaBehance, FaGithub, FaLinkedin } from "react-icons/fa"; // Behance, Github, Linkedin from react-icons
-import Image from "next/image";
 import type { ProfileData } from "@/lib/profile";
+import {
+  educationLevelOptions,
+  educationUsesSemester,
+} from "@/lib/education";
 
 export default function ProfileSettings({ initialData }: { initialData: ProfileData }) {
   const [isLoading, setIsLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string>(initialData.avatarUrl);
   const [avatarBase64, setAvatarBase64] = useState<string | null>(null);
   const [skills, setSkills] = useState<string[]>(initialData.skills || []);
+  const [educationLevel, setEducationLevel] = useState(
+    initialData.tingkat_pendidikan || "",
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const showSemester = educationUsesSemester(educationLevel);
+  const hasLegacyEducationLevel =
+    Boolean(initialData.tingkat_pendidikan) &&
+    !educationLevelOptions.some(
+      (option) => option.value === initialData.tingkat_pendidikan,
+    );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -121,7 +133,9 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
           onClick={() => fileInputRef.current?.click()}
         >
           <div className="w-full h-full rounded-full overflow-hidden border border-gray-200">
-            <img 
+            {/* Blob/data URL preview sengaja memakai img agar dapat ditampilkan sebelum disimpan. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={avatarPreview} 
               alt={initialData.name} 
               className="w-full h-full object-cover"
@@ -191,17 +205,41 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
               />
             </div>
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Universitas</label>
-              <input
-                type="text"
-                name="school"
-                defaultValue={initialData.school}
+              <label htmlFor="tingkat_pendidikan" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Jenjang Pendidikan</label>
+              <select
+                id="tingkat_pendidikan"
+                name="tingkat_pendidikan"
+                value={educationLevel}
+                onChange={(event) => setEducationLevel(event.target.value)}
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-              />
+              >
+                <option value="">Pilih jenjang pendidikan</option>
+                {hasLegacyEducationLevel && (
+                  <option value={initialData.tingkat_pendidikan}>
+                    {initialData.tingkat_pendidikan}
+                  </option>
+                )}
+                {educationLevelOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label htmlFor="school" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Nama Universitas/Sekolah</label>
+              <input
+                id="school"
+                type="text"
+                name="school"
+                defaultValue={initialData.school}
+                placeholder="Contoh: Universitas Brawijaya"
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+              />
+            </div>
             <div>
               <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Jurusan</label>
               <input
@@ -211,8 +249,10 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               />
             </div>
-            
-            <div className="grid grid-cols-2 gap-5">
+          </div>
+
+          <div className={`grid grid-cols-1 gap-5 ${showSemester ? "md:grid-cols-2" : ""}`}>
+            {showSemester && (
               <div>
                 <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Semester</label>
                 <input
@@ -226,15 +266,15 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                   className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                 />
               </div>
-              <div>
-                <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Lokasi</label>
-                <input
-                  type="text"
-                  name="location"
-                  defaultValue={initialData.location}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-                />
-              </div>
+            )}
+            <div>
+              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Lokasi</label>
+              <input
+                type="text"
+                name="location"
+                defaultValue={initialData.location}
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+              />
             </div>
           </div>
 

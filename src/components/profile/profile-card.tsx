@@ -4,6 +4,7 @@ import Link from "next/link";
 interface ProfileCardProps {
   isPublic?: boolean;
   name: string;
+  role: string;
   avatarUrl: string;
   headline: string;
   location: string;
@@ -18,6 +19,7 @@ interface ProfileCardProps {
 export default function ProfileCard({
   isPublic = false,
   name,
+  role,
   avatarUrl,
   headline,
   location,
@@ -28,15 +30,29 @@ export default function ProfileCard({
   reviewCount,
   totalProject,
 }: ProfileCardProps) {
+  const roleLabel =
+    role === "STUDENT"
+      ? "Pelajar"
+      : role === "UMKM"
+        ? "UMKM"
+        : role === "ADMIN"
+          ? "Admin"
+          : "Pengguna";
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center sticky top-24">
+      {/* Avatar dapat berupa data URL hasil unggahan profil. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={avatarUrl}
         alt={`Foto profil ${name}`}
         className="w-24 h-24 rounded-full object-cover mb-4 ring-4 ring-gray-50"
       />
       <h2 className="text-xl font-bold">{name}</h2>
-      <p className="text-sm text-gray-500 mb-3">{headline}</p>
+      <span className="mt-2 rounded-full bg-brand-soft px-3 py-1 text-xs font-bold text-brand">
+        Role: {roleLabel}
+      </span>
+      <p className="mt-2 text-sm text-gray-500 mb-3">{headline}</p>
 
       <div className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full mb-6 ${available ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-600"}`}>
         <CircleCheck className="w-3.5 h-3.5" />

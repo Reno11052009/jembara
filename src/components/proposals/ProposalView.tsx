@@ -1,19 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Proposal, ProposalStatus } from "@/types/proposal";
+import type { Proposal, ProposalFilter } from "@/types/proposal";
 import ProposalFilterTabs from "@/components/proposals/ProposalFilterTabs";
 import ProposalList from "@/components/proposals/ProposalList";
 
-type FilterValue = "Semua" | ProposalStatus;
-
 interface ProposalsViewProps {
   proposals: Proposal[];
-  tabCounts: Record<FilterValue, number>;
+  tabCounts: Record<ProposalFilter, number>;
 }
 
 export default function ProposalsView({ proposals, tabCounts }: ProposalsViewProps) {
-  const [activeFilter, setActiveFilter] = useState<FilterValue>("Semua");
+  const [activeFilter, setActiveFilter] = useState<ProposalFilter>("Semua");
 
   const filteredProposals =
     activeFilter === "Semua"

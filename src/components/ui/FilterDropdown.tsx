@@ -5,13 +5,20 @@ import { Check, ChevronDown } from "lucide-react";
 
 interface FilterDropdownProps {
   label: string;
-  options: string[];
+  options: Array<{ label: string; value: string }>;
+  value: string;
+  onChange: (value: string) => void;
 }
 
-export default function FilterDropdown({ label, options }: FilterDropdownProps) {
-  const [selected, setSelected] = useState<string | null>(null);
+export default function FilterDropdown({
+  label,
+  options,
+  value,
+  onChange,
+}: FilterDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const selected = options.find((option) => option.value === value);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -28,12 +35,12 @@ export default function FilterDropdown({ label, options }: FilterDropdownProps) 
       <button
         onClick={() => setIsOpen((prev) => !prev)}
         className={`flex items-center gap-1.5 rounded-[99px] border bg-card px-3.5 py-2 text-sm transition-colors text-body font-medium ${
-          isOpen || selected
+          isOpen || value
             ? "border-brand text-brand"
             : "border-hairline text-ink hover:border-brand hover:text-brand"
         }`}
       >
-        {selected ?? label}
+        {selected?.label ?? label}
         <ChevronDown
           size={14}
           className={`transition-transform duration-200 ${
@@ -44,20 +51,34 @@ export default function FilterDropdown({ label, options }: FilterDropdownProps) 
 
       {isOpen && (
         <div className="absolute left-0 top-full z-10 mt-2 w-56 overflow-hidden rounded-2xl border border-hairline bg-card py-2 shadow-xl">
+          <button
+            type="button"
+            onClick={() => {
+              onChange("");
+              setIsOpen(false);
+            }}
+            className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-sm hover:bg-canvas ${
+              value ? "text-ink" : "font-medium text-brand"
+            }`}
+          >
+            Semua {label.toLocaleLowerCase("id-ID")}
+            {!value && <Check size={14} />}
+          </button>
           {options.map((option) => {
-            const isSelected = option === selected;
+            const isSelected = option.value === value;
             return (
               <button
-                key={option}
+                type="button"
+                key={option.value}
                 onClick={() => {
-                  setSelected(option);
+                  onChange(option.value);
                   setIsOpen(false);
                 }}
                 className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-sm hover:bg-canvas ${
                   isSelected ? "font-medium text-brand" : "text-ink"
                 }`}
               >
-                {option}
+                {option.label}
                 {isSelected && <Check size={14} />}
               </button>
             );

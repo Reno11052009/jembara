@@ -1,9 +1,11 @@
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import ProposalStatsGrid from "@/components/proposals/ProposalStatsGrid";
 import ProposalsView from "@/components/proposals/ProposalView";
-import { proposalStats, proposalTabCounts, proposals } from "@/lib/mock-proposal";
+import { getStudentProposals } from "@/lib/proposals";
 
-export default function ProposalsPage() {
+export default async function ProposalsPage() {
+  const data = await getStudentProposals();
+
   return (
     <>
       <DashboardPageHeader
@@ -12,8 +14,8 @@ export default function ProposalsPage() {
       />
 
       <div className="flex flex-col gap-6">
-        <ProposalStatsGrid stats={proposalStats} />
-        <ProposalsView proposals={proposals} tabCounts={proposalTabCounts} />
+        <ProposalStatsGrid summary={data.summary} />
+        <ProposalsView proposals={data.proposals} tabCounts={data.tabCounts} />
       </div>
     </>
   );

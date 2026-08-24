@@ -11,8 +11,8 @@ export const mockProjects: Project[] = [
     budgetLabel: "Rp 2.000.000",
     deadlineLabel: "30 Hari",
     locationLabel: "Bandung - Remote",
-    matchPercent: 87,
     skillMatchPercent: 76,
+    skillMatchReason: "2 dari 3 skill cocok",
   },
   {
     id: "2",
@@ -24,8 +24,8 @@ export const mockProjects: Project[] = [
     budgetLabel: "Rp 2.000.000",
     deadlineLabel: "30 Hari",
     locationLabel: "Bandung - Remote",
-    matchPercent: 82,
     skillMatchPercent: 76,
+    skillMatchReason: "2 dari 3 skill cocok",
   },
   {
     id: "3",
@@ -37,8 +37,8 @@ export const mockProjects: Project[] = [
     budgetLabel: "Rp 2.000.000",
     deadlineLabel: "30 Hari",
     locationLabel: "Bandung - Remote",
-    matchPercent: 76,
     skillMatchPercent: 76,
+    skillMatchReason: "2 dari 3 skill cocok",
   },
   {
     id: "4",
@@ -50,7 +50,7 @@ export const mockProjects: Project[] = [
     budgetLabel: "Rp 2.000.000",
     deadlineLabel: "30 Hari",
     locationLabel: "Bandung - Remote",
-    matchPercent: 71,
     skillMatchPercent: 76,
+    skillMatchReason: "2 dari 3 skill cocok",
   },
 ];
