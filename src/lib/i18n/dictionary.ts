@@ -21,6 +21,11 @@ export interface Dictionary {
     pasangLowongan: string;
     lowonganSaya: string;
     pelamar: string;
+    daftarUser: string;
+    daftarUmkm: string;
+    relasi: string;
+    lowongan: string;
+    monitorPesan: string;
   };
   settings: {
     pageTitle: string;
@@ -69,6 +74,11 @@ const dictionary: Record<Language, Dictionary> = {
       pasangLowongan: "Pasang Lowongan",
       lowonganSaya: "Lowongan Saya",
       pelamar: "Pelamar",
+      daftarUser: "Daftar User",
+      daftarUmkm: "Daftar UMKM",
+      relasi: "Relasi",
+      lowongan: "Lowongan",
+      monitorPesan: "Monitor Pesan",
     },
     settings: {
       pageTitle: "Pengaturan",
@@ -115,6 +125,11 @@ const dictionary: Record<Language, Dictionary> = {
       pasangLowongan: "Post a Job",
       lowonganSaya: "My Listings",
       pelamar: "Applicants",
+      daftarUser: "User List",
+      daftarUmkm: "UMKM List",
+      relasi: "Relations",
+      lowongan: "Listings",
+      monitorPesan: "Message Monitoring",
     },
     settings: {
       pageTitle: "Settings",
@@ -161,6 +176,11 @@ const dictionary: Record<Language, Dictionary> = {
       pasangLowongan: "求人を投稿",
       lowonganSaya: "自分の求人",
       pelamar: "応募者",
+      daftarUser: "ユーザー一覧",
+      daftarUmkm: "UMKM一覧",
+      relasi: "関係",
+      lowongan: "求人モニタリング",
+      monitorPesan: "メッセージ監視",
     },
     settings: {
       pageTitle: "設定",
