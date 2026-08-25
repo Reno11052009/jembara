@@ -4,7 +4,7 @@ export interface AdminStat {
   id: string;
   label: string;
   value: string;
-  subLabel: string;
+  subLabel?: string;
   icon: LucideIcon;
 }
 

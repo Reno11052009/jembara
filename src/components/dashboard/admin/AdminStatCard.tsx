@@ -12,7 +12,9 @@ export default function AdminStatCard({ stat }: { stat: AdminStat }) {
         </span>
       </div>
       <p className="mt-3 font-display text-xl font-black text-ink">{stat.value}</p>
-      <p className="mt-1 text-xs font-semibold text-success">{stat.subLabel}</p>
+      {stat.subLabel && (
+        <p className="mt-1 text-xs font-semibold text-success">{stat.subLabel}</p>
+      )}
     </div>
   );
 }
