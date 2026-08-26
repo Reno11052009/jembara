@@ -40,9 +40,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${unbounded.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <PreferencesProvider>
-          <SmoothScroll>{children}</SmoothScroll>
-        </PreferencesProvider>
+        <PreferencesProvider>{children}</PreferencesProvider>
       </body>
     </html>
   );

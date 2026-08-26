@@ -8,13 +8,14 @@ import StatsBar from "@/components/landing/StatsBar";
 import Testimonials from "@/components/landing/Testimonials";
 import CtaSection from "@/components/landing/CtaSection";
 import Footer from "@/components/landing/Footer";
+import SmoothScroll from "@/components/providers/SmoothScroll";
 import { verifySession } from "@/lib/session";
 
 export default async function LandingPage() {
   const session = await verifySession();
 
   return (
-    <>
+    <SmoothScroll>
       <Navbar sessionName={session?.name ?? null} />
       <Hero />
       <ProcessSteps />
@@ -25,6 +26,6 @@ export default async function LandingPage() {
       <Testimonials />
       <CtaSection />
       <Footer />
-    </>
+    </SmoothScroll>
   );
 }

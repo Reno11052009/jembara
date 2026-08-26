@@ -8,18 +8,41 @@ import {
   Briefcase,
   User,
   Settings,
+  Users,
+  PlusCircle,
+  LayoutGrid,
+  Building2,
+  Handshake,
 } from "lucide-react";
-import { Home, ListChecks, FolderOpen, MessageSquare, CreditCard } from "lucide-react";
+import { Home, ListChecks, FolderOpen, MessageSquare, CreditCard, FileText } from "lucide-react";
 import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface NavItem {
-  key: "dashboard" | "findProjects" | "myProposals" | "activeProjects" | "portfolio" | "messages" | "earnings" | "profile" | "settings";
+  key:
+    | "dashboard"
+    | "findProjects"
+    | "myProposals"
+    | "activeProjects"
+    | "portfolio"
+    | "messages"
+    | "earnings"
+    | "profile"
+    | "settings"
+    | "cariTalent"
+    | "pasangLowongan"
+    | "lowonganSaya"
+    | "pelamar"
+    | "daftarUser"
+    | "daftarUmkm"
+    | "relasi"
+    | "lowongan"
+    | "monitorPesan";
   href: string;
   icon?: React.ElementType;
   iconSrc?: string;
 }
 
-const navItems: NavItem[] = [
+const studentNavItems: NavItem[] = [
   { key: "dashboard", href: "/dashboard", icon: Home },
   { key: "findProjects", href: "/dashboard/find-projects", icon: Search },
   { key: "myProposals", href: "/dashboard/proposals", icon: ListChecks },
@@ -31,16 +54,53 @@ const navItems: NavItem[] = [
   { key: "settings", href: "/dashboard/settings", icon: Settings },
 ];
 
+// NOTE: cariTalent / pasangLowongan / lowonganSaya / pelamar pages don't exist yet —
+// hrefs below are placeholders, update once those pages are built.
+const umkmNavItems: NavItem[] = [
+  { key: "dashboard", href: "/dashboard", icon: Home },
+  { key: "cariTalent", href: "/dashboard/cari-talent", icon: Users },
+  { key: "pasangLowongan", href: "/dashboard/pasang-lowongan", icon: PlusCircle },
+  { key: "lowonganSaya", href: "/dashboard/lowongan-saya", icon: ListChecks },
+  { key: "pelamar", href: "/dashboard/pelamar", icon: FileText },
+  { key: "activeProjects", href: "/dashboard/active-projects", icon: Briefcase },
+  { key: "messages", href: "/dashboard/pesan", icon: MessageSquare },
+  { key: "settings", href: "/dashboard/settings", icon: Settings },
+];
+
+// NOTE: daftarUser / daftarUmkm / relasi / lowongan / monitorPesan pages don't
+// exist yet — hrefs below are placeholders, update once those pages are built.
+const adminNavItems: NavItem[] = [
+  { key: "dashboard", href: "/dashboard", icon: LayoutGrid },
+  { key: "daftarUser", href: "/dashboard/daftar-user", icon: Users },
+  { key: "daftarUmkm", href: "/dashboard/daftar-umkm", icon: Building2 },
+  { key: "relasi", href: "/dashboard/relasi", icon: Handshake },
+  { key: "lowongan", href: "/dashboard/lowongan", icon: Briefcase },
+  { key: "monitorPesan", href: "/dashboard/monitor-pesan", icon: MessageSquare },
+];
+
 export default function Sidebar({ role }: { role: string }) {
   const pathname = usePathname();
   const { dict } = usePreferences();
 
+  const navItems =
+    role === "ADMIN"
+      ? adminNavItems
+      : role === "UMKM"
+        ? umkmNavItems
+        : studentNavItems.filter((item) => item.key !== "myProposals" || role === "STUDENT");
+
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col self-start bg-sidebar lg:flex">
       <div className="flex h-full flex-col px-4 py-6">
-        <Link href="/" className="mb-8 px-2">
+        <Link href="/" className="mb-8 flex items-center gap-2 px-2">
+          {role === "ADMIN" && <span className="h-6 w-6 rounded-md bg-brand" />}
           <span className="font-display text-lg font-bold text-white">Jem</span>
           <span className="font-display text-lg font-bold text-brand">Bara</span>
+          {role === "ADMIN" && (
+            <span className="font-body text-xs font-semibold tracking-wide text-slate-400">
+              ADMIN
+            </span>
+          )}
         </Link>
 
         <nav className="flex flex-col gap-1">
@@ -83,8 +143,15 @@ export default function Sidebar({ role }: { role: string }) {
                 {dict.sidebar[item.key]}
               </Link>
             );
-            })}
+          })}
         </nav>
+
+        {role === "ADMIN" && (
+          <div className="px-3 pt-4">
+            <p className="font-body text-xs text-slate-500">Logged in as:</p>
+            <p className="font-display text-sm font-bold text-white">Super Admin</p>
+          </div>
+        )}
       </div>
     </aside>
   );

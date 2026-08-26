@@ -95,3 +95,27 @@ html {
     font-family: var(--font-display);
   }
 }
+
+/* ── CSS-only scroll reveal animation ─────────────────────────────────────── */
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-reveal {
+  animation: fadeSlideUp 0.7s ease-out both;
+}
+
+.animate-reveal-d1 { animation-delay: 80ms; }
+.animate-reveal-d2 { animation-delay: 160ms; }
+.animate-reveal-d3 { animation-delay: 240ms; }
+.animate-reveal-d4 { animation-delay: 320ms; }
+.animate-reveal-d5 { animation-delay: 400ms; }
+.animate-reveal-d6 { animation-delay: 480ms; }
