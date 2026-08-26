@@ -1,4 +1,4 @@
-import { User, Store, ArrowRight, Sparkles } from "lucide-react";
+import { User, Store, Sparkles } from "lucide-react";
 import { selectRoleAction } from "@/app/actions/auth";
 
 export default function PilihRolePage() {
