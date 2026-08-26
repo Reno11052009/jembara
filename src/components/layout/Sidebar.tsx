@@ -63,7 +63,7 @@ const umkmNavItems: NavItem[] = [
   { key: "lowonganSaya", href: "/dashboard/lowongan-saya", icon: ListChecks },
   { key: "pelamar", href: "/dashboard/pelamar", icon: FileText },
   { key: "activeProjects", href: "/dashboard/active-projects", icon: Briefcase },
-  { key: "messages", href: "/dashboard/pesan", icon: MessageSquare },
+  { key: "messages", href: "/dashboard/messages", icon: MessageSquare },
   { key: "settings", href: "/dashboard/settings", icon: Settings },
 ];
 
