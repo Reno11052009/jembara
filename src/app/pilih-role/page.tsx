@@ -54,7 +54,7 @@ export default function PilihRolePage() {
           </div>
 
           {/* Card UMKM - Enhanced */}
-          <div className="group relative rounded-2xl border border-zinc-200 bg-white/80 p-8 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand hover:shadow-xl hover:shadow-brand/10">
+          <div className="group relative rounded-2xl border border-zinc-200 bg-white/80 p-8 shadow-sm backdrop-blur-sm">
             {/* Glow effect */}
             <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-brand/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
