@@ -59,14 +59,9 @@ export default function PilihRolePage() {
           <div className="group relative rounded-2xl border border-zinc-200 bg-white/80 p-8 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand hover:shadow-xl hover:shadow-brand/10">
             {/* Glow effect */}
             <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-brand/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-            
-            {/* Popular badge */}
-            <div className="absolute -top-2 right-6 rounded-full bg-linear-to-r from-amber-400 to-amber-500 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white shadow-lg shadow-amber-400/30">
-              Populer
-            </div>
 
             <div className="relative">
-              <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25 transition-all duration-300 group-hover:scale-110 group-hover:shadow-amber-500/40">
+              <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-brand to-brand/80 text-white shadow-lg shadow-brand/25 transition-all duration-300 group-hover:scale-110 group-hover:shadow-brand/40">
                 <Store size={28} />
               </div>
               
@@ -81,7 +76,7 @@ export default function PilihRolePage() {
                 <input type="hidden" name="role" value="UMKM" />
                 <button
                   type="submit"
-                  className="group/btn inline-flex w-full items-center justify-center gap-2 rounded-xl bg-linear-to-r from-amber-500 to-amber-600 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-amber-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/40 hover:scale-[1.02] active:scale-[0.98]"
+                  className="group/btn inline-flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-brand hover:shadow-lg hover:shadow-brand/30 hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <span>Pilih UMKM</span>
                   <ArrowRight size={16} className="transition-transform duration-300 group-hover/btn:translate-x-1" />
