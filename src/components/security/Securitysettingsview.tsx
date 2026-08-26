@@ -1,22 +1,17 @@
 import ChangePasswordCard from "@/components/security/Changepasswordcard";
 import TwoFactorAuthCard from "@/components/security/Twofactorauthcard";
 import ActiveSessionsCard from "@/components/security/Activesessionscard";
+import type { ActiveSession } from "@/types/settings";
 
-export default function SecuritySettingsView() {
+export default function SecuritySettingsView({ sessions }: { sessions: ActiveSession[] }) {
   return (
     <div className="flex flex-col gap-6">
       <ChangePasswordCard />
       <TwoFactorAuthCard />
-      <ActiveSessionsCard />
-
-      <div className="flex justify-end">
-        <button
-          type="button"
-          className="font-body text-sm font-semibold text-white bg-brand hover:bg-brand-dark transition-colors rounded-full px-6 py-3"
-        >
-          Simpan Perubahan
-        </button>
-      </div>
+      <ActiveSessionsCard
+        key={sessions.map(({ id }) => id).join(":")}
+        initialSessions={sessions}
+      />
     </div>
   );
 }

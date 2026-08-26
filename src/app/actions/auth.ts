@@ -26,16 +26,21 @@ const DUMMY_PASSWORD_HASH = "$2b$10$4VcIQIWwB9giOWgG9HFHbOlk5D5ut/ZfJf7gD3yhMgEz
 async function checkLoginRateLimit(email: string) {
   const clientAddress = await getClientAddress();
   const ipKey = createRateLimitKey("auth:login:ip", clientAddress);
-  const identityKey = createRateLimitKey("auth:login:identity", `${clientAddress}:${email}`);
+  // Menggabungkan alamat sumber dan identitas mencegah satu penyerang
+  // mengunci akun korban untuk semua perangkat/lokasi.
+  const identityKey = createRateLimitKey(
+    "auth:login:ip-identity",
+    `${clientAddress}:${email}`,
+  );
   const rateLimitConfig = config.security.auth.rateLimit;
 
-  const ipResult = consumeRateLimit({
+  const ipResult = await consumeRateLimit({
     key: ipKey,
     ...rateLimitConfig.loginByIp,
   });
-  const identityResult = consumeRateLimit({
+  const identityResult = await consumeRateLimit({
     key: identityKey,
-    ...rateLimitConfig.loginByIdentity,
+    ...rateLimitConfig.loginByIpAndIdentity,
   });
 
   return {
@@ -47,7 +52,7 @@ async function checkLoginRateLimit(email: string) {
 async function checkRegistrationRateLimit() {
   const clientAddress = await getClientAddress();
   const key = createRateLimitKey("auth:register:ip", clientAddress);
-  const result = consumeRateLimit({
+  const result = await consumeRateLimit({
     key,
     ...config.security.auth.rateLimit.registerByIp,
   });
@@ -80,7 +85,7 @@ export async function loginAction(formData: LoginFormData): Promise<{ error?: st
     return { error: INVALID_CREDENTIALS_MESSAGE };
   }
 
-  clearRateLimit(rateLimit.identityKey);
+  await clearRateLimit(rateLimit.identityKey);
   await createSession(user.id, user.role, user.name || "Pengguna");
   redirect("/dashboard");
 }
@@ -147,11 +152,24 @@ export async function selectRoleAction(formData: FormData): Promise<void> {
   const updatedUser = await prisma.$transaction(async (transaction) => {
     const user = await transaction.user.findUnique({
       where: { id: session.userId },
-      select: { id: true, name: true, role: true },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        student: { select: { id: true } },
+        umkm: { select: { id: true } },
+      },
     });
 
     if (!user || user.role === "ADMIN") {
       return null;
+    }
+
+    // Pemilihan role adalah bagian onboarding, bukan mekanisme pergantian
+    // identitas. Setelah salah satu profil dibuat, role tidak boleh diubah dari
+    // endpoint publik ini.
+    if (user.student || user.umkm) {
+      return { id: user.id, name: user.name, role: user.role, changed: false };
     }
 
     await transaction.user.update({
@@ -176,12 +194,16 @@ export async function selectRoleAction(formData: FormData): Promise<void> {
       });
     }
 
-    return { id: user.id, name: user.name, role };
+    return { id: user.id, name: user.name, role, changed: true };
   });
 
   if (!updatedUser) {
     await deleteSession();
     redirect("/login");
+  }
+
+  if (!updatedUser.changed) {
+    redirect("/dashboard");
   }
 
   await createSession(updatedUser.id, updatedUser.role, updatedUser.name || "Pengguna");

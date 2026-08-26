@@ -13,7 +13,10 @@ export default function ChatPanel({ conversation, messages }: ChatPanelProps) {
     <div className="flex h-full flex-1 flex-col bg-card">
       <ChatHeader conversation={conversation} />
       <ChatThread messages={messages} />
-      <ChatComposer />
+      <ChatComposer
+        conversationId={conversation.id}
+        canSend={conversation.canSend}
+      />
     </div>
   );
 }

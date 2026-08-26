@@ -45,7 +45,11 @@ export default function Sidebar({ role }: { role: string }) {
 
         <nav className="flex flex-col gap-1">
           {navItems
-            .filter((item) => item.key !== "myProposals" || role === "STUDENT")
+            .filter(
+              (item) =>
+                !["myProposals", "portfolio"].includes(item.key) ||
+                role === "STUDENT",
+            )
             .map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;

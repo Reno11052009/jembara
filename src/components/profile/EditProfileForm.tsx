@@ -28,6 +28,16 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+      void Swal.fire({
+        icon: "error",
+        title: "Foto tidak valid",
+        text: "Pilih gambar PNG, JPEG, atau WebP dengan ukuran maksimal 5 MB.",
+        confirmButtonColor: "#f97316",
+      });
+      e.target.value = "";
+      return;
+    }
 
     // Create object URL for immediate preview
     const objectUrl = URL.createObjectURL(file);
@@ -56,7 +66,19 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
       ctx?.drawImage(img, 0, 0, width, height);
       
       const webpDataUrl = canvas.toDataURL("image/webp", 0.75); // 75% quality
+      if (webpDataUrl.length > 360_000) {
+        void Swal.fire({
+          icon: "error",
+          title: "Foto masih terlalu besar",
+          text: "Gunakan gambar yang lebih sederhana atau beresolusi lebih kecil.",
+          confirmButtonColor: "#f97316",
+        });
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+      setAvatarPreview(webpDataUrl);
       setAvatarBase64(webpDataUrl);
+      URL.revokeObjectURL(objectUrl);
     };
   };
 

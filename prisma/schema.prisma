@@ -21,14 +21,43 @@ model user {
   github       String?
   linkedin     String?
   behance      String?
+  saldo        Int      @default(0) @db.Integer
   createdAt    DateTime @default(now()) @db.Timestamp(6)
   updateAt   DateTime @updatedAt @db.Timestamp(6)
 
   student student?
   umkm    umkm?
   admin   admin?
+  sentMessages message[] @relation("MessageSender")
+  receivedMessages message[] @relation("MessageRecipient")
   notifications notification[]
   notificationPreference notification_preference?
+  sessions auth_session[]
+}
+
+model auth_session {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  userAgent  String?  @db.VarChar(512)
+  ipAddress  String?  @db.VarChar(64)
+  expiresAt  DateTime @db.Timestamp(6)
+  lastSeenAt DateTime @default(now()) @db.Timestamp(6)
+  createdAt  DateTime @default(now()) @db.Timestamp(6)
+
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@index([expiresAt])
+  @@index([lastSeenAt])
+}
+
+model security_rate_limit {
+  key       String   @id @db.VarChar(96)
+  count     Int
+  resetAt   DateTime @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  @@index([resetAt])
 }
 
 model student {
@@ -174,6 +203,26 @@ model project {
   skillsNeeded project_skill[]
   proposals    proposal[]
   review       review?
+  messages     message[]
+}
+
+model message {
+  id          String    @id @default(uuid()) @db.Uuid
+  projectId   String    @db.Uuid
+  senderId    String    @db.Uuid
+  recipientId String    @db.Uuid
+  content     String    @db.VarChar(2000)
+  readAt      DateTime? @db.Timestamp(6)
+  createdAt   DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamp(6)
+
+  project   project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sender    user    @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient user    @relation("MessageRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+  @@index([recipientId, readAt])
+  @@index([senderId, createdAt])
 }
 
 model proposal {

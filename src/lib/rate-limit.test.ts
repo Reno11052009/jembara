@@ -1,28 +1,100 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const rateLimitMock = vi.hoisted(() => ({
+  deleteMany: vi.fn(),
+  updateMany: vi.fn(),
+  findUnique: vi.fn(),
+  create: vi.fn(),
+  headers: vi.fn(),
+}));
 
 vi.mock("server-only", () => ({}));
+vi.mock("./prisma", () => ({
+  default: { security_rate_limit: rateLimitMock },
+}));
+vi.mock("next/headers", () => ({ headers: rateLimitMock.headers }));
 
-import { clearRateLimit, consumeRateLimit } from "./rate-limit";
+import {
+  clearRateLimit,
+  consumeRateLimit,
+  createRateLimitKey,
+  getClientAddress,
+} from "./rate-limit";
 
-describe("consumeRateLimit", () => {
-  const key = "test:rate-limit";
-
+describe("persistent rate limit", () => {
   beforeEach(() => {
-    clearRateLimit(key);
+    vi.clearAllMocks();
+    rateLimitMock.deleteMany.mockResolvedValue({ count: 0 });
+    rateLimitMock.headers.mockResolvedValue(new Headers());
   });
 
-  it("blocks requests after the configured limit", () => {
-    expect(consumeRateLimit({ key, limit: 2, windowMs: 1_000, now: 0 }).allowed).toBe(true);
-    expect(consumeRateLimit({ key, limit: 2, windowMs: 1_000, now: 1 }).allowed).toBe(true);
-
-    const blocked = consumeRateLimit({ key, limit: 2, windowMs: 1_000, now: 2 });
-    expect(blocked.allowed).toBe(false);
-    expect(blocked.retryAfterSeconds).toBe(1);
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
-  it("starts a new bucket after the window expires", () => {
-    consumeRateLimit({ key, limit: 1, windowMs: 1_000, now: 0 });
+  it("creates a new bucket for the first request", async () => {
+    rateLimitMock.updateMany.mockResolvedValueOnce({ count: 0 }).mockResolvedValueOnce({ count: 0 });
+    rateLimitMock.findUnique.mockResolvedValue(null);
+    rateLimitMock.create.mockResolvedValue({ key: "test" });
 
-    expect(consumeRateLimit({ key, limit: 1, windowMs: 1_000, now: 1_000 }).allowed).toBe(true);
+    await expect(
+      consumeRateLimit({ key: "test:bucket", limit: 2, windowMs: 1_000, now: 0 }),
+    ).resolves.toEqual({ allowed: true, remaining: 1, retryAfterSeconds: 0 });
+  });
+
+  it("blocks a bucket that has reached its limit", async () => {
+    rateLimitMock.updateMany.mockResolvedValueOnce({ count: 0 }).mockResolvedValueOnce({ count: 0 });
+    rateLimitMock.findUnique.mockResolvedValue({ count: 2, resetAt: new Date(1_000) });
+
+    await expect(
+      consumeRateLimit({ key: "test:bucket", limit: 2, windowMs: 1_000, now: 1 }),
+    ).resolves.toEqual({ allowed: false, remaining: 0, retryAfterSeconds: 1 });
+  });
+
+  it("resets an expired bucket atomically", async () => {
+    rateLimitMock.updateMany.mockResolvedValueOnce({ count: 1 });
+
+    await expect(
+      consumeRateLimit({ key: "test:bucket", limit: 2, windowMs: 1_000, now: 1_000 }),
+    ).resolves.toEqual({ allowed: true, remaining: 1, retryAfterSeconds: 0 });
+  });
+
+  it("clears a bucket from persistent storage", async () => {
+    rateLimitMock.deleteMany.mockResolvedValue({ count: 1 });
+    await clearRateLimit("test:bucket");
+    expect(rateLimitMock.deleteMany).toHaveBeenCalledWith({ where: { key: "test:bucket" } });
+  });
+
+  it("hashes sensitive rate-limit identities", () => {
+    const key = createRateLimitKey("auth:login:identity", "student@example.com");
+    expect(key).not.toContain("student@example.com");
+    expect(key.length).toBeLessThanOrEqual(96);
+  });
+
+  it("ignores a spoofed Cloudflare header on a direct Vercel host", async () => {
+    vi.stubEnv("VERCEL", "1");
+    rateLimitMock.headers.mockResolvedValue(
+      new Headers({
+        host: "jembara-preview.vercel.app",
+        "cf-connecting-ip": "198.51.100.99",
+        "x-vercel-forwarded-for": "203.0.113.10",
+      }),
+    );
+
+    await expect(getClientAddress()).resolves.toBe("203.0.113.10");
+  });
+
+  it("trusts Cloudflare client IP only on the configured production host", async () => {
+    vi.stubEnv("VERCEL", "1");
+    vi.stubEnv("TRUSTED_CLOUDFLARE_HOSTS", "jembara.web.id");
+    rateLimitMock.headers.mockResolvedValue(
+      new Headers({
+        host: "jembara.web.id",
+        "cf-connecting-ip": "198.51.100.25",
+        "x-vercel-forwarded-for": "203.0.113.20",
+      }),
+    );
+
+    await expect(getClientAddress()).resolves.toBe("198.51.100.25");
   });
 });

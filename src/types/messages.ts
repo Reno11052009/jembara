@@ -8,6 +8,7 @@ export interface Conversation {
   unread: boolean;
   isOnline: boolean;
   projectName?: string;
+  canSend: boolean;
 }
 
 export interface ChatMessage {
@@ -16,4 +17,15 @@ export interface ChatMessage {
   text: string;
   timeLabel: string;
   dateDividerLabel?: string;
+}
+
+export interface MessagesData {
+  conversations: Conversation[];
+  conversationMessages: Record<string, ChatMessage[]>;
+  selectedConversationId: string;
+}
+
+export interface MessageActionResult {
+  success: boolean;
+  error?: string;
 }

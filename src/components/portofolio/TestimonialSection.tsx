@@ -9,11 +9,17 @@ export default function TestimonialSection({ testimonials }: TestimonialSectionP
   return (
     <div>
       <h2 className="font-display text-lg font-black text-ink">Testimoni Klien</h2>
-      <div className="mt-4 grid grid-cols-1 gap-5 md:grid-cols-2">
-        {testimonials.map((testimonial) => (
-          <TestimonialCard key={testimonial.id} testimonial={testimonial} />
-        ))}
-      </div>
+      {testimonials.length ? (
+        <div className="mt-4 grid grid-cols-1 gap-5 md:grid-cols-2">
+          {testimonials.map((testimonial) => (
+            <TestimonialCard key={testimonial.id} testimonial={testimonial} />
+          ))}
+        </div>
+      ) : (
+        <div className="mt-4 rounded-xl border border-dashed border-hairline bg-card p-8 text-center text-sm text-ink-muted">
+          Testimoni akan tampil setelah proyek selesai dan UMKM memberikan ulasan.
+        </div>
+      )}
     </div>
   );
 }

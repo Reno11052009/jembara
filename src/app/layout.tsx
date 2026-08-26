@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { connection } from "next/server";
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import { PreferencesProvider } from "@/contexts/PreferencesContext";
 import "./global.css";
@@ -27,7 +28,11 @@ export const metadata: Metadata = {
   description: "Temukan talenta. Selesaikan project.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // CSP nonce dibuat per request di proxy dan harus dipasangkan ke script yang
+  // dirender Next.js, sehingga root layout tidak boleh diprerender statis.
+  await connection();
+
   return (
     <html
       lang="id"

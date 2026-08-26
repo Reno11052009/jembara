@@ -4,7 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
-  useState,
+  useSyncExternalStore,
   ReactNode,
 } from "react";
 import dictionary, { Dictionary, Language } from "@/lib/i18n/dictionary";
@@ -19,6 +19,31 @@ const FONT_SIZE_PX: Record<FontSize, string> = {
 
 const LANGUAGE_STORAGE_KEY = "jembara:language";
 const FONT_SIZE_STORAGE_KEY = "jembara:font-size";
+const PREFERENCES_CHANGE_EVENT = "jembara:preferences-changed";
+
+function subscribeToPreferences(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+  window.addEventListener(PREFERENCES_CHANGE_EVENT, onStoreChange);
+
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener(PREFERENCES_CHANGE_EVENT, onStoreChange);
+  };
+}
+
+function getStoredLanguage(): Language {
+  const storedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
+  return storedLanguage && storedLanguage in dictionary
+    ? (storedLanguage as Language)
+    : "id";
+}
+
+function getStoredFontSize(): FontSize {
+  const storedFontSize = window.localStorage.getItem(FONT_SIZE_STORAGE_KEY);
+  return storedFontSize && storedFontSize in FONT_SIZE_PX
+    ? (storedFontSize as FontSize)
+    : "medium";
+}
 
 interface PreferencesContextValue {
   language: Language;
@@ -33,25 +58,16 @@ const PreferencesContext = createContext<PreferencesContextValue | undefined>(
 );
 
 export function PreferencesProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("id");
-  const [fontSize, setFontSizeState] = useState<FontSize>("medium");
-
-  // Load saved preferences once on mount (client-only; localStorage isn't available during SSR)
-  useEffect(() => {
-    const storedLanguage = window.localStorage.getItem(
-      LANGUAGE_STORAGE_KEY
-    ) as Language | null;
-    const storedFontSize = window.localStorage.getItem(
-      FONT_SIZE_STORAGE_KEY
-    ) as FontSize | null;
-
-    if (storedLanguage && dictionary[storedLanguage]) {
-      setLanguageState(storedLanguage);
-    }
-    if (storedFontSize && FONT_SIZE_PX[storedFontSize]) {
-      setFontSizeState(storedFontSize);
-    }
-  }, []);
+  const language = useSyncExternalStore<Language>(
+    subscribeToPreferences,
+    getStoredLanguage,
+    () => "id"
+  );
+  const fontSize = useSyncExternalStore<FontSize>(
+    subscribeToPreferences,
+    getStoredFontSize,
+    () => "medium"
+  );
 
   // Apply font size to the document root so every rem-based text on the site scales
   useEffect(() => {
@@ -64,13 +80,13 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   }, [language]);
 
   const setLanguage = (next: Language) => {
-    setLanguageState(next);
     window.localStorage.setItem(LANGUAGE_STORAGE_KEY, next);
+    window.dispatchEvent(new Event(PREFERENCES_CHANGE_EVENT));
   };
 
   const setFontSize = (next: FontSize) => {
-    setFontSizeState(next);
     window.localStorage.setItem(FONT_SIZE_STORAGE_KEY, next);
+    window.dispatchEvent(new Event(PREFERENCES_CHANGE_EVENT));
   };
 
   return (

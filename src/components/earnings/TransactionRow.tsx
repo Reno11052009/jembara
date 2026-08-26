@@ -5,9 +5,9 @@ interface TransactionRowProps {
 }
 
 const statusStyles: Record<Transaction["status"], { badge: string; amount: string }> = {
-  Diterima: { badge: "bg-success/10 text-success", amount: "text-success" },
-  Pending: { badge: "bg-brand-soft text-brand", amount: "text-brand" },
-  Diproses: { badge: "bg-brand-soft text-brand", amount: "text-brand" },
+  Selesai: { badge: "bg-success/10 text-success", amount: "text-success" },
+  "Dalam Review": { badge: "bg-brand-soft text-brand", amount: "text-brand" },
+  Berjalan: { badge: "bg-brand-soft text-brand", amount: "text-brand" },
 };
 
 function formatRupiah(value: number) {

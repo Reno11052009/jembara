@@ -11,6 +11,7 @@ import {
   educationLevelOptions,
   educationUsesSemester,
 } from "@/lib/education";
+import { skillTaxonomy } from "@/lib/skill-taxonomy";
 
 export default function ProfileSettings({ initialData }: { initialData: ProfileData }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +33,16 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+      void Swal.fire({
+        icon: "error",
+        title: "Foto tidak valid",
+        text: "Pilih gambar PNG, JPEG, atau WebP dengan ukuran maksimal 5 MB.",
+        confirmButtonColor: "#f97316",
+      });
+      e.target.value = "";
+      return;
+    }
 
     const objectUrl = URL.createObjectURL(file);
     setAvatarPreview(objectUrl);
@@ -58,7 +69,19 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
       ctx?.drawImage(img, 0, 0, width, height);
       
       const webpDataUrl = canvas.toDataURL("image/webp", 0.75);
+      if (webpDataUrl.length > 360_000) {
+        void Swal.fire({
+          icon: "error",
+          title: "Foto masih terlalu besar",
+          text: "Gunakan gambar yang lebih sederhana atau beresolusi lebih kecil.",
+          confirmButtonColor: "#f97316",
+        });
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+      setAvatarPreview(webpDataUrl);
       setAvatarBase64(webpDataUrl);
+      URL.revokeObjectURL(objectUrl);
     };
   };
 
@@ -67,26 +90,47 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
   };
 
   const handleAddSkill = async () => {
+    if (skills.length >= 20) {
+      await Swal.fire({
+        icon: "info",
+        title: "Batas skill tercapai",
+        text: "Maksimal 20 skill dapat ditambahkan.",
+        confirmButtonColor: "#FF6B35",
+      });
+      return;
+    }
+
+    const existingSkillKeys = new Set(
+      skills.map((skill) => skill.toLocaleLowerCase("id-ID")),
+    );
+    const availableSkills = skillTaxonomy.filter(
+      (skill) => !existingSkillKeys.has(skill.name.toLocaleLowerCase("id-ID")),
+    );
+    if (availableSkills.length === 0) {
+      await Swal.fire({
+        icon: "info",
+        title: "Semua skill sudah dipilih",
+        confirmButtonColor: "#FF6B35",
+      });
+      return;
+    }
+
     const { value: newSkill } = await Swal.fire({
-      title: 'Tambah Skill',
-      input: 'text',
-      inputPlaceholder: 'Contoh: Next.js, Figma, dsb...',
+      title: "Tambah Skill",
+      input: "select",
+      inputOptions: Object.fromEntries(
+        availableSkills.map((skill) => [skill.name, skill.name]),
+      ),
+      inputPlaceholder: "Pilih skill resmi Jembara",
       showCancelButton: true,
-      confirmButtonColor: '#FF6B35',
-      confirmButtonText: 'Tambah',
-      cancelButtonText: 'Batal',
-      inputValidator: (value) => {
-        if (!value) {
-          return 'Skill tidak boleh kosong!';
-        }
-        if (skills.includes(value.trim())) {
-          return 'Skill sudah ada!';
-        }
-      }
+      confirmButtonColor: "#FF6B35",
+      confirmButtonText: "Tambah",
+      cancelButtonText: "Batal",
+      inputValidator: (value) => (value ? undefined : "Pilih salah satu skill."),
     });
 
     if (newSkill) {
-      setSkills([...skills, newSkill.trim()]);
+      setSkills([...skills, newSkill]);
     }
   };
 

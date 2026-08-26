@@ -2,15 +2,12 @@ import PageHeader from "@/components/layout/PageHeader";
 import PortfolioStatsGrid from "@/components/portofolio/PortfolioStatsGrid";
 import PortfolioProjectSection from "@/components/portofolio/PortfolioProjectSection";
 import SkillEndorsementSection from "@/components/portofolio/SkillEndorsementSection";
-import TestimonialSection from "@/components/portofolio/TestimonialSection"; 
-import {
-  portfolioStats,
-  portfolioProjects,
-  skillEndorsements,
-  portfolioTestimonials,
-} from "@/lib/mock-portfolio";
+import TestimonialSection from "@/components/portofolio/TestimonialSection";
+import { getPortfolioData } from "@/lib/portfolio";
 
-export default function PortfolioPage() {
+export default async function PortfolioPage() {
+  const data = await getPortfolioData();
+
   return (
     <>
       <PageHeader
@@ -19,10 +16,10 @@ export default function PortfolioPage() {
       />
 
       <div className="flex flex-col gap-8">
-        <PortfolioStatsGrid stats={portfolioStats} />
-        <PortfolioProjectSection projects={portfolioProjects} />
-        <SkillEndorsementSection skills={skillEndorsements} />
-        <TestimonialSection testimonials={portfolioTestimonials} />
+        <PortfolioStatsGrid summary={data.summary} />
+        <PortfolioProjectSection projects={data.projects} />
+        <SkillEndorsementSection skills={data.skills} />
+        <TestimonialSection testimonials={data.testimonials} />
       </div>
     </>
   );
