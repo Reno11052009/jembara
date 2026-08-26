@@ -75,7 +75,7 @@ const adminNavItems: NavItem[] = [
   { key: "daftarUmkm", href: "/dashboard/daftar-umkm", icon: Building2 },
   { key: "relasi", href: "/dashboard/relasi", icon: Handshake },
   { key: "lowongan", href: "/dashboard/lowongan", icon: Briefcase },
-  { key: "monitorPesan", href: "/dashboard/monitor-pesan", icon: MessageSquare },
+  // { key: "monitorPesan", href: "/dashboard/monitor-pesan", icon: MessageSquare },
 ];
 
 export default function Sidebar({ role }: { role: string }) {
