@@ -17,6 +17,7 @@ export interface AdminQuickAction {
   id: string;
   label: string;
   icon: LucideIcon;
+  href?: string;
 }
 
 export interface PlatformActivity {
@@ -25,4 +26,24 @@ export interface PlatformActivity {
   title: string;
   subtitle: string;
   timeLabel: string;
+}
+
+export interface AdminStatData {
+  id: string;
+  label: string;
+  value: string;
+  subLabel?: string;
+}
+
+export interface AdminQuickActionData {
+  id: string;
+  label: string;
+  href: string;
+}
+
+export interface AdminDashboardOverview {
+  stats: AdminStatData[];
+  userGrowthData: UserGrowthPoint[];
+  quickActions: AdminQuickActionData[];
+  platformActivities: PlatformActivity[];
 }

@@ -3,11 +3,6 @@
 import { useState } from "react";
 import { UserGrowthPoint } from "@/types/admin-dashboard";
 
-// Skala sumbu-Y statis mengikuti mockup (0/6K/9K/12K/15K), sama seperti
-// pola di EarningsBarChart. Sesuaikan manual kalau nanti ada nilai > 15K.
-const Y_AXIS_LABELS = ["15K", "12K", "9K", "6K", "0"];
-const MAX_VALUE = 15000;
-
 function formatShort(value: number) {
   if (value >= 1000) {
     return `${(value / 1000).toFixed(1).replace(/\.0$/, "")}K`;
@@ -15,21 +10,44 @@ function formatShort(value: number) {
   return `${value}`;
 }
 
+function getNiceMaximum(value: number) {
+  if (value <= 0) return 1;
+
+  const magnitude = 10 ** Math.floor(Math.log10(value));
+  const normalizedValue = value / magnitude;
+  const roundedValue =
+    normalizedValue <= 1
+      ? 1
+      : normalizedValue <= 2
+        ? 2
+        : normalizedValue <= 5
+          ? 5
+          : 10;
+
+  return roundedValue * magnitude;
+}
+
 export default function UserGrowthBarChart({ data }: { data: UserGrowthPoint[] }) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const lastIndex = data.length - 1;
+  const maximumValue = getNiceMaximum(
+    Math.max(...data.map((point) => point.value), 0),
+  );
+  const yAxisLabels = Array.from({ length: 5 }, (_, index) =>
+    formatShort((maximumValue * (4 - index)) / 4),
+  );
 
   return (
     <div className="flex gap-4">
       <div className="flex flex-col justify-between py-1 text-right font-body text-xs text-ink-muted">
-        {Y_AXIS_LABELS.map((label) => (
+        {yAxisLabels.map((label) => (
           <span key={label}>{label}</span>
         ))}
       </div>
 
       <div className="relative flex-1">
         <div className="absolute inset-0 flex flex-col justify-between">
-          {Y_AXIS_LABELS.map((label) => (
+          {yAxisLabels.map((label) => (
             <div key={label} className="border-t border-dashed border-hairline" />
           ))}
         </div>
@@ -38,7 +56,7 @@ export default function UserGrowthBarChart({ data }: { data: UserGrowthPoint[] }
           {data.map((point, index) => {
             const isActive =
               hoveredIndex === index || (hoveredIndex === null && index === lastIndex);
-            const heightPercent = (point.value / MAX_VALUE) * 100;
+            const heightPercent = (point.value / maximumValue) * 100;
 
             return (
               <div

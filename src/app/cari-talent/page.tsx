@@ -1,5 +1,5 @@
-import CariTalentView from "@/components/dashboard/umkm/cari-talents/CariTalentView";
+import { redirect } from "next/navigation";
 
 export default function CariTalentPage() {
-  return <CariTalentView />;
+  redirect("/dashboard/cari-talent");
 }

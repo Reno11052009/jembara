@@ -7,9 +7,15 @@ export default function RecentApplicants({ applicants }: { applicants: OwnerRece
       <h2 className="font-display text-lg font-black text-ink">Pelamar Terbaru</h2>
       <div className="rounded-xl border border-hairline bg-card px-6 py-6">
         <div className="flex flex-col gap-4">
-        {applicants.map((applicant) => (
-          <ApplicantListItem key={applicant.id} applicant={applicant} />
-        ))}
+        {applicants.length > 0 ? (
+          applicants.map((applicant) => (
+            <ApplicantListItem key={applicant.id} applicant={applicant} />
+          ))
+        ) : (
+          <p className="py-6 text-center text-sm text-ink-muted">
+            Belum ada proposal masuk.
+          </p>
+        )}
       </div>
     </div>
   </div>

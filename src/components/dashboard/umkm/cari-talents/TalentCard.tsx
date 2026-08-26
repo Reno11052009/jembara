@@ -1,8 +1,13 @@
 import { Star } from "lucide-react";
-import Button from "@/components/ui/Button";
 import type { Talent } from "@/types/talent";
 
-export default function TalentCard({ talent }: { talent: Talent }) {
+export default function TalentCard({
+  talent,
+  showSkillMatch,
+}: {
+  talent: Talent;
+  showSkillMatch: boolean;
+}) {
   const initials = talent.name
     .split(" ")
     .map((part) => part[0])
@@ -21,9 +26,11 @@ export default function TalentCard({ talent }: { talent: Talent }) {
             <h3 className="font-display text-base font-black text-ink">
               {talent.name}
             </h3>
-            <span className="shrink-0 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-display font-black text-brand">
-              {talent.matchPercent}% Match
-            </span>
+            {showSkillMatch && (
+              <span className="shrink-0 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-display font-black text-brand">
+                {talent.matchPercent}% skill cocok
+              </span>
+            )}
           </div>
           <p className="text-sm font-body text-ink-muted">{talent.role}</p>
         </div>
@@ -31,12 +38,13 @@ export default function TalentCard({ talent }: { talent: Talent }) {
 
       <div className="mt-4 flex flex-wrap items-center gap-2 text-sm font-body font-bold text-ink">
         <Star size={14} className="fill-brand text-brand" />
-        {talent.rating.toFixed(1)}
-        <span></span>
-        {talent.rateLabel}
-        <span></span>
+        {talent.rating === null ? "Talent baru" : talent.rating.toFixed(1)}
+        <span>·</span>
+        {talent.completedProjectCount ?? 0} proyek
+        <span>·</span>
+        {talent.portfolioCount ?? 0} portofolio
+        <span>·</span>
         {talent.location}
-        {talent.isRemote && <span> Remote</span>}
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
@@ -50,13 +58,21 @@ export default function TalentCard({ talent }: { talent: Talent }) {
         ))}
       </div>
 
-      <div className="mt-5 flex items-center gap-4 font-display font-black text-ink">
-        <Button variant="primary" className="flex-1">
-          Hubungi
-        </Button>
-        <Button variant="outline" className="flex-1">
-          Lihat Profil
-        </Button>
+      <div className="mt-5 font-display font-black text-ink">
+        {talent.profileUrl ? (
+          <a
+            href={talent.profileUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex w-full items-center justify-center rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            Lihat Portofolio
+          </a>
+        ) : (
+          <span className="inline-flex w-full items-center justify-center rounded-full bg-canvas px-5 py-2.5 text-sm font-semibold text-ink-muted">
+            Portofolio belum tersedia
+          </span>
+        )}
       </div>
     </div>
   );

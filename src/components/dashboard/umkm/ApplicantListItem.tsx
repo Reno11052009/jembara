@@ -11,8 +11,13 @@ export default function ApplicantListItem({ applicant }: { applicant: OwnerRecen
       <div className="flex-1">
         <p className="font-display text-sm font-bold text-ink">{applicant.name}</p>
         <p className="font-body text-xs text-ink-muted">{applicant.role}</p>
+        {applicant.projectTitle && (
+          <p className="mt-1 line-clamp-1 font-body text-xs text-ink-muted">
+            {applicant.projectTitle}
+          </p>
+        )}
         <span className="mt-1.5 inline-block rounded-full bg-brand-soft px-2.5 py-1 text-xs font-bold text-brand">
-          {applicant.matchPercent}% Cocok
+          {applicant.matchPercent}% skill cocok
         </span>
       </div>
       <div className="flex flex-col items-end">

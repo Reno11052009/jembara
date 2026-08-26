@@ -1,4 +1,6 @@
 import { LucideIcon } from "lucide-react";
+import type { AdminDashboardOverview } from "@/types/admin-dashboard";
+import type { OwnerDashboardOverview } from "@/types/umkm-owner-dashboard";
 
 export interface DashboardStat {
   id: string;
@@ -73,4 +75,6 @@ export interface DashboardData {
   notifications: DashboardNotification[];
   projectSectionTitle: string;
   projectSectionEmptyMessage: string;
+  adminOverview?: AdminDashboardOverview;
+  umkmOverview?: OwnerDashboardOverview;
 }

@@ -1,39 +1,22 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import Footer from "@/components/landing/Footer";
 import TalentFilterBar from "@/components/dashboard/umkm/cari-talents/TalentFilterBar";
 import TalentCard from "@/components/dashboard/umkm/cari-talents/TalentCard";
-import { ownerName, ownerAvatarUrl } from "@/lib/mock-umkm-owner-dashboard";
-import { recommendedTalents } from "@/lib/mock-talents";
-import type { TalentFilters } from "@/types/talent";
+import type { TalentFilters, TalentSearchData } from "@/types/talent";
 
 const initialFilters: TalentFilters = {
   query: "",
   skill: "",
   location: "",
   rating: "",
-  experience: "",
-  budget: "",
 };
 
-function matchesBudget(ratePerHour: number, budget: string) {
-  switch (budget) {
-    case "under-150k":
-      return ratePerHour < 150_000;
-    case "150k-200k":
-      return ratePerHour >= 150_000 && ratePerHour < 200_000;
-    case "200k-250k":
-      return ratePerHour >= 200_000 && ratePerHour <= 250_000;
-    case "over-250k":
-      return ratePerHour > 250_000;
-    default:
-      return true;
-  }
-}
-
-export default function CariTalentView() {
+export default function CariTalentView({ data }: { data: TalentSearchData }) {
+  const router = useRouter();
   const [filters, setFilters] = useState<TalentFilters>(initialFilters);
 
   function updateFilter(name: keyof TalentFilters, value: string) {
@@ -43,7 +26,7 @@ export default function CariTalentView() {
   const filteredTalents = useMemo(() => {
     const query = filters.query.trim().toLowerCase();
 
-    return recommendedTalents.filter((talent) => {
+    return data.talents.filter((talent) => {
       const matchesQuery =
         !query ||
         talent.name.toLowerCase().includes(query) ||
@@ -54,37 +37,73 @@ export default function CariTalentView() {
         matchesQuery &&
         (!filters.skill || talent.skills.includes(filters.skill)) &&
         (!filters.location || talent.location === filters.location) &&
-        (!filters.rating || talent.rating >= Number.parseFloat(filters.rating)) &&
-        (!filters.experience || talent.experienceLevel === filters.experience) &&
-        (!filters.budget || matchesBudget(talent.ratePerHour, filters.budget))
+        (!filters.rating ||
+          (talent.rating !== null &&
+            talent.rating >= Number.parseFloat(filters.rating)))
       );
     });
-  }, [filters]);
+  }, [data.talents, filters]);
 
   return (
     <>
       <PageHeader
         title="Cari Talent 🚀"
         subtitle="Temukan mahasiswa dan fresh graduate terbaik untuk kebutuhan proyek UMKM Anda."
-        userName={ownerName}
-        avatarUrl={ownerAvatarUrl}
+        userName={data.ownerName}
+        avatarUrl={data.ownerAvatarUrl}
       />
+
+      {data.projects.length > 0 && (
+        <div className="mb-4 rounded-xl border border-hairline bg-card p-4">
+          <label
+            htmlFor="matching-project"
+            className="mb-2 block text-sm font-display font-bold text-ink"
+          >
+            Hitung kecocokan skill untuk proyek
+          </label>
+          <select
+            id="matching-project"
+            value={data.selectedProjectId ?? ""}
+            onChange={(event) =>
+              router.replace(
+                `/dashboard/cari-talent?project=${encodeURIComponent(event.target.value)}`,
+              )
+            }
+            className="w-full rounded-lg border border-hairline bg-canvas px-4 py-3 text-sm text-ink focus:border-brand focus:outline-none"
+          >
+            {data.projects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.title}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <TalentFilterBar
         query={filters.query}
         onQueryChange={(value) => updateFilter("query", value)}
         filters={filters}
         onFilterChange={updateFilter}
+        skillOptions={data.skillOptions}
+        locationOptions={data.locationOptions}
+        ratingOptions={data.ratingOptions}
       />
 
       <h2 className="mb-4 font-display text-lg font-black text-ink">
-        Talenta Terbaik yang Direkomendasikan
+        {data.selectedProjectTitle
+          ? `Rekomendasi talent untuk ${data.selectedProjectTitle}`
+          : "Talent yang sedang tersedia"}
       </h2>
 
       {filteredTalents.length > 0 ? (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           {filteredTalents.map((talent) => (
-            <TalentCard key={talent.id} talent={talent} />
+            <TalentCard
+              key={talent.id}
+              talent={talent}
+              showSkillMatch={Boolean(data.selectedProjectId)}
+            />
           ))}
         </div>
       ) : (

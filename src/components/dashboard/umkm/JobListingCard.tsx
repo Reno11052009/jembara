@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { OwnerJobListing } from "@/types/umkm-owner-dashboard";
 
 export default function JobListingCard({ listing }: { listing: OwnerJobListing }) {
@@ -6,7 +7,7 @@ export default function JobListingCard({ listing }: { listing: OwnerJobListing }
       <div className="flex items-start justify-between gap-4">
         <h3 className="font-display text-xl font-black text-ink">{listing.title}</h3>
         <span className="shrink-0 rounded-full bg-brand-soft px-3 py-1 text-xs font-display font-black text-brand">
-          {listing.matchPercent}% Match
+          {listing.budgetLabel ?? `${listing.matchPercent ?? 0}% Match`}
         </span>
       </div>
       <p className="mt-1 font-body text-sm text-ink-muted">{listing.companyName}</p>
@@ -18,12 +19,12 @@ export default function JobListingCard({ listing }: { listing: OwnerJobListing }
             {listing.status}
           </span>
         </div>
-        <button
-          type="button"
-          className="w-60 rounded-full border-2 border-ink px-5 py-2 text-sm font-display font-black text-ink transition-colors hover:bg-ink hover:text-white"
+        <Link
+          href="/dashboard/pelamar"
+          className="w-60 rounded-full border-2 border-ink px-5 py-2 text-center text-sm font-display font-black text-ink transition-colors hover:bg-ink hover:text-white"
         >
           Lihat Pelamar
-        </button>
+        </Link>
       </div>
     </div>
   );

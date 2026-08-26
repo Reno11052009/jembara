@@ -14,7 +14,6 @@ import ProfileCompletionBanner from "@/components/dashboard/ProfileCompletionBan
 import StatCard from "@/components/dashboard/StatCard";
 import RecommendedProjectCard from "@/components/dashboard/RecommendedProjectCard";
 import RunningActivityCard from "@/components/dashboard/RunningActivityCard";
-import ManagedProjectCard from "@/components/dashboard/ManagedProjectCard";
 import RecentNotificationsCard from "@/components/dashboard/RecentNotificationsCard";
 import OwnerDashboardView from "@/components/dashboard/umkm/OwnerDashboardView";
 import AdminDashboardView from "@/components/dashboard/admin/AdminDashboardView";
@@ -40,19 +39,35 @@ const dashboardSubtitles = {
 export default async function DashboardPage() {
   const dashboard = await getDashboardData();
 
-  // The UMKM owner dashboard mockup uses a different data model (Lowongan/Pelamar)
-  // than the shared getDashboardData() pipeline below (Proyek/Proposal), so it's
-  // rendered as its own self-contained view for now. See OwnerDashboardView for details.
+  // Tampilan UMKM memakai istilah lowongan/pelamar, sedangkan sumber tepercayanya
+  // tetap project/proposal yang difilter berdasarkan pemilik pada server.
   if (dashboard.role === "UMKM") {
-    return <OwnerDashboardView />;
+    if (!dashboard.umkmOverview) {
+      throw new Error("Data dashboard UMKM tidak tersedia");
+    }
+
+    return (
+      <OwnerDashboardView
+        ownerName={dashboard.userName}
+        ownerAvatarUrl={dashboard.avatarUrl}
+        data={dashboard.umkmOverview}
+      />
+    );
   }
 
-  // Same reasoning as OwnerDashboardView above: the admin dashboard mockup
-  // (stats, growth chart, quick actions, activity feed) doesn't map onto the
-  // shared getDashboardData() pipeline, so it's rendered as its own
-  // self-contained view. See AdminDashboardView for details.
+  // Admin memakai tampilan khusus, tetapi seluruh datanya tetap berasal dari
+  // pipeline getDashboardData() yang sudah mengautorisasi sesi di server.
   if (dashboard.role === "ADMIN") {
-    return <AdminDashboardView />;
+    if (!dashboard.adminOverview) {
+      throw new Error("Data dashboard admin tidak tersedia");
+    }
+
+    return (
+      <AdminDashboardView
+        adminName={dashboard.userName}
+        data={dashboard.adminOverview}
+      />
+    );
   }
 
   const firstName = dashboard.userName.trim().split(/\s+/)[0] || "Pengguna";

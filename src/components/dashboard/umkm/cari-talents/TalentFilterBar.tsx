@@ -2,20 +2,16 @@
 
 import { Search } from "lucide-react";
 import FilterDropdown from "@/components/ui/FilterDropdown";
-import {
-  budgetOptions,
-  experienceOptions,
-  locationOptions,
-  ratingOptions,
-  skillOptions,
-} from "@/lib/mock-talents";
-import type { TalentFilters } from "@/types/talent";
+import type { TalentFilterOption, TalentFilters } from "@/types/talent";
 
 interface TalentFilterBarProps {
   query: string;
   onQueryChange: (value: string) => void;
   filters: TalentFilters;
   onFilterChange: (name: keyof TalentFilters, value: string) => void;
+  skillOptions: TalentFilterOption[];
+  locationOptions: TalentFilterOption[];
+  ratingOptions: TalentFilterOption[];
 }
 
 export default function TalentFilterBar({
@@ -23,6 +19,9 @@ export default function TalentFilterBar({
   onQueryChange,
   filters,
   onFilterChange,
+  skillOptions,
+  locationOptions,
+  ratingOptions,
 }: TalentFilterBarProps) {
   return (
     <div className="mb-6">
@@ -58,18 +57,6 @@ export default function TalentFilterBar({
           options={ratingOptions}
           value={filters.rating}
           onChange={(value) => onFilterChange("rating", value)}
-        />
-        <FilterDropdown
-          label="Pengalaman"
-          options={experienceOptions}
-          value={filters.experience}
-          onChange={(value) => onFilterChange("experience", value)}
-        />
-        <FilterDropdown
-          label="Budget"
-          options={budgetOptions}
-          value={filters.budget}
-          onChange={(value) => onFilterChange("budget", value)}
         />
       </div>
     </div>
