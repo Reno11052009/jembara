@@ -1,4 +1,4 @@
-import { User, Store, Sparkles } from "lucide-react";
+import { User, Store } from "lucide-react";
 import { selectRoleAction } from "@/app/actions/auth";
 
 export default function PilihRolePage() {
@@ -13,7 +13,6 @@ export default function PilihRolePage() {
       <div className="relative w-full max-w-4xl text-center">
         {/* Header with badge */}
         <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-brand/10 px-4 py-1.5 text-sm font-medium text-brand">
-          <Sparkles size={14} />
           <span>Pilih Peran Kamu</span>
         </div>
 
@@ -86,7 +85,7 @@ export default function PilihRolePage() {
 
         {/* Footer note */}
         <p className="mt-8 text-xs text-zinc-400">
-          Bergabung gratis • Bisa ubah kapan saja di pengaturan akun
+          Bergabung gratis Bisa ubah kapan saja di pengaturan akun
         </p>
       </div>
     </div>
