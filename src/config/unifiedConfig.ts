@@ -43,6 +43,14 @@ export const config = {
           limit: 5,
           windowMs: 10 * 60 * 1000,
         },
+        projectCreateByUser: {
+          limit: 10,
+          windowMs: 60 * 60 * 1000,
+        },
+        proposalCreateByUser: {
+          limit: 10,
+          windowMs: 60 * 60 * 1000,
+        },
       },
     },
   },

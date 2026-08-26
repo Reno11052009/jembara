@@ -1,7 +1,5 @@
-"use client";
-
-import { useState } from "react";
-import { Bookmark, BriefcaseBusiness, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { BriefcaseBusiness, TrendingUp } from "lucide-react";
 import { Project } from "@/types/project";
 
 interface ProjectCardProps {
@@ -13,8 +11,6 @@ export default function ProjectCard({
   project,
   showStudentFeatures = true,
 }: ProjectCardProps) {
-  const [isSaved, setIsSaved] = useState(false);
-
   return (
     <div className="rounded-xl border border-hairline bg-card p-5">
       <div className="flex items-start justify-between gap-3">
@@ -80,23 +76,12 @@ export default function ProjectCard({
       </div>
 
       <div className="mt-5 flex items-center justify-between gap-3">
-        <button className="rounded-[99px] bg-brand px-6 py-2.5 text-sm font-display font-bold uppercase text-white transition-opacity hover:opacity-90">
+        <Link
+          href={`/dashboard/find-projects/${project.id}`}
+          className="rounded-[99px] bg-brand px-6 py-2.5 text-sm font-display font-bold uppercase text-white transition-opacity hover:opacity-90"
+        >
           Lihat Project
-        </button>
-        {showStudentFeatures && (
-          <button
-            aria-label={isSaved ? "Hapus dari simpanan" : "Simpan project"}
-            aria-pressed={isSaved}
-            onClick={() => setIsSaved((prev) => !prev)}
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-              isSaved
-                ? "border-brand bg-brand-soft text-brand"
-                : "border-hairline-ink text-ink hover:border-brand hover:text-brand"
-            }`}
-          >
-            <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} />
-          </button>
-        )}
+        </Link>
       </div>
     </div>
   );

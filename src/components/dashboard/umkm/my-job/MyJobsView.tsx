@@ -4,32 +4,46 @@ import { useMemo, useState } from "react";
 import PageHeader from "@/components/layout/PageHeader";
 import Footer from "@/components/landing/Footer";
 import MyJobRow from "@/components/dashboard/umkm/my-job/MyJobRow";
-import { ownerName, ownerAvatarUrl } from "@/lib/mock-umkm-owner-dashboard";
-import { myJobListings } from "@/lib/mock-my-jobs";
-import type { JobListingStatus } from "@/types/my-jobs";
+import type {
+  JobListingStatus,
+  MyJobsData,
+} from "@/types/my-jobs";
 
 type TabValue = "Semua" | JobListingStatus;
 
-const tabs: TabValue[] = ["Semua", "Aktif", "Ditutup", "Draft"];
+const tabs: TabValue[] = [
+  "Semua",
+  "Terbuka",
+  "Seleksi",
+  "Berjalan",
+  "Dalam Review",
+  "Selesai",
+  "Dibatalkan",
+];
 
-export default function MyJobsView() {
+export default function MyJobsView({ data }: { data: MyJobsData }) {
   const [activeTab, setActiveTab] = useState<TabValue>("Semua");
 
   const filteredListings = useMemo(
     () =>
       activeTab === "Semua"
-        ? myJobListings
-        : myJobListings.filter((listing) => listing.status === activeTab),
-    [activeTab],
+        ? data.listings
+        : data.listings.filter((listing) => listing.status === activeTab),
+    [activeTab, data.listings],
   );
+
+  const tabCount = (tab: TabValue) =>
+    tab === "Semua"
+      ? data.listings.length
+      : data.listings.filter((listing) => listing.status === tab).length;
 
   return (
     <>
       <PageHeader
-        title="Lowongan Saya 📂"
-        subtitle="Kelola semua lowongan proyek yang telah Anda publikasikan atau simpan."
-        userName={ownerName}
-        avatarUrl={ownerAvatarUrl}
+        title="Lowongan Saya"
+        subtitle={`Kelola project yang dibuat oleh ${data.businessName}.`}
+        userName={data.ownerName}
+        avatarUrl={data.ownerAvatarUrl}
       />
 
       <div className="mb-6 flex flex-wrap gap-2">
@@ -44,7 +58,7 @@ export default function MyJobsView() {
                 : "border border-hairline bg-card text-ink hover:border-brand hover:text-brand"
             }`}
           >
-            {tab}
+            {tab} ({tabCount(tab)})
           </button>
         ))}
       </div>
@@ -58,10 +72,10 @@ export default function MyJobsView() {
       ) : (
         <div className="rounded-xl border border-dashed border-hairline bg-card px-6 py-12 text-center">
           <h3 className="font-display text-base font-black text-ink">
-            Belum ada lowongan
+            Belum ada project
           </h3>
           <p className="mt-2 text-sm font-body text-ink-muted">
-            Tidak ada lowongan dengan status ini.
+            Tidak ada project dengan status ini.
           </p>
         </div>
       )}

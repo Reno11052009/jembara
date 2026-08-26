@@ -1,59 +1,105 @@
-import { Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { CalendarDays, MapPin } from "lucide-react";
 import type { MyJobListing } from "@/types/my-jobs";
 
 const statusStyles: Record<MyJobListing["status"], string> = {
-  Aktif: "bg-emerald-50 text-success",
-  Ditutup: "bg-red-50 text-danger",
-  Draft: "bg-amber-50 text-amber-600",
+  Terbuka: "bg-emerald-50 text-success",
+  Seleksi: "bg-blue-50 text-blue-600",
+  Berjalan: "bg-brand-soft text-brand",
+  "Dalam Review": "bg-violet-50 text-violet-600",
+  Selesai: "bg-slate-100 text-slate-700",
+  Dibatalkan: "bg-danger-soft text-danger",
+  Lainnya: "bg-neutral-100 text-neutral-600",
 };
 
 export default function MyJobRow({ listing }: { listing: MyJobListing }) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-hairline bg-card px-6 py-5">
-      {/* Judul + info pelamar */}
-      <div>
-        <h3 className="font-display text-lg font-black text-ink">{listing.title}</h3>
-        <p className="mt-1 text-base font-body text-ink-muted">
-          Diposting: {listing.postedDateLabel} <span className="mx-1">·</span>
-          {listing.applicantCount} Pelamar
-        </p>
-      </div>
+  const collaborationStarted = [
+    "IN_PROGRESS",
+    "REVIEW",
+    "COMPLETED",
+  ].includes(listing.statusCode);
 
-      {/* Budget di tengah, teks label & angka rata kiri */}
-      <div className="flex flex-1 justify-center min-w-40">
-        <div className="flex flex-col items-start">
-          <p className="text-sm font-body text-ink-muted">Estimasi Budget</p>
-          <p className="mt-0.5 font-display text-lg font-black text-ink">
-            {listing.budgetLabel}
+  return (
+    <article className="rounded-xl border border-hairline bg-card px-6 py-5">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-3">
+            <h3 className="font-display text-lg font-black text-ink">
+              {listing.title}
+            </h3>
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-bold ${statusStyles[listing.status]}`}
+            >
+              {listing.status}
+            </span>
+          </div>
+          <p className="mt-2 line-clamp-2 text-sm text-ink-muted">
+            {listing.description}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {listing.skills.map((skill) => (
+              <span
+                key={skill}
+                className="rounded-md bg-canvas px-2.5 py-1 text-xs text-ink"
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid min-w-64 grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          <div>
+            <p className="text-xs text-ink-muted">Budget</p>
+            <p className="mt-0.5 font-display font-black text-ink">
+              {listing.budgetLabel}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-ink-muted">Proposal Masuk</p>
+            <p className="mt-0.5 font-display font-black text-ink">
+              {listing.applicantCount} proposal
+            </p>
+          </div>
+          <p className="flex items-center gap-1.5 text-ink-muted">
+            <CalendarDays size={14} /> {listing.deadlineLabel}
+          </p>
+          <p className="flex items-center gap-1.5 text-ink-muted">
+            <MapPin size={14} /> {listing.workModeLabel} · {listing.locationLabel}
           </p>
         </div>
       </div>
 
-      {/* Status + aksi */}
-      <div className="flex items-center gap-6">
-        <span
-          className={`rounded-full px-3 py-1 text-sm font-bold ${statusStyles[listing.status]}`}
-        >
-          {listing.status}
-        </span>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label={`Edit ${listing.title}`}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-hairline text-ink transition-colors hover:border-brand hover:text-brand"
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-4">
+        <p className="text-xs text-ink-muted">
+          Dipublikasikan {listing.postedDateLabel}
+        </p>
+        {collaborationStarted ? (
+          <Link
+            href={`/dashboard/messages?project=${encodeURIComponent(listing.id)}`}
+            className="rounded-full border border-ink px-4 py-2 text-xs font-display font-bold uppercase text-ink hover:border-brand hover:text-brand"
           >
-            <Pencil size={15} />
-          </button>
-          <button
-            type="button"
-            aria-label={`Hapus ${listing.title}`}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-danger-soft text-danger transition-colors hover:opacity-80"
-          >
-            <Trash2 size={15} />
-          </button>
-        </div>
+            Buka Kolaborasi
+          </Link>
+        ) : listing.statusCode === "OPEN" || listing.statusCode === "PROPOSAL" ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {listing.applicantCount > 0 && (
+              <Link
+                href={`/dashboard/pelamar?project=${encodeURIComponent(listing.id)}`}
+                className="rounded-full border border-ink px-4 py-2 text-xs font-display font-bold uppercase text-ink hover:border-brand hover:text-brand"
+              >
+                Lihat Pelamar
+              </Link>
+            )}
+            <Link
+              href={`/dashboard/cari-talent?project=${encodeURIComponent(listing.id)}`}
+              className="rounded-full bg-brand px-4 py-2 text-xs font-display font-bold uppercase text-white hover:opacity-90"
+            >
+              Cari Talent
+            </Link>
+          </div>
+        ) : null}
       </div>
-    </div>
+    </article>
   );
 }

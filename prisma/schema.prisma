@@ -192,7 +192,9 @@ model project {
   description String
   budget      Float?
   deadline    DateTime?
-  status      String    @default("OPEN") // OPEN, PROPOSAL, IN_PROGRESS, REVIEW, COMPLETED
+  workMode    String    @default("REMOTE") // REMOTE, HYBRID, ONSITE
+  location    String?
+  status      String    @default("OPEN") // OPEN, PROPOSAL, IN_PROGRESS, REVIEW, COMPLETED, CANCELLED
   umkmId      String    @db.Uuid
   studentId   String?   @db.Uuid
   createdAt   DateTime  @default(now()) @db.Timestamp(6)
@@ -204,6 +206,8 @@ model project {
   proposals    proposal[]
   review       review?
   messages     message[]
+
+  @@index([umkmId, status, createdAt])
 }
 
 model message {

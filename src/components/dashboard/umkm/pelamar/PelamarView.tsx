@@ -1,36 +1,73 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import Footer from "@/components/landing/Footer";
 import ApplicantRow from "@/components/dashboard/umkm/pelamar/ApplicantRow";
-import { ownerName, ownerAvatarUrl } from "@/lib/mock-umkm-owner-dashboard";
-import { applicants, projectTitle } from "@/lib/mock-applicants";
-import type { ApplicantStatus } from "@/types/applicant";
+import type {
+  ApplicantStatus,
+  ApplicantsData,
+} from "@/types/applicant";
 
 type TabValue = "Semua" | ApplicantStatus;
 
-const tabs: TabValue[] = ["Semua", "Baru", "Shortlist", "Ditolak"];
+const tabs: TabValue[] = ["Semua", "Pending", "Diterima", "Ditolak"];
 
-export default function PelamarView() {
+export default function PelamarView({ data }: { data: ApplicantsData }) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabValue>("Semua");
 
   const filteredApplicants = useMemo(
     () =>
       activeTab === "Semua"
-        ? applicants
-        : applicants.filter((applicant) => applicant.status === activeTab),
-    [activeTab],
+        ? data.applicants
+        : data.applicants.filter((applicant) => applicant.status === activeTab),
+    [activeTab, data.applicants],
   );
+
+  const tabCount = (tab: TabValue) =>
+    tab === "Semua"
+      ? data.applicants.length
+      : data.applicants.filter((applicant) => applicant.status === tab).length;
 
   return (
     <>
       <PageHeader
-        title="Pelamar 📨"
-        subtitle={`Proyek: ${projectTitle}`}
-        userName={ownerName}
-        avatarUrl={ownerAvatarUrl}
+        title="Pelamar"
+        subtitle={data.selectedProjectTitle
+          ? `Proposal untuk project ${data.selectedProjectTitle}`
+          : "Pantau proposal yang masuk untuk project Anda."}
+        userName={data.ownerName}
+        avatarUrl={data.ownerAvatarUrl}
       />
+
+      {data.projects.length > 0 && (
+        <div className="mb-5 rounded-xl border border-hairline bg-card p-4">
+          <label
+            htmlFor="applicant-project"
+            className="mb-2 block text-sm font-display font-bold text-ink"
+          >
+            Pilih project
+          </label>
+          <select
+            id="applicant-project"
+            value={data.selectedProjectId ?? ""}
+            onChange={(event) =>
+              router.replace(
+                `/dashboard/pelamar?project=${encodeURIComponent(event.target.value)}`,
+              )
+            }
+            className="w-full rounded-lg border border-hairline bg-canvas px-4 py-3 text-sm text-ink focus:border-brand focus:outline-none"
+          >
+            {data.projects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.title} · {project.status}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="mb-6 flex flex-wrap gap-2">
         {tabs.map((tab) => (
@@ -44,7 +81,7 @@ export default function PelamarView() {
                 : "border border-hairline bg-card text-ink hover:border-brand hover:text-brand"
             }`}
           >
-            {tab}
+            {tab} ({tabCount(tab)})
           </button>
         ))}
       </div>
@@ -61,7 +98,9 @@ export default function PelamarView() {
             Belum ada pelamar
           </h3>
           <p className="mt-2 text-sm font-body text-ink-muted">
-            Tidak ada pelamar dengan status ini.
+            {data.projects.length === 0
+              ? "Buat dan publikasikan project untuk mulai menerima proposal."
+              : "Tidak ada proposal dengan status ini."}
           </p>
         </div>
       )}
