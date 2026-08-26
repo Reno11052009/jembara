@@ -49,7 +49,6 @@ export default function PilihRolePage() {
                   className="group/btn inline-flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-brand hover:shadow-lg hover:shadow-brand/30 hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <span>Pilih Pelajar</span>
-                  <ArrowRight size={16} className="transition-transform duration-300 group-hover/btn:translate-x-1" />
                 </button>
               </form>
             </div>
@@ -79,7 +78,6 @@ export default function PilihRolePage() {
                   className="group/btn inline-flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-brand hover:shadow-lg hover:shadow-brand/30 hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <span>Pilih UMKM</span>
-                  <ArrowRight size={16} className="transition-transform duration-300 group-hover/btn:translate-x-1" />
                 </button>
               </form>
             </div>
