@@ -26,8 +26,6 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
   const router = useRouter();
   const isUmkm = initialData.role === "UMKM";
   const showSemester = educationUsesSemester(educationLevel);
-  const locationValue =
-    initialData.location === "Lokasi belum diatur" ? "" : initialData.location;
   const hasLegacyEducationLevel =
     Boolean(initialData.tingkat_pendidikan) &&
     !educationLevelOptions.some(
@@ -315,7 +313,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                 <div className="md:col-span-2">
                   <IndonesiaRegionFields
                     initialValue={{
-                      addressDetail: initialData.businessAddressDetail,
+                      addressDetail: initialData.addressDetail,
                       provinceCode: initialData.provinceCode,
                       regencyCode: initialData.regencyCode,
                       districtCode: initialData.districtCode,
@@ -385,16 +383,17 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                     />
                   </div>
                 )}
-              <div>
-                <label htmlFor="location" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Lokasi</label>
-                <input
-                  id="location"
-                  type="text"
-                  name="location"
-                  defaultValue={locationValue}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-                />
-              </div>
+                <div className="md:col-span-2">
+                  <IndonesiaRegionFields
+                    initialValue={{
+                      addressDetail: initialData.addressDetail,
+                      provinceCode: initialData.provinceCode,
+                      regencyCode: initialData.regencyCode,
+                      districtCode: initialData.districtCode,
+                      villageCode: initialData.villageCode,
+                    }}
+                  />
+                </div>
               </div>
             )}
           </div>

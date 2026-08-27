@@ -67,6 +67,15 @@ model student {
   tingkat_pendidikan String?
   jurusan            String?
   semester           Int?
+  alamat_detail      String?
+  provinsi_kode      String?
+  provinsi_nama      String?
+  kabupaten_kode     String?
+  kabupaten_nama     String?
+  kecamatan_kode     String?
+  kecamatan_nama     String?
+  kelurahan_kode     String?
+  kelurahan_nama     String?
   experience         Int      @default(0) // years or months
   available          Boolean  @default(false)
   rating             Float    @default(0)

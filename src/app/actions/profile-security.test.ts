@@ -174,6 +174,44 @@ describe("profile action security", () => {
     });
   });
 
+  it("stores a verified structured address for a student", async () => {
+    const formData = profileForm();
+    formData.set("addressDetail", "Jalan Veteran 8, RT 02/RW 03");
+    formData.set("provinceCode", "35");
+    formData.set("regencyCode", "35.73");
+    formData.set("districtCode", "35.73.05");
+    formData.set("villageCode", "35.73.05.1001");
+
+    await expect(updateProfileAction(formData)).resolves.toEqual({ success: true });
+
+    expect(mocks.validateRegionSelection).toHaveBeenCalledWith({
+      provinceCode: "35",
+      regencyCode: "35.73",
+      districtCode: "35.73.05",
+      villageCode: "35.73.05.1001",
+    });
+    expect(mocks.userUpdate).toHaveBeenCalledWith({
+      where: { id: "11111111-1111-4111-8111-111111111111" },
+      data: expect.objectContaining({ location: "Kota Malang, Jawa Timur" }),
+    });
+    expect(mocks.studentUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: expect.objectContaining({
+          alamat_detail: "Jalan Veteran 8, RT 02/RW 03",
+          provinsi_kode: "35",
+          provinsi_nama: "Jawa Timur",
+          kabupaten_kode: "35.73",
+          kabupaten_nama: "Kota Malang",
+          kecamatan_kode: "35.73.05",
+          kecamatan_nama: "Lowokwaru",
+          kelurahan_kode: "35.73.05.1001",
+          kelurahan_nama: "Dinoyo",
+        }),
+      }),
+    );
+    expect(mocks.umkmUpsert).not.toHaveBeenCalled();
+  });
+
   it("updates UMKM business information instead of education data", async () => {
     mocks.userFindUnique.mockResolvedValue({ role: "UMKM" });
     const formData = profileForm();

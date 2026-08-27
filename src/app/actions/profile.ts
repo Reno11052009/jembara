@@ -231,6 +231,16 @@ export async function updateProfileAction(formData: FormData) {
   if (authenticatedUser.role === "UMKM") {
     if (!parsed.data.businessName) return { error: "Nama usaha wajib diisi" };
     if (!parsed.data.businessCategory) return { error: "Kategori usaha wajib diisi" };
+  }
+
+  const hasRegionInput = Boolean(
+    parsed.data.addressDetail ||
+      parsed.data.provinceCode ||
+      parsed.data.regencyCode ||
+      parsed.data.districtCode ||
+      parsed.data.villageCode,
+  );
+  if (authenticatedUser.role === "UMKM" || hasRegionInput) {
     if (!parsed.data.addressDetail) return { error: "Detail alamat wajib diisi" };
     if (
       !parsed.data.provinceCode ||
@@ -238,7 +248,7 @@ export async function updateProfileAction(formData: FormData) {
       !parsed.data.districtCode ||
       !parsed.data.villageCode
     ) {
-      return { error: "Wilayah usaha wajib dilengkapi" };
+      return { error: "Wilayah wajib dilengkapi" };
     }
 
     try {
@@ -335,6 +345,19 @@ export async function updateProfileAction(formData: FormData) {
               ? { tingkat_pendidikan: parsed.data.tingkat_pendidikan || null }
               : {}),
             ...(semester !== undefined ? { semester } : {}),
+            ...(validatedRegion
+              ? {
+                  alamat_detail: parsed.data.addressDetail!,
+                  provinsi_kode: validatedRegion.provinceCode,
+                  provinsi_nama: validatedRegion.provinceName,
+                  kabupaten_kode: validatedRegion.regencyCode,
+                  kabupaten_nama: validatedRegion.regencyName,
+                  kecamatan_kode: validatedRegion.districtCode,
+                  kecamatan_nama: validatedRegion.districtName,
+                  kelurahan_kode: validatedRegion.villageCode,
+                  kelurahan_nama: validatedRegion.villageName,
+                }
+              : {}),
           },
           create: {
             userId: session.userId,
@@ -342,6 +365,19 @@ export async function updateProfileAction(formData: FormData) {
             school: parsed.data.school || null,
             tingkat_pendidikan: parsed.data.tingkat_pendidikan || null,
             semester: semester ?? null,
+            ...(validatedRegion
+              ? {
+                  alamat_detail: parsed.data.addressDetail!,
+                  provinsi_kode: validatedRegion.provinceCode,
+                  provinsi_nama: validatedRegion.provinceName,
+                  kabupaten_kode: validatedRegion.regencyCode,
+                  kabupaten_nama: validatedRegion.regencyName,
+                  kecamatan_kode: validatedRegion.districtCode,
+                  kecamatan_nama: validatedRegion.districtName,
+                  kelurahan_kode: validatedRegion.villageCode,
+                  kelurahan_nama: validatedRegion.villageName,
+                }
+              : {}),
           },
           select: { id: true },
         });
