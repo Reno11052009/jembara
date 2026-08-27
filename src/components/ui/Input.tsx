@@ -6,10 +6,11 @@ import { Eye, EyeOff } from "lucide-react";
 interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   error?: string;
+  required?: boolean;
 }
 
 const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
-  ({ label, error, id, className, type, ...rest }, ref) => {
+  ({ label, error, required, id, className, type, ...rest }, ref) => {
     const generatedId = useId();
     const inputId = id ?? generatedId;
     const errorId = `${inputId}-error`;
@@ -20,6 +21,7 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
       <div className="flex flex-col gap-1.5">
         <label htmlFor={inputId} className="text-sm font-medium text-ink">
           {label}
+          {required && <span className="text-danger ml-0.5">*</span>}
         </label>
         <div className="relative">
           <input
