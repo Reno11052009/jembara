@@ -9,7 +9,7 @@
   
   **Submission for ITECHNO CUP 2026 - Web Development**
   
-  **By [Nama Tim]**
+  **By [Terserah]**
   
 </div>
 
@@ -35,11 +35,11 @@
 
 | Nama | Peran | GitHub |
 |------|-------|--------|
-| **[Nama Lengkap 1]** | Project Lead & Full Stack Developer | [GitHub](https://github.com/[username1]) |
-| **[Nama Lengkap 2]** | Frontend Developer | [GitHub](https://github.com/[username2]) |
+| **[Chello Arta Sukma Hadinata]** | Project Lead | [GitHub](https://github.com/[username1]) |
+| **[Dico Zakaria Putra Aydia Subagio]** | Frontend Developer | [GitHub](https://github.com/[username2]) |
 | **Arsya Mayreno Arnaldo** | Backend Developer | [GitHub](https://github.com/Reno11052009) |
 | **Chello Arta Sukma Hadinata** | UI/UX Designer | [GitHub](https://github.com/[username4]) |
-| **[Nama Lengkap 4]** | UI/UX Designer | [@username4](https://github.com/[username4]) 
+| **[Chello Arta Sukma Hadinata]** | UI/UX Designer | [@username4](https://github.com/[username4]) 
 
 ---
 
@@ -51,13 +51,13 @@
 
 ### Solusi yang Ditawarkan
 
-[Jelaskan bagaimana aplikasi ini menyelesaikan masalah tersebut dengan pendekatan yang unik atau inovatif]
+[Dengan website Jembara ini kita dapat mengurangi jumlah pengangguran di Indonesia dengan cara memudahkan mereka untuk mencari pekerjaan yang sesuai dengan apa yang mereka inginkan.]
 
 ### Tujuan Proyek
 
-- 🎯 **Tujuan Utama**: [Tujuan primer aplikasi]
-- 📊 **Target Pengguna**: [Siapa yang akan menggunakan aplikasi ini]
-- 💡 **Value Proposition**: [Apa yang membuat aplikasi ini berbeda dari solusi lain]
+- 🎯 **Tujuan Utama**: [Membantu pelajar/mahasiswa/orang-orang untuk mendapatkan pekerjaan]
+- 📊 **Target Pengguna**: [Mahasiswa, Pengangguran, Freelancer, Pekerja part-time]
+- 💡 **Value Proposition**: [Website pencari pekerjaan dengan sistem matchmaking dan fokus pada usaha UMKM]
 
 ---
 
@@ -139,9 +139,10 @@ Monitoring   : -
 
 | Teknologi | Alasan Pemilihan |
 |-----------|------------------|
-| **[Tech 1]** | [Jelaskan mengapa memilih teknologi ini, keunggulannya untuk proyek ini] |
-| **[Tech 2]** | [Jelaskan mengapa memilih teknologi ini, keunggulannya untuk proyek ini] |
-| **[Tech 3]** | [Jelaskan mengapa memilih teknologi ini, keunggulannya untuk proyek ini] |
+| **[Next.js]** | [Mendukung frontend dan backend dalam satu codebase,supaya tidak perlu melakukan development dalam server terpisah.] |
+| **[Prisma]** | [Mempermudah pengelolaan database dan TypeScript, mengurangi risiko error saat mengelola data pengguna dan proyek.] |
+| **[TypeScript]** | [Membantu menangkap bug lebih awal pada form dan komponen yang kompleks, mempermudah kolaborasi tim.] |
+| **[TailwindCSS]** | [Mempercepat proses desain langsung tanpa berpindah file CSS terpisah, mempercepat proses desain dan pengembangan dalam project.] |
 
 ### Dependencies Utama
 
