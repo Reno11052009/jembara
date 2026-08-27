@@ -92,6 +92,7 @@ export default function RegisterForm() {
 
       <InputField
         label="Nama Lengkap"
+        required
         autoComplete="name"
         placeholder="Nama kamu"
         value={formData.fullName}
@@ -100,6 +101,7 @@ export default function RegisterForm() {
       />
       <InputField
         label="Email"
+        required
         type="email"
         autoComplete="email"
         placeholder="kamu@email.com"
@@ -109,6 +111,7 @@ export default function RegisterForm() {
       />
       <InputField
         label="Alamat"
+        required
         type="text"
         autoComplete="street-address"
         placeholder="Alamat lengkap (min. 5 karakter)"
@@ -118,6 +121,7 @@ export default function RegisterForm() {
       />
       <InputField
         label="Password"
+        required
         type="password"
         autoComplete="new-password"
         placeholder="Minimal 8 karakter"
@@ -127,6 +131,7 @@ export default function RegisterForm() {
       />
       <InputField
         label="Konfirmasi Password"
+        required
         type="password"
         autoComplete="new-password"
         placeholder="Ulangi password"

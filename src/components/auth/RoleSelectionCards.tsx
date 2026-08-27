@@ -26,7 +26,7 @@ export default function RoleSelectionCards() {
         <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-brand/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
         <div className="relative">
-          <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-brand to-brand/80 text-white shadow-lg shadow-brand/25 transition-all duration-300 group-hover:scale-110 group-hover:shadow-brand/40">
+          <div className="mb-5 inline-flex h-[61.6px] w-[61.6px] items-center justify-center rounded-2xl bg-linear-to-br from-brand to-brand/80 text-white shadow-lg shadow-brand/25">
             <User size={28} />
           </div>
 
@@ -57,7 +57,7 @@ export default function RoleSelectionCards() {
         <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-brand/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
         <div className="relative">
-          <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-brand to-brand/80 text-white shadow-lg shadow-brand/25 transition-all duration-300 group-hover:scale-110 group-hover:shadow-brand/40">
+          <div className="mb-5 inline-flex h-[61.6px] w-[61.6px] items-center justify-center rounded-2xl bg-linear-to-br from-brand to-brand/80 text-white shadow-lg shadow-brand/25">
             <Store size={28} />
           </div>
 
