@@ -10,6 +10,13 @@ import { educationLevelOptions, educationUsesSemester } from "@/lib/education";
 import { config } from "@/config/unifiedConfig";
 import { consumeRateLimit, createRateLimitKey } from "@/lib/rate-limit";
 import { getCanonicalSkillName } from "@/lib/skill-taxonomy";
+import {
+  formatRegionLocation,
+  RegionInputError,
+  RegionServiceError,
+  validateRegionSelection,
+  type ValidatedRegionSelection,
+} from "@/lib/regions";
 
 const MAX_SKILLS = 20;
 const MAX_AVATAR_BYTES = 256 * 1024;
@@ -23,6 +30,38 @@ const optionalText = (maximum: number) =>
 const profileSchema = z.object({
   name: z.string().trim().min(3, "Nama minimal 3 karakter").max(100),
   headline: optionalText(100),
+  businessName: z
+    .string()
+    .trim()
+    .min(3, "Nama usaha minimal 3 karakter")
+    .max(120, "Nama usaha terlalu panjang")
+    .optional(),
+  businessCategory: z
+    .string()
+    .trim()
+    .min(2, "Kategori usaha minimal 2 karakter")
+    .max(100, "Kategori usaha terlalu panjang")
+    .optional(),
+  businessWebsite: optionalText(2048),
+  addressDetail: z
+    .string()
+    .trim()
+    .min(5, "Detail alamat minimal 5 karakter")
+    .max(255, "Detail alamat terlalu panjang")
+    .optional(),
+  provinceCode: z.string().regex(/^\d{2}$/, "Provinsi tidak valid").optional(),
+  regencyCode: z
+    .string()
+    .regex(/^\d{2}\.\d{2}$/, "Kabupaten/kota tidak valid")
+    .optional(),
+  districtCode: z
+    .string()
+    .regex(/^\d{2}\.\d{2}\.\d{2}$/, "Kecamatan tidak valid")
+    .optional(),
+  villageCode: z
+    .string()
+    .regex(/^\d{2}\.\d{2}\.\d{2}\.\d{4}$/, "Kelurahan/desa tidak valid")
+    .optional(),
   location: optionalText(255),
   tingkat_pendidikan: optionalText(10).refine(
     (value) => value === undefined || value === "" || educationLevels.has(value),
@@ -148,6 +187,14 @@ export async function updateProfileAction(formData: FormData) {
   const parsed = profileSchema.safeParse({
     name: formEntry(formData, "name"),
     headline: formEntry(formData, "headline"),
+    businessName: formEntry(formData, "businessName"),
+    businessCategory: formEntry(formData, "businessCategory"),
+    businessWebsite: formEntry(formData, "businessWebsite"),
+    addressDetail: formEntry(formData, "addressDetail"),
+    provinceCode: formEntry(formData, "provinceCode"),
+    regencyCode: formEntry(formData, "regencyCode"),
+    districtCode: formEntry(formData, "districtCode"),
+    villageCode: formEntry(formData, "villageCode"),
     location: formEntry(formData, "location"),
     tingkat_pendidikan: formEntry(formData, "tingkat_pendidikan"),
     school: formEntry(formData, "school"),
@@ -180,6 +227,35 @@ export async function updateProfileAction(formData: FormData) {
   if (!authenticatedUser || !["STUDENT", "UMKM"].includes(authenticatedUser.role)) {
     return { error: "Akun tidak diizinkan memperbarui profil ini." };
   }
+  let validatedRegion: ValidatedRegionSelection | null = null;
+  if (authenticatedUser.role === "UMKM") {
+    if (!parsed.data.businessName) return { error: "Nama usaha wajib diisi" };
+    if (!parsed.data.businessCategory) return { error: "Kategori usaha wajib diisi" };
+    if (!parsed.data.addressDetail) return { error: "Detail alamat wajib diisi" };
+    if (
+      !parsed.data.provinceCode ||
+      !parsed.data.regencyCode ||
+      !parsed.data.districtCode ||
+      !parsed.data.villageCode
+    ) {
+      return { error: "Wilayah usaha wajib dilengkapi" };
+    }
+
+    try {
+      validatedRegion = await validateRegionSelection({
+        provinceCode: parsed.data.provinceCode,
+        regencyCode: parsed.data.regencyCode,
+        districtCode: parsed.data.districtCode,
+        villageCode: parsed.data.villageCode,
+      });
+    } catch (error) {
+      if (error instanceof RegionInputError) return { error: error.message };
+      if (error instanceof RegionServiceError) {
+        return { error: "Data wilayah belum dapat diverifikasi. Silakan coba lagi." };
+      }
+      throw error;
+    }
+  }
 
   const parsedSkills = parseSkills(parsed.data.skills);
   if (parsedSkills?.error) return { error: parsedSkills.error };
@@ -187,6 +263,7 @@ export async function updateProfileAction(formData: FormData) {
   if (avatar.error) return { error: avatar.error };
 
   const portfolioUrl = normalizeOptionalUrl(parsed.data.portfolioUrl);
+  const businessWebsite = normalizeOptionalUrl(parsed.data.businessWebsite);
   const github = normalizeOptionalUrl(
     parsed.data.github,
     new Set(["github.com", "www.github.com"]),
@@ -199,7 +276,7 @@ export async function updateProfileAction(formData: FormData) {
     parsed.data.behance,
     new Set(["behance.net", "www.behance.net"]),
   );
-  const invalidUrl = [portfolioUrl, github, linkedin, behance].find(
+  const invalidUrl = [businessWebsite, portfolioUrl, github, linkedin, behance].find(
     (result) => result.error,
   );
   if (invalidUrl?.error) return { error: invalidUrl.error };
@@ -225,9 +302,11 @@ export async function updateProfileAction(formData: FormData) {
         where: { id: session.userId },
         data: {
           name: parsed.data.name,
-          ...(parsed.data.location !== undefined
-            ? { location: parsed.data.location || null }
-            : {}),
+          ...(validatedRegion
+            ? { location: formatRegionLocation(validatedRegion) }
+            : parsed.data.location !== undefined
+              ? { location: parsed.data.location || null }
+              : {}),
           ...(parsed.data.about !== undefined
             ? { bio: parsed.data.about || null }
             : {}),
@@ -317,14 +396,35 @@ export async function updateProfileAction(formData: FormData) {
         await transaction.umkm.upsert({
           where: { userId: session.userId },
           update: {
-            ...(parsed.data.headline !== undefined
-              ? { kategori_usaha: parsed.data.headline || null }
+            nama_usaha: parsed.data.businessName!,
+            kategori_usaha: parsed.data.businessCategory!,
+            ...(businessWebsite.value !== undefined
+              ? { website: businessWebsite.value }
               : {}),
+            alamat_detail: parsed.data.addressDetail!,
+            provinsi_kode: validatedRegion!.provinceCode,
+            provinsi_nama: validatedRegion!.provinceName,
+            kabupaten_kode: validatedRegion!.regencyCode,
+            kabupaten_nama: validatedRegion!.regencyName,
+            kecamatan_kode: validatedRegion!.districtCode,
+            kecamatan_nama: validatedRegion!.districtName,
+            kelurahan_kode: validatedRegion!.villageCode,
+            kelurahan_nama: validatedRegion!.villageName,
           },
           create: {
             userId: session.userId,
-            nama_usaha: parsed.data.name,
-            kategori_usaha: parsed.data.headline || null,
+            nama_usaha: parsed.data.businessName!,
+            kategori_usaha: parsed.data.businessCategory!,
+            website: businessWebsite.value ?? null,
+            alamat_detail: parsed.data.addressDetail!,
+            provinsi_kode: validatedRegion!.provinceCode,
+            provinsi_nama: validatedRegion!.provinceName,
+            kabupaten_kode: validatedRegion!.regencyCode,
+            kabupaten_nama: validatedRegion!.regencyName,
+            kecamatan_kode: validatedRegion!.districtCode,
+            kecamatan_nama: validatedRegion!.districtName,
+            kelurahan_kode: validatedRegion!.villageCode,
+            kelurahan_nama: validatedRegion!.villageName,
           },
         });
       }

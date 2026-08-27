@@ -11,6 +11,8 @@ const mocks = vi.hoisted(() => ({
   studentSkillDeleteMany: vi.fn(),
   studentSkillCreate: vi.fn(),
   skillFindFirst: vi.fn(),
+  umkmUpsert: vi.fn(),
+  validateRegionSelection: vi.fn(),
   createUserNotification: vi.fn(),
   revalidatePath: vi.fn(),
 }));
@@ -49,6 +51,12 @@ vi.mock("@/lib/notifications", () => ({
   createUserNotification: mocks.createUserNotification,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
+vi.mock("@/lib/regions", () => ({
+  RegionInputError: class RegionInputError extends Error {},
+  RegionServiceError: class RegionServiceError extends Error {},
+  validateRegionSelection: mocks.validateRegionSelection,
+  formatRegionLocation: vi.fn(() => "Kota Malang, Jawa Timur"),
+}));
 
 import { updateProfileAction } from "./profile";
 
@@ -76,6 +84,16 @@ describe("profile action security", () => {
     mocks.studentUpsert.mockResolvedValue({ id: "student-1" });
     mocks.studentSkillFindMany.mockResolvedValue([]);
     mocks.skillFindFirst.mockResolvedValue({ id: "skill-1" });
+    mocks.validateRegionSelection.mockResolvedValue({
+      provinceCode: "35",
+      provinceName: "Jawa Timur",
+      regencyCode: "35.73",
+      regencyName: "Kota Malang",
+      districtCode: "35.73.05",
+      districtName: "Lowokwaru",
+      villageCode: "35.73.05.1001",
+      villageName: "Dinoyo",
+    });
     mocks.transaction.mockImplementation(async (callback) =>
       callback({
         user: { update: mocks.userUpdate },
@@ -86,6 +104,7 @@ describe("profile action security", () => {
           create: mocks.studentSkillCreate,
         },
         skill: { findFirst: mocks.skillFindFirst },
+        umkm: { upsert: mocks.umkmUpsert },
       }),
     );
   });
@@ -153,5 +172,63 @@ describe("profile action security", () => {
       data: { studentId: "student-1", skillId: "skill-1" },
       select: { id: true },
     });
+  });
+
+  it("updates UMKM business information instead of education data", async () => {
+    mocks.userFindUnique.mockResolvedValue({ role: "UMKM" });
+    const formData = profileForm();
+    formData.set("businessName", "Kopi Jembara");
+    formData.set("businessCategory", "Kuliner");
+    formData.set("businessWebsite", "kopijembara.id");
+    formData.set("addressDetail", "Jalan Merdeka 10");
+    formData.set("provinceCode", "35");
+    formData.set("regencyCode", "35.73");
+    formData.set("districtCode", "35.73.05");
+    formData.set("villageCode", "35.73.05.1001");
+
+    await expect(updateProfileAction(formData)).resolves.toEqual({ success: true });
+
+    expect(mocks.umkmUpsert).toHaveBeenCalledWith({
+      where: { userId: "11111111-1111-4111-8111-111111111111" },
+      update: {
+        nama_usaha: "Kopi Jembara",
+        kategori_usaha: "Kuliner",
+        website: "https://kopijembara.id/",
+        alamat_detail: "Jalan Merdeka 10",
+        provinsi_kode: "35",
+        provinsi_nama: "Jawa Timur",
+        kabupaten_kode: "35.73",
+        kabupaten_nama: "Kota Malang",
+        kecamatan_kode: "35.73.05",
+        kecamatan_nama: "Lowokwaru",
+        kelurahan_kode: "35.73.05.1001",
+        kelurahan_nama: "Dinoyo",
+      },
+      create: {
+        userId: "11111111-1111-4111-8111-111111111111",
+        nama_usaha: "Kopi Jembara",
+        kategori_usaha: "Kuliner",
+        website: "https://kopijembara.id/",
+        alamat_detail: "Jalan Merdeka 10",
+        provinsi_kode: "35",
+        provinsi_nama: "Jawa Timur",
+        kabupaten_kode: "35.73",
+        kabupaten_nama: "Kota Malang",
+        kecamatan_kode: "35.73.05",
+        kecamatan_nama: "Lowokwaru",
+        kelurahan_kode: "35.73.05.1001",
+        kelurahan_nama: "Dinoyo",
+      },
+    });
+    expect(mocks.studentUpsert).not.toHaveBeenCalled();
+  });
+
+  it("requires a business name and category for UMKM profiles", async () => {
+    mocks.userFindUnique.mockResolvedValue({ role: "UMKM" });
+
+    await expect(updateProfileAction(profileForm())).resolves.toEqual({
+      error: "Nama usaha wajib diisi",
+    });
+    expect(mocks.transaction).not.toHaveBeenCalled();
   });
 });

@@ -18,6 +18,12 @@ import {
   registerSchema,
   roleSelectionSchema,
 } from "@/validators/auth.schema";
+import {
+  formatRegionLocation,
+  RegionInputError,
+  RegionServiceError,
+  validateRegionSelection,
+} from "@/lib/regions";
 
 const INVALID_CREDENTIALS_MESSAGE = "Email atau password salah";
 const RATE_LIMIT_MESSAGE = "Terlalu banyak percobaan. Silakan coba lagi nanti";
@@ -137,10 +143,36 @@ export async function logoutAction() {
   redirect("/login");
 }
 
-export async function selectRoleAction(formData: FormData): Promise<void> {
-  const parsed = roleSelectionSchema.safeParse({ role: formData.get("role") });
+export type RoleSelectionActionState = { error?: string };
+
+function normalizeWebsite(value: string | undefined) {
+  if (!value) return null;
+  return /^https?:\/\//i.test(value) ? value : `https://${value}`;
+}
+
+export async function selectRoleAction(
+  _previousState: RoleSelectionActionState,
+  formData: FormData,
+): Promise<RoleSelectionActionState> {
+  const rawRole = formData.get("role");
+  const parsed = roleSelectionSchema.safeParse(
+    rawRole === "UMKM"
+      ? {
+          role: rawRole,
+          businessName: formData.get("businessName"),
+          businessCategory: formData.get("businessCategory"),
+          addressDetail: formData.get("addressDetail"),
+          provinceCode: formData.get("provinceCode"),
+          regencyCode: formData.get("regencyCode"),
+          districtCode: formData.get("districtCode"),
+          villageCode: formData.get("villageCode"),
+          phone: formData.get("phone") ?? undefined,
+          website: formData.get("website") ?? undefined,
+        }
+      : { role: rawRole },
+  );
   if (!parsed.success) {
-    return;
+    return { error: getValidationMessage(parsed.error) };
   }
 
   const session = await verifySession();
@@ -149,6 +181,19 @@ export async function selectRoleAction(formData: FormData): Promise<void> {
   }
 
   const { role } = parsed.data;
+  let validatedRegion = null;
+  if (parsed.data.role === "UMKM") {
+    try {
+      validatedRegion = await validateRegionSelection(parsed.data);
+    } catch (error) {
+      if (error instanceof RegionInputError) return { error: error.message };
+      if (error instanceof RegionServiceError) {
+        return { error: "Data wilayah belum dapat diverifikasi. Silakan coba lagi." };
+      }
+      throw error;
+    }
+  }
+
   const updatedUser = await prisma.$transaction(async (transaction) => {
     const user = await transaction.user.findUnique({
       where: { id: session.userId },
@@ -172,9 +217,19 @@ export async function selectRoleAction(formData: FormData): Promise<void> {
       return { id: user.id, name: user.name, role: user.role, changed: false };
     }
 
+    const businessData = parsed.data.role === "UMKM" ? parsed.data : null;
+
     await transaction.user.update({
       where: { id: user.id },
-      data: { role },
+      data: {
+        role,
+        ...(businessData
+          ? {
+              location: formatRegionLocation(validatedRegion!),
+              no_telepon: businessData.phone || null,
+            }
+          : {}),
+      },
     });
 
     if (role === "STUDENT") {
@@ -186,10 +241,34 @@ export async function selectRoleAction(formData: FormData): Promise<void> {
     } else {
       await transaction.umkm.upsert({
         where: { userId: user.id },
-        update: {},
+        update: {
+          nama_usaha: businessData!.businessName,
+          kategori_usaha: businessData!.businessCategory,
+          website: normalizeWebsite(businessData!.website),
+          alamat_detail: businessData!.addressDetail,
+          provinsi_kode: validatedRegion!.provinceCode,
+          provinsi_nama: validatedRegion!.provinceName,
+          kabupaten_kode: validatedRegion!.regencyCode,
+          kabupaten_nama: validatedRegion!.regencyName,
+          kecamatan_kode: validatedRegion!.districtCode,
+          kecamatan_nama: validatedRegion!.districtName,
+          kelurahan_kode: validatedRegion!.villageCode,
+          kelurahan_nama: validatedRegion!.villageName,
+        },
         create: {
           userId: user.id,
-          nama_usaha: user.name || "UMKM",
+          nama_usaha: businessData!.businessName,
+          kategori_usaha: businessData!.businessCategory,
+          website: normalizeWebsite(businessData!.website),
+          alamat_detail: businessData!.addressDetail,
+          provinsi_kode: validatedRegion!.provinceCode,
+          provinsi_nama: validatedRegion!.provinceName,
+          kabupaten_kode: validatedRegion!.regencyCode,
+          kabupaten_nama: validatedRegion!.regencyName,
+          kecamatan_kode: validatedRegion!.districtCode,
+          kecamatan_nama: validatedRegion!.districtName,
+          kelurahan_kode: validatedRegion!.villageCode,
+          kelurahan_nama: validatedRegion!.villageName,
         },
       });
     }

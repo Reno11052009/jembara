@@ -12,6 +12,7 @@ import {
   educationUsesSemester,
 } from "@/lib/education";
 import { skillTaxonomy } from "@/lib/skill-taxonomy";
+import IndonesiaRegionFields from "@/components/regions/IndonesiaRegionFields";
 
 export default function ProfileSettings({ initialData }: { initialData: ProfileData }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +24,10 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const isUmkm = initialData.role === "UMKM";
   const showSemester = educationUsesSemester(educationLevel);
+  const locationValue =
+    initialData.location === "Lokasi belum diatur" ? "" : initialData.location;
   const hasLegacyEducationLevel =
     Boolean(initialData.tingkat_pendidikan) &&
     !educationLevelOptions.some(
@@ -139,7 +143,9 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
     setIsLoading(true);
     
     const formData = new FormData(e.currentTarget);
-    formData.append("skills", skills.join(","));
+    if (!isUmkm) {
+      formData.append("skills", skills.join(","));
+    }
     if (avatarBase64) {
       formData.append("avatarBase64", avatarBase64);
     }
@@ -248,82 +254,155 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               />
             </div>
-            <div>
-              <label htmlFor="tingkat_pendidikan" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Jenjang Pendidikan</label>
-              <select
-                id="tingkat_pendidikan"
-                name="tingkat_pendidikan"
-                value={educationLevel}
-                onChange={(event) => setEducationLevel(event.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-              >
-                <option value="">Pilih jenjang pendidikan</option>
-                {hasLegacyEducationLevel && (
-                  <option value={initialData.tingkat_pendidikan}>
-                    {initialData.tingkat_pendidikan}
-                  </option>
+          </div>
+
+          <div className="border-t border-gray-100 pt-6">
+            <h3 className="mb-5 text-lg font-bold text-gray-900">
+              {isUmkm ? "Informasi Usaha" : "Informasi Pendidikan"}
+            </h3>
+
+            {isUmkm ? (
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div>
+                  <label htmlFor="businessName" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
+                    Nama Usaha
+                  </label>
+                  <input
+                    id="businessName"
+                    type="text"
+                    name="businessName"
+                    defaultValue={initialData.businessName}
+                    minLength={3}
+                    maxLength={120}
+                    autoComplete="organization"
+                    placeholder="Contoh: Kopi Jembara"
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="businessCategory" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
+                    Kategori Usaha
+                  </label>
+                  <input
+                    id="businessCategory"
+                    type="text"
+                    name="businessCategory"
+                    defaultValue={initialData.businessCategory}
+                    minLength={2}
+                    maxLength={100}
+                    placeholder="Contoh: Kuliner, Fashion, atau Jasa"
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="businessWebsite" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
+                    Website Usaha
+                  </label>
+                  <input
+                    id="businessWebsite"
+                    type="text"
+                    name="businessWebsite"
+                    defaultValue={initialData.businessWebsite}
+                    maxLength={2048}
+                    inputMode="url"
+                    autoComplete="url"
+                    placeholder="tokokamu.id"
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <IndonesiaRegionFields
+                    initialValue={{
+                      addressDetail: initialData.businessAddressDetail,
+                      provinceCode: initialData.provinceCode,
+                      regencyCode: initialData.regencyCode,
+                      districtCode: initialData.districtCode,
+                      villageCode: initialData.villageCode,
+                    }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div>
+                  <label htmlFor="tingkat_pendidikan" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Jenjang Pendidikan</label>
+                  <select
+                    id="tingkat_pendidikan"
+                    name="tingkat_pendidikan"
+                    value={educationLevel}
+                    onChange={(event) => setEducationLevel(event.target.value)}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                  >
+                    <option value="">Pilih jenjang pendidikan</option>
+                    {hasLegacyEducationLevel && (
+                      <option value={initialData.tingkat_pendidikan}>
+                        {initialData.tingkat_pendidikan}
+                      </option>
+                    )}
+                    {educationLevelOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="school" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Nama Universitas/Sekolah</label>
+                  <input
+                    id="school"
+                    type="text"
+                    name="school"
+                    defaultValue={initialData.school}
+                    placeholder="Contoh: Universitas Brawijaya"
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="headline" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Jurusan</label>
+                  <input
+                    id="headline"
+                    type="text"
+                    name="headline"
+                    defaultValue={initialData.headline}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                  />
+                </div>
+                {showSemester && (
+                  <div>
+                    <label htmlFor="semester" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Semester</label>
+                    <input
+                      id="semester"
+                      type="number"
+                      name="semester"
+                      defaultValue={initialData.semester ?? ""}
+                      min={1}
+                      max={20}
+                      step={1}
+                      placeholder="Contoh: 6"
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                    />
+                  </div>
                 )}
-                {educationLevelOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label htmlFor="school" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Nama Universitas/Sekolah</label>
-              <input
-                id="school"
-                type="text"
-                name="school"
-                defaultValue={initialData.school}
-                placeholder="Contoh: Universitas Brawijaya"
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Jurusan</label>
-              <input
-                type="text"
-                name="headline"
-                defaultValue={initialData.headline}
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-              />
-            </div>
-          </div>
-
-          <div className={`grid grid-cols-1 gap-5 ${showSemester ? "md:grid-cols-2" : ""}`}>
-            {showSemester && (
               <div>
-                <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Semester</label>
+                <label htmlFor="location" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Lokasi</label>
                 <input
-                  type="number"
-                  name="semester"
-                  defaultValue={initialData.semester ?? ""}
-                  min={1}
-                  max={20}
-                  step={1}
-                  placeholder="Contoh: 6"
+                  id="location"
+                  type="text"
+                  name="location"
+                  defaultValue={locationValue}
                   className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                 />
               </div>
+              </div>
             )}
-            <div>
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Lokasi</label>
-              <input
-                type="text"
-                name="location"
-                defaultValue={initialData.location}
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-              />
-            </div>
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Bio</label>
+            <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
+              {isUmkm ? "Deskripsi Usaha" : "Bio"}
+            </label>
             <textarea
               name="about"
               rows={2}
@@ -343,8 +422,8 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
           </div>
         </div>
 
-        {/* Skill & Keahlian Card */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 lg:p-7 shadow-sm">
+        {/* Skill & Keahlian hanya relevan untuk profil pelajar. */}
+        {!isUmkm && <div className="bg-white rounded-2xl border border-gray-100 p-6 lg:p-7 shadow-sm">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
             <h3 className="text-lg font-bold text-gray-900">Skill & Keahlian</h3>
             <button 
@@ -376,7 +455,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
               <p className="text-sm text-gray-500 italic">Belum ada skill yang ditambahkan.</p>
             )}
           </div>
-        </div>
+        </div>}
 
 
         {/* Link Portfolio & Sosial Media Card */}

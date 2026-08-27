@@ -54,7 +54,43 @@ describe("auth schemas", () => {
 
   it("allows only public onboarding roles", () => {
     expect(roleSelectionSchema.safeParse({ role: "STUDENT" }).success).toBe(true);
-    expect(roleSelectionSchema.safeParse({ role: "UMKM" }).success).toBe(true);
+    expect(
+      roleSelectionSchema.safeParse({
+        role: "UMKM",
+        businessName: "Kopi Jembara",
+        businessCategory: "Kuliner",
+        addressDetail: "Jalan Merdeka 10",
+        provinceCode: "35",
+        regencyCode: "35.73",
+        districtCode: "35.73.05",
+        villageCode: "35.73.05.1001",
+        phone: "+62 812-3456-7890",
+        website: "kopijembara.id",
+      }).success,
+    ).toBe(true);
     expect(roleSelectionSchema.safeParse({ role: "ADMIN" }).success).toBe(false);
+  });
+
+  it("requires business details when selecting the UMKM role", () => {
+    const result = roleSelectionSchema.safeParse({ role: "UMKM" });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects invalid UMKM contact details", () => {
+    const result = roleSelectionSchema.safeParse({
+      role: "UMKM",
+      businessName: "Kopi Jembara",
+      businessCategory: "Kuliner",
+      addressDetail: "Jalan Merdeka 10",
+      provinceCode: "35",
+      regencyCode: "35.73",
+      districtCode: "35.73.05",
+      villageCode: "35.73.05.1001",
+      phone: "telepon saya",
+      website: "https://",
+    });
+
+    expect(result.success).toBe(false);
   });
 });

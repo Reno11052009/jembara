@@ -51,13 +51,53 @@ export const registerSchema = z
     path: ["confirmPassword"],
   });
 
-export const roleSelectionSchema = z
-  .object({
-    role: z.enum(["STUDENT", "UMKM"], {
-      error: "Pilihan peran tidak valid",
-    }),
-  })
-  .strict();
+const optionalBusinessText = (maximum: number) =>
+  z.string().trim().max(maximum).optional();
+
+export const roleSelectionSchema = z.discriminatedUnion("role", [
+  z.object({
+    role: z.literal("STUDENT"),
+  }).strict(),
+  z.object({
+    role: z.literal("UMKM"),
+    businessName: z
+      .string({ error: "Nama usaha wajib diisi" })
+      .trim()
+      .min(3, "Nama usaha minimal 3 karakter")
+      .max(120, "Nama usaha terlalu panjang"),
+    businessCategory: z
+      .string({ error: "Kategori usaha wajib diisi" })
+      .trim()
+      .min(2, "Kategori usaha minimal 2 karakter")
+      .max(100, "Kategori usaha terlalu panjang"),
+    addressDetail: z
+      .string({ error: "Alamat usaha wajib diisi" })
+      .trim()
+      .min(5, "Detail alamat minimal 5 karakter")
+      .max(255, "Detail alamat terlalu panjang"),
+    provinceCode: z.string().regex(/^\d{2}$/, "Provinsi tidak valid"),
+    regencyCode: z.string().regex(/^\d{2}\.\d{2}$/, "Kabupaten/kota tidak valid"),
+    districtCode: z.string().regex(/^\d{2}\.\d{2}\.\d{2}$/, "Kecamatan tidak valid"),
+    villageCode: z
+      .string()
+      .regex(/^\d{2}\.\d{2}\.\d{2}\.\d{4}$/, "Kelurahan/desa tidak valid"),
+    phone: optionalBusinessText(30).refine(
+      (value) => value === undefined || value === "" || /^[+\d\s().-]+$/.test(value),
+      "Nomor telepon tidak valid",
+    ),
+    website: optionalBusinessText(2048).refine((value) => {
+      if (value === undefined || value === "") return true;
+
+      try {
+        const candidate = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+        const url = new URL(candidate);
+        return ["http:", "https:"].includes(url.protocol) && Boolean(url.hostname);
+      } catch {
+        return false;
+      }
+    }, "Website tidak valid"),
+  }).strict(),
+]);
 
 export type SelectableRole = z.infer<typeof roleSelectionSchema>["role"];
 
