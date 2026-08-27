@@ -4,7 +4,6 @@ import { useActionState, useMemo, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { createProjectAction } from "@/app/actions/projects";
 import PageHeader from "@/components/layout/PageHeader";
-import Footer from "@/components/landing/Footer";
 import Button from "@/components/ui/Button";
 import type {
   ProjectCreationData,
@@ -266,10 +265,6 @@ export default function PasangLowonganView({
             </Button>
           </div>
         </form>
-      </div>
-
-      <div className="-mx-6 mt-10 sm:-mx-8">
-        <Footer />
       </div>
     </>
   );

@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import PageHeader from "@/components/layout/PageHeader";
-import Footer from "@/components/landing/Footer";
 import MyJobRow from "@/components/dashboard/umkm/my-job/MyJobRow";
 import type {
   JobListingStatus,
@@ -79,10 +78,6 @@ export default function MyJobsView({ data }: { data: MyJobsData }) {
           </p>
         </div>
       )}
-
-      <div className="-mx-6 mt-10 sm:-mx-8">
-        <Footer />
-      </div>
     </>
   );
 }

@@ -1,6 +1,5 @@
 import { Briefcase, CheckCircle2, FileText, Users } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
-import Footer from "@/components/landing/Footer";
 import OwnerStatsGrid from "@/components/dashboard/umkm/OwnerStatsGrid";
 import RecentJobListings from "@/components/dashboard/umkm/RecentJobListings";
 import RecentApplicants from "@/components/dashboard/umkm/RecentApplicants";
@@ -50,10 +49,6 @@ export default function OwnerDashboardView({
             <RecentApplicants applicants={data.recentApplicants} />
           </div>
         </div>
-      </div>
-
-      <div className="-mx-6 mt-10 sm:-mx-8">
-        <Footer />
       </div>
     </>
   );

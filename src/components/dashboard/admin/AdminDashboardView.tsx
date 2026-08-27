@@ -6,7 +6,6 @@ import {
   Users,
 } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
-import Footer from "@/components/landing/Footer";
 import AdminStatsGrid from "@/components/dashboard/admin/AdminStatsGrid";
 import UserGrowthChartCard from "@/components/dashboard/admin/UserGrowthChartCard";
 import QuickActionsCard from "@/components/dashboard/admin/QuickActionsCard";
@@ -71,10 +70,6 @@ export default function AdminDashboardView({
         </div>
 
         <RecentActivityCard activities={data.platformActivities} />
-      </div>
-
-      <div className="-mx-6 mt-10 sm:-mx-8">
-        <Footer />
       </div>
     </>
   );

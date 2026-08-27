@@ -1,5 +1,4 @@
 import PageHeader from "@/components/layout/PageHeader";
-import Footer from "@/components/landing/Footer";
 import RelationsFilterTabs from "@/components/dashboard/admin/relations/RelationsFilterTabs";
 import RelationsTableCard from "@/components/dashboard/admin/relations/RelationsTableCard";
 import { adminName } from "@/lib/mock-admin-dashboard";
@@ -17,10 +16,6 @@ export default function AdminRelationsView() {
       <div className="flex flex-col gap-6">
         <RelationsFilterTabs />
         <RelationsTableCard rows={adminRelationRows} />
-      </div>
-
-      <div className="-mx-6 mt-10 sm:-mx-8">
-        <Footer />
       </div>
     </>
   );

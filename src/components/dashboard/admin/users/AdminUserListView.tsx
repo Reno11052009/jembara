@@ -1,5 +1,4 @@
 import PageHeader from "@/components/layout/PageHeader";
-import Footer from "@/components/landing/Footer";
 import UserListToolbar from "@/components/dashboard/admin/users/UserListToolbar";
 import UserListTable from "@/components/dashboard/admin/users/UserListTable";
 import UserListPagination from "@/components/dashboard/admin/users/UserListPagination";
@@ -19,10 +18,6 @@ export default function AdminUserListView() {
         <UserListToolbar />
         <UserListTable users={adminUserRows} />
         <UserListPagination summary={adminUserListSummary} />
-      </div>
-
-      <div className="-mx-6 mt-10 sm:-mx-8">
-        <Footer />
       </div>
     </>
   );

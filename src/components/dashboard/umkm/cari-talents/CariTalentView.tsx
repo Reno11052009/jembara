@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
-import Footer from "@/components/landing/Footer";
 import TalentFilterBar from "@/components/dashboard/umkm/cari-talents/TalentFilterBar";
 import TalentCard from "@/components/dashboard/umkm/cari-talents/TalentCard";
 import type { TalentFilters, TalentSearchData } from "@/types/talent";
@@ -123,10 +122,6 @@ export default function CariTalentView({ data }: { data: TalentSearchData }) {
           </button>
         </div>
       )}
-
-      <div className="-mx-6 mt-10 sm:-mx-8">
-        <Footer />
-      </div>
     </>
   );
 }

@@ -9,7 +9,6 @@ import {
   Users,
 } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
-import Footer from "@/components/landing/Footer";
 import ProfileCompletionBanner from "@/components/dashboard/ProfileCompletionBanner";
 import StatCard from "@/components/dashboard/StatCard";
 import RecommendedProjectCard from "@/components/dashboard/RecommendedProjectCard";
@@ -121,10 +120,6 @@ export default async function DashboardPage() {
             <RecentNotificationsCard notifications={dashboard.notifications} />
           </div>
         </div>
-      </div>
-
-      <div className="-mx-6 mt-10 sm:-mx-8">
-        <Footer />
       </div>
     </>
   );

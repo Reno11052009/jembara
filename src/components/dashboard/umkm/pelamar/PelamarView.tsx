@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
-import Footer from "@/components/landing/Footer";
 import ApplicantRow from "@/components/dashboard/umkm/pelamar/ApplicantRow";
 import type {
   ApplicantStatus,
@@ -104,10 +103,6 @@ export default function PelamarView({ data }: { data: ApplicantsData }) {
           </p>
         </div>
       )}
-
-      <div className="-mx-6 mt-10 sm:-mx-8">
-        <Footer />
-      </div>
     </>
   );
 }

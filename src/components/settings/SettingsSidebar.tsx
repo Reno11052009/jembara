@@ -16,7 +16,7 @@ export default function SettingsSidebar() {
   const pathname = usePathname();
 
   return (
-    <nav className="w-full rounded-xl border border-[#ECECEC] bg-white overflow-hidden">
+    <nav className="sticky top-24 w-full rounded-xl border border-[#ECECEC] bg-white overflow-hidden">
       {SETTINGS_NAV_ITEMS.map((item) => {
         const isActive = pathname?.endsWith(`/settings/${item.slug}`);
 

@@ -38,9 +38,9 @@ export default function SettingsView({
         avatarUrl={initialData.avatarUrl}
       />
 
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Sidebar Tabs */}
-        <div className="w-full lg:w-64 shrink-0">
+        <div className="sticky top-24 w-full lg:w-64 shrink-0">
           <div className="bg-white rounded-2xl border border-gray-100 py-3 pr-3 shadow-sm flex flex-col gap-1 overflow-hidden">
             {tabIds.map((id) => (
               <button
@@ -48,8 +48,8 @@ export default function SettingsView({
                 onClick={() => setActiveTab(id)}
                 className={`flex w-full items-center pl-6 pr-4 py-3 text-left text-sm font-medium rounded-r-2xl transition-colors ${
                   activeTab === id
-                    ? "bg-[#FFF3ED] text-[#FF6B35] font-bold border-l-[4px] border-[#FF6B35]"
-                    : "text-gray-700 hover:bg-gray-50 border-l-[4px] border-transparent"
+                    ? "bg-[#FFF3ED] text-brand font-bold border-l-4 border-brand"
+                    : "text-gray-700 hover:bg-gray-50 border-l-4 border-transparent"
                 }`}
               >
                 {dict.settings.tabs[id]}

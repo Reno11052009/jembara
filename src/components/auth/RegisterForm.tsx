@@ -69,10 +69,10 @@ export default function RegisterForm() {
     }
   }
 
-  const completion = useMemo(() => {
+  const progress = useMemo(() => {
     const fields = Object.values(formData);
     const filled = fields.filter((v) => v.trim().length > 0).length;
-    return Math.round((filled / fields.length) * 100);
+    return { filled, total: fields.length };
   }, [formData]);
 
   return (
@@ -80,13 +80,19 @@ export default function RegisterForm() {
       <div>
         <div className="mb-1.5 flex justify-between text-xs text-ink-muted">
           <span>Profile Progress</span>
-          <span className="font-medium text-brand">{completion}%</span>
+          <span className="font-medium text-brand">
+            {progress.filled}/{progress.total}
+          </span>
         </div>
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-hairline">
-          <div
-            className="h-full rounded-full bg-brand transition-all duration-300"
-            style={{ width: `${completion}%` }}
-          />
+        <div className="flex gap-1.5">
+          {Array.from({ length: progress.total }).map((_, i) => (
+            <div
+              key={i}
+              className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
+                i < progress.filled ? "bg-brand" : "bg-hairline"
+              }`}
+            />
+          ))}
         </div>
       </div>
 
