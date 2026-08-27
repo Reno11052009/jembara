@@ -1,30 +1,13 @@
-"use client";
+import Link from "next/link";
 
-import { useState } from "react";
-import { relationFilterTabs } from "@/lib/mock-admin-relations";
+const tabs = [
+  { label: "Semua Relasi", value: "semua" },
+  { label: "Berlangsung", value: "aktif" },
+  { label: "Dalam Review", value: "review" },
+  { label: "Selesai", value: "selesai" },
+  { label: "Dibatalkan", value: "dibatalkan" },
+];
 
-export default function RelationsFilterTabs() {
-  const [active, setActive] = useState(relationFilterTabs[0].value);
-
-  return (
-    <div className="flex flex-wrap gap-3">
-      {relationFilterTabs.map((tab) => {
-        const isActive = tab.value === active;
-        return (
-          <button
-            key={tab.value}
-            type="button"
-            onClick={() => setActive(tab.value)}
-            className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-colors ${
-              isActive
-                ? "bg-brand text-white"
-                : "border border-hairline bg-card text-ink hover:border-brand hover:text-brand"
-            }`}
-          >
-            {tab.label}
-          </button>
-        );
-      })}
-    </div>
-  );
+export default function RelationsFilterTabs({ active }: { active: string }) {
+  return <div className="flex flex-wrap gap-3">{tabs.map((tab) => <Link key={tab.value} href={tab.value === "semua" ? "/dashboard/relasi" : `/dashboard/relasi?status=${tab.value}`} className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-colors ${tab.value === active ? "bg-brand text-white" : "border border-hairline bg-card text-ink hover:border-brand hover:text-brand"}`}>{tab.label}</Link>)}</div>;
 }

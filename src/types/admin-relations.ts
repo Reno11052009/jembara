@@ -1,4 +1,4 @@
-export type RelationContractStatus = "aktif" | "selesai" | "dibatalkan";
+export type RelationContractStatus = "aktif" | "review" | "selesai" | "dibatalkan";
 
 export interface RelationTimelineStep {
   id: string;
@@ -15,7 +15,12 @@ export interface AdminRelationRow {
   projectName: string;
   contractValue: string;
   status: RelationContractStatus;
-  progressPercent?: number;
   rating?: number;
-  timeline?: RelationTimelineStep[];
+}
+
+export interface AdminRelationsData {
+  adminName: string;
+  adminAvatarUrl?: string;
+  rows: AdminRelationRow[];
+  activeFilter: string;
 }

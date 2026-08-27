@@ -2,6 +2,7 @@ import AdminStatCard from "@/components/dashboard/admin/AdminStatCard";
 import { AdminStat } from "@/types/admin-dashboard";
 
 const columnClasses: Record<number, string> = {
+  3: "lg:grid-cols-3",
   4: "lg:grid-cols-4",
   5: "lg:grid-cols-5",
 };

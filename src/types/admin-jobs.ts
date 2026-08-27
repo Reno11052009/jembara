@@ -1,4 +1,13 @@
-export type JobListingStatus = "aktif" | "terlaporkan";
+import type { AdminStatData } from "./admin-dashboard";
+
+export type AdminJobStatus =
+  | "OPEN"
+  | "PROPOSAL"
+  | "IN_PROGRESS"
+  | "REVIEW"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "UNKNOWN";
 
 export interface AdminJobRow {
   id: string;
@@ -7,6 +16,12 @@ export interface AdminJobRow {
   category: string;
   budgetLabel: string;
   applicantCount: number;
-  status: JobListingStatus;
-  flagged?: boolean;
+  status: AdminJobStatus;
+}
+
+export interface AdminJobsData {
+  adminName: string;
+  adminAvatarUrl?: string;
+  stats: AdminStatData[];
+  rows: AdminJobRow[];
 }

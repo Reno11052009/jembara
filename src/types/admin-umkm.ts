@@ -1,4 +1,6 @@
-export type AdminUmkmVerificationStatus = "terverifikasi" | "pending" | "ditolak";
+import type { AdminFilterOption } from "./admin-users";
+
+export type AdminUmkmProfileStatus = "lengkap" | "perlu_dilengkapi";
 
 export interface AdminUmkmRow {
   id: string;
@@ -8,7 +10,17 @@ export interface AdminUmkmRow {
   category: string;
   location: string;
   jobCount: number;
-  verification: AdminUmkmVerificationStatus;
-  rejectionReason?: string;
+  profileStatus: AdminUmkmProfileStatus;
   registeredDate: string;
+}
+
+export interface AdminUmkmData {
+  adminName: string;
+  adminAvatarUrl?: string;
+  rows: AdminUmkmRow[];
+  summary: string;
+  statusOptions: AdminFilterOption[];
+  filters: { query: string; profileStatus: string };
+  currentPage: number;
+  totalPages: number;
 }

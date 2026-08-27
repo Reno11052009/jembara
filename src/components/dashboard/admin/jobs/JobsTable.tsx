@@ -7,9 +7,13 @@ export default function JobsTable({ rows }: { rows: AdminJobRow[] }) {
     <div className="overflow-hidden rounded-xl border border-hairline bg-card">
       <JobsTableHeader />
       <div className="divide-y divide-hairline">
-        {rows.map((row) => (
-          <JobsTableRow key={row.id} job={row} />
-        ))}
+        {rows.length > 0 ? (
+          rows.map((row) => <JobsTableRow key={row.id} job={row} />)
+        ) : (
+          <p className="px-6 py-12 text-center text-sm text-ink-muted">
+            Belum ada lowongan di platform.
+          </p>
+        )}
       </div>
     </div>
   );

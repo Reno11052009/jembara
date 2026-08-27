@@ -9,7 +9,7 @@ vi.mock("server-only", () => ({}));
 vi.mock("next/navigation", () => ({ redirect: redirectMock }));
 vi.mock("./session", () => ({ verifySession: verifySessionMock }));
 
-import { requireAuthenticatedSession } from "./auth-guard";
+import { requireAdminSession, requireAuthenticatedSession } from "./auth-guard";
 
 describe("requireAuthenticatedSession", () => {
   beforeEach(() => {
@@ -37,6 +37,32 @@ describe("requireAuthenticatedSession", () => {
     verifySessionMock.mockResolvedValue(session);
 
     await expect(requireAuthenticatedSession()).resolves.toEqual(session);
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects authenticated users without the ADMIN role", async () => {
+    verifySessionMock.mockResolvedValue({
+      userId: "student-id",
+      role: "STUDENT",
+      name: "Pelajar",
+    });
+    redirectMock.mockImplementation(() => {
+      throw new Error("NEXT_REDIRECT");
+    });
+
+    await expect(requireAdminSession()).rejects.toThrow("NEXT_REDIRECT");
+    expect(redirectMock).toHaveBeenCalledWith("/forbidden");
+  });
+
+  it("returns the session for an ADMIN user", async () => {
+    const session = {
+      userId: "admin-id",
+      role: "ADMIN",
+      name: "Admin Jembara",
+    };
+    verifySessionMock.mockResolvedValue(session);
+
+    await expect(requireAdminSession()).resolves.toEqual(session);
     expect(redirectMock).not.toHaveBeenCalled();
   });
 });
