@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { RegionLevel, RegionOption } from "@/lib/regions";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 
 export type RegionFieldValue = {
   addressDetail: string;
@@ -69,10 +70,6 @@ function useRegionOptions(level: RegionLevel, parentCode?: string) {
   return { options, loading, error };
 }
 
-function placeholder(label: string, loading: boolean) {
-  return loading ? `Memuat ${label.toLocaleLowerCase("id-ID")}...` : `Pilih ${label}`;
-}
-
 export default function IndonesiaRegionFields({
   initialValue = {},
 }: IndonesiaRegionFieldsProps) {
@@ -90,92 +87,77 @@ export default function IndonesiaRegionFields({
 
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-      <div>
-        <label htmlFor="provinceCode" className={labelClassName}>Provinsi</label>
-        <select
-          id="provinceCode"
-          name="provinceCode"
-          value={provinceCode}
-          onChange={(event) => {
-            setProvinceCode(event.target.value);
-            setRegencyCode("");
-            setDistrictCode("");
-            setVillageCode("");
-          }}
-          disabled={provinces.loading}
-          className={fieldClassName}
-          required
-        >
-          <option value="">{placeholder("provinsi", provinces.loading)}</option>
-          {provinces.options.map((option) => (
-            <option key={option.code} value={option.code}>{option.name}</option>
-          ))}
-        </select>
-      </div>
+      <SearchableSelect
+        id="provinceCode"
+        name="provinceCode"
+        label="Provinsi"
+        value={provinceCode}
+        onChange={(code) => {
+          setProvinceCode(code);
+          setRegencyCode("");
+          setDistrictCode("");
+          setVillageCode("");
+        }}
+        options={provinces.options}
+        loading={provinces.loading}
+        placeholder="Pilih provinsi"
+        searchPlaceholder="Cari provinsi..."
+        required
+      />
 
-      <div>
-        <label htmlFor="regencyCode" className={labelClassName}>Kabupaten/Kota</label>
-        <select
-          id="regencyCode"
-          name="regencyCode"
-          value={regencyCode}
-          onChange={(event) => {
-            setRegencyCode(event.target.value);
-            setDistrictCode("");
-            setVillageCode("");
-          }}
-          disabled={!provinceCode || regencies.loading}
-          className={fieldClassName}
-          required
-        >
-          <option value="">{placeholder("kabupaten/kota", regencies.loading)}</option>
-          {regencies.options.map((option) => (
-            <option key={option.code} value={option.code}>{option.name}</option>
-          ))}
-        </select>
-      </div>
+      <SearchableSelect
+        id="regencyCode"
+        name="regencyCode"
+        label="Kabupaten/Kota"
+        value={regencyCode}
+        onChange={(code) => {
+          setRegencyCode(code);
+          setDistrictCode("");
+          setVillageCode("");
+        }}
+        options={regencies.options}
+        loading={regencies.loading}
+        disabled={!provinceCode}
+        placeholder="Pilih kabupaten/kota"
+        searchPlaceholder="Cari kabupaten/kota..."
+        required
+      />
 
-      <div>
-        <label htmlFor="districtCode" className={labelClassName}>Kecamatan</label>
-        <select
-          id="districtCode"
-          name="districtCode"
-          value={districtCode}
-          onChange={(event) => {
-            setDistrictCode(event.target.value);
-            setVillageCode("");
-          }}
-          disabled={!regencyCode || districts.loading}
-          className={fieldClassName}
-          required
-        >
-          <option value="">{placeholder("kecamatan", districts.loading)}</option>
-          {districts.options.map((option) => (
-            <option key={option.code} value={option.code}>{option.name}</option>
-          ))}
-        </select>
-      </div>
+      <SearchableSelect
+        id="districtCode"
+        name="districtCode"
+        label="Kecamatan"
+        value={districtCode}
+        onChange={(code) => {
+          setDistrictCode(code);
+          setVillageCode("");
+        }}
+        options={districts.options}
+        loading={districts.loading}
+        disabled={!regencyCode}
+        placeholder="Pilih kecamatan"
+        searchPlaceholder="Cari kecamatan..."
+        required
+      />
 
-      <div>
-        <label htmlFor="villageCode" className={labelClassName}>Kelurahan/Desa</label>
-        <select
-          id="villageCode"
-          name="villageCode"
-          value={villageCode}
-          onChange={(event) => setVillageCode(event.target.value)}
-          disabled={!districtCode || villages.loading}
-          className={fieldClassName}
-          required
-        >
-          <option value="">{placeholder("kelurahan/desa", villages.loading)}</option>
-          {villages.options.map((option) => (
-            <option key={option.code} value={option.code}>{option.name}</option>
-          ))}
-        </select>
-      </div>
+      <SearchableSelect
+        id="villageCode"
+        name="villageCode"
+        label="Kelurahan/Desa"
+        value={villageCode}
+        onChange={setVillageCode}
+        options={villages.options}
+        loading={villages.loading}
+        disabled={!districtCode}
+        placeholder="Pilih kelurahan/desa"
+        searchPlaceholder="Cari kelurahan/desa..."
+        required
+      />
 
       <div className="md:col-span-2">
-        <label htmlFor="addressDetail" className={labelClassName}>Detail Alamat</label>
+        <label htmlFor="addressDetail" className={labelClassName}>
+          Detail Alamat <span className="text-red-500">*</span>
+        </label>
         <textarea
           id="addressDetail"
           name="addressDetail"

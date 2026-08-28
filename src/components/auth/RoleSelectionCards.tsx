@@ -117,17 +117,27 @@ export default function RoleSelectionCards() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="phone" className="mb-1.5 block text-sm font-semibold text-zinc-700">
-                    Nomor telepon
+                    Nomor telepon <span className="text-red-500">*</span>
                   </label>
                   <input
                     id="phone"
                     name="phone"
                     type="tel"
-                    maxLength={30}
+                    required
+                    inputMode="numeric"
+                    minLength={11}
+                    maxLength={11}
+                    pattern="[0-9]{11}"
+                    title="Nomor telepon harus 11 digit angka"
                     autoComplete="tel"
                     placeholder="08xxxxxxxxxx"
+                    onChange={(event) => {
+                      event.target.value = event.target.value.replace(/\D/g, "").slice(0, 11);
+                    }}
                     className={inputClassName}
                   />
+                  {/* TODO (dicatat, belum dikerjakan): kalau nomor diisi format +62,
+                     otomatis convert ke 08 setelah dipakai telfon/di-blur. Menyusul. */}
                 </div>
 
                 <div>
@@ -142,6 +152,14 @@ export default function RoleSelectionCards() {
                     inputMode="url"
                     autoComplete="url"
                     placeholder="tokokamu.id"
+                    pattern="^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$"
+                    title="Wajib mengandung domain, contoh: tokokamu.com"
+                    onKeyDown={(event) => {
+                      if (event.key === " ") event.preventDefault();
+                    }}
+                    onChange={(event) => {
+                      event.target.value = event.target.value.replace(/\s/g, "");
+                    }}
                     className={inputClassName}
                   />
                 </div>
@@ -158,9 +176,8 @@ export default function RoleSelectionCards() {
                   type="button"
                   onClick={() => setShowBusinessForm(false)}
                   disabled={pending}
-                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50 disabled:opacity-60"
-                  aria-label="Kembali ke pilihan role"
-                >
+                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-600 transition hover:border-brand hover:bg-orange-50 hover:text-brand disabled:opacity-60"
+                  >
                   <ArrowLeft size={17} />
                 </button>
                 <button
