@@ -1,10 +1,12 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
-import { Check, ChevronDown } from "lucide-react";
+
+import { useActionState, useMemo, useState, type FormEvent } from "react";
+import { Check } from "lucide-react";
 import { createProjectAction } from "@/app/actions/projects";
 import PageHeader from "@/components/layout/PageHeader";
 import Button from "@/components/ui/Button";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import type {
   ProjectCreationData,
   ProjectWorkMode,
@@ -21,6 +23,11 @@ const workModeOptions: Array<{
 
 const fieldClass =
   "w-full rounded-lg bg-canvas px-4 py-3 text-sm font-body text-ink placeholder:text-ink-muted outline-none focus:ring-2 focus:ring-brand/30";
+const pageLabelClassName = "flex flex-col gap-2 text-base font-bold text-ink";
+const pageLabelTextClassName = "inline-flex items-center gap-1";
+
+// Judul cuma ditolak kalau isinya angka doang (nggak ada huruf sama sekali).
+const titleMustContainLetterPattern = "^(?=.*[A-Za-z]).*$";
 
 export default function PasangLowonganView({
   data,
@@ -33,6 +40,14 @@ export default function PasangLowonganView({
   );
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
   const [workMode, setWorkMode] = useState<ProjectWorkMode>("REMOTE");
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  const [budgetValue, setBudgetValue] = useState("");
+
+  function handleBudgetChange(event: React.ChangeEvent<HTMLInputElement>) {
+      const rawValue = event.target.value.replace(/\D/g, "");
+      const formatted = new Intl.NumberFormat("id-ID").format(Number(rawValue || 0));
+      setBudgetValue(formatted);
+    }
 
   const groupedSkills = useMemo(() => {
     return data.skillOptions.reduce<Record<string, typeof data.skillOptions>>(
@@ -54,6 +69,15 @@ export default function PasangLowonganView({
     );
   }
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    setAttemptedSubmit(true);
+    if (selectedSkillIds.length === 0) {
+      event.preventDefault();
+    }
+  }
+
+  const showSkillRequiredError = attemptedSubmit && selectedSkillIds.length === 0;
+
   return (
     <>
       <PageHeader
@@ -73,21 +97,23 @@ export default function PasangLowonganView({
               Project yang berhasil dibuat langsung berstatus OPEN dan tampil di marketplace.
             </p>
           </div>
-          <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-bold text-brand">
-            Maksimal 10 skill
-          </span>
         </div>
 
-        <form action={formAction} className="mt-6 flex flex-col gap-6">
+        <form action={formAction} onSubmit={handleSubmit} className="mt-6 flex flex-col gap-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <label className="flex flex-col gap-2 text-base font-bold text-ink">
-              Judul Project
+            {/* Judul */}
+            <label className={pageLabelClassName}>
+              <span className={pageLabelTextClassName}>
+                Judul Project <span className="text-red-500">*</span>
+              </span>
               <input
                 name="title"
                 type="text"
                 required
                 minLength={5}
                 maxLength={120}
+                pattern={titleMustContainLetterPattern}
+                title="Judul harus mengandung huruf, nggak boleh cuma angka"
                 placeholder="Contoh: Website katalog produk furnitur"
                 className={fieldClass}
               />
@@ -98,17 +124,25 @@ export default function PasangLowonganView({
               )}
             </label>
 
-            <label className="flex flex-col gap-2 text-base font-bold text-ink">
-              Budget Tetap (Rp)
+            {/* Budget */}
+            <label className={pageLabelClassName}>
+              <span className={pageLabelTextClassName}>
+                Budget Tetap (Rp) <span className="text-red-500">*</span>
+              </span>
               <input
                 name="budget"
-                type="number"
+                type="text"
+                inputMode="numeric"
                 required
-                min={50_000}
-                max={1_000_000_000}
-                step={50_000}
-                placeholder="Contoh: 2500000"
-                className={fieldClass}
+                value={budgetValue}
+                onChange={handleBudgetChange}
+                placeholder="Contoh: 2.500.000"
+                className={`${fieldClass} text-right`}
+              />
+              <input
+                type="hidden"
+                name="budgetRaw"
+                value={budgetValue.replace(/\D/g, "")}
               />
               {state.fieldErrors?.budget?.[0] && (
                 <span className="text-sm font-normal text-danger">
@@ -116,10 +150,13 @@ export default function PasangLowonganView({
                 </span>
               )}
             </label>
-          </div>
+            </div>
 
-          <label className="flex flex-col gap-2 text-base font-bold text-ink">
-            Deskripsi Project
+          {/* Deskripsi */}
+          <label className={pageLabelClassName}>
+            <span className={pageLabelTextClassName}>
+              Deskripsi Project <span className="text-red-500">*</span>
+            </span>
             <textarea
               name="description"
               rows={5}
@@ -136,10 +173,14 @@ export default function PasangLowonganView({
             )}
           </label>
 
+          {/* Skill */}
           <fieldset className="flex flex-col gap-3">
             <legend className="text-base font-bold text-ink">
-              Skill Wajib
+              <span className={pageLabelTextClassName}>
+                Skill Wajib <span className="text-red-500">*</span>
+              </span>
             </legend>
+
             {data.skillOptions.length > 0 ? (
               <div className="space-y-4 rounded-lg bg-canvas p-4">
                 {Object.entries(groupedSkills).map(([category, skills]) => (
@@ -176,9 +217,15 @@ export default function PasangLowonganView({
                 Master skill belum tersedia. Jalankan seed taxonomy sebelum membuat project.
               </p>
             )}
+
             {selectedSkillIds.map((skillId) => (
               <input key={skillId} type="hidden" name="skillIds" value={skillId} />
             ))}
+            {showSkillRequiredError && (
+              <span className="text-sm font-normal text-danger">
+                Pilih minimal 1 skill.
+              </span>
+            )}
             {state.fieldErrors?.skillIds?.[0] && (
               <span className="text-sm font-normal text-danger">
                 {state.fieldErrors.skillIds[0]}
@@ -187,13 +234,16 @@ export default function PasangLowonganView({
           </fieldset>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <label className="flex flex-col gap-2 text-base font-bold text-ink">
-              Deadline
+            {/* Deadline */}
+            <label className={pageLabelClassName}>
+              <span className={pageLabelTextClassName}>
+                Deadline <span className="text-red-500">*</span>
+              </span>
               <input
                 name="deadline"
                 type="date"
                 required
-                className={fieldClass}
+                className={`${fieldClass} [&::-webkit-datetime-edit]:w-full [&::-webkit-datetime-edit-fields-wrapper]:w-full`}
               />
               {state.fieldErrors?.deadline?.[0] && (
                 <span className="text-sm font-normal text-danger">
@@ -202,32 +252,28 @@ export default function PasangLowonganView({
               )}
             </label>
 
-            <label className="flex flex-col gap-2 text-base font-bold text-ink">
-              Mode Kerja
-              <span className="relative">
-                <select
-                  name="workMode"
-                  value={workMode}
-                  onChange={(event) =>
-                    setWorkMode(event.target.value as ProjectWorkMode)
-                  }
-                  className={`${fieldClass} appearance-none pr-10`}
-                >
-                  {workModeOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown
-                  size={16}
-                  className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink"
-                />
-              </span>
-            </label>
+            {/* Mode Kerja */}
+            <SearchableSelect
+              id="workMode"
+              name="workMode"
+              label="Mode Kerja"
+              labelClassName="mt-2 inline-flex items-center gap-1 text-base font-bold text-ink"
+              value={workMode}
+              onChange={(code) => setWorkMode(code as ProjectWorkMode)}
+              options={workModeOptions.map((option) => ({
+                code: option.value,
+                name: option.label,
+              }))}
+              placeholder="Pilih mode kerja"
+              searchPlaceholder="Cari mode kerja..."
+              required
+            />
 
-            <label className="flex flex-col gap-2 text-base font-bold text-ink">
-              Lokasi
+            {/* Lokasi */}
+            <label className={pageLabelClassName}>
+              <span className={pageLabelTextClassName}>
+                Lokasi {workMode !== "REMOTE" && <span className="text-red-500">*</span>}
+              </span>
               <input
                 name="location"
                 type="text"
