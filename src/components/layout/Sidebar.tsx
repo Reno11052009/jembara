@@ -9,7 +9,6 @@ import {
   User,
   Settings,
   Users,
-  PlusCircle,
   LayoutGrid,
   Building2,
   Handshake,
@@ -29,8 +28,6 @@ interface NavItem {
     | "profile"
     | "settings"
     | "cariTalent"
-    | "pasangLowongan"
-    | "lowonganSaya"
     | "pelamar"
     | "daftarUser"
     | "daftarUmkm"
@@ -54,13 +51,10 @@ const studentNavItems: NavItem[] = [
   { key: "settings", href: "/dashboard/settings", icon: Settings },
 ];
 
-// NOTE: cariTalent / pasangLowongan / lowonganSaya / pelamar pages don't exist yet —
-// hrefs below are placeholders, update once those pages are built.
 const umkmNavItems: NavItem[] = [
   { key: "dashboard", href: "/dashboard", icon: Home },
   { key: "cariTalent", href: "/dashboard/cari-talent", icon: Users },
-  { key: "pasangLowongan", href: "/dashboard/pasang-lowongan", icon: PlusCircle },
-  { key: "lowonganSaya", href: "/dashboard/lowongan-saya", icon: ListChecks },
+  { key: "lowongan", href: "/dashboard/lowongan-saya", icon: Briefcase },
   { key: "pelamar", href: "/dashboard/pelamar", icon: FileText },
   { key: "activeProjects", href: "/dashboard/active-projects", icon: Briefcase },
   { key: "messages", href: "/dashboard/messages", icon: MessageSquare },
@@ -111,7 +105,11 @@ export default function Sidebar({ role }: { role: string }) {
                 role === "STUDENT",
             )
             .map((item) => {
-            const isActive = pathname === item.href;
+            const isUmkmLowongan = role === "UMKM" && item.key === "lowongan";
+            const isActive = isUmkmLowongan
+              ? pathname === "/dashboard/lowongan-saya" ||
+                pathname === "/dashboard/pasang-lowongan"
+              : pathname === item.href;
             const Icon = item.icon;
             return (
               <Link

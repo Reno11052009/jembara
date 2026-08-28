@@ -1,7 +1,7 @@
 <div align="center">
   
   # Jembara
-  ### [Tagline Singkat dan Menarik]
+  ### Jembatani skillmu untuk kesempatan nyata
   
   [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Visit_Site-success?style=for-the-badge)](https://[URL_DEMO])
   [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://[URL_REPO])
@@ -35,11 +35,10 @@
 
 | Nama | Peran | GitHub |
 |------|-------|--------|
-| **[Chello Arta Sukma Hadinata]** | Project Lead | [GitHub](https://github.com/[username1]) |
-| **[Dico Zakaria Putra Aydia Subagio]** | Frontend Developer | [GitHub](https://github.com/[username2]) |
+| **Chello Arta Sukma Hadinata** | Project Lead | [GitHub](https://github.com/SauraAsh) |
+| **Dico Zakaria Putra Aydia Subagio** | Frontend Developer | [GitHub](https://github.com/Ozakae) |
 | **Arsya Mayreno Arnaldo** | Backend Developer | [GitHub](https://github.com/Reno11052009) |
-| **Chello Arta Sukma Hadinata** | UI/UX Designer | [GitHub](https://github.com/[username4]) |
-| **[Chello Arta Sukma Hadinata]** | UI/UX Designer | [@username4](https://github.com/[username4]) 
+| **Chello Arta Sukma Hadinata** | UI/UX Designer | [GitHub](https://github.com/SauraAsh) |
 
 ---
 
@@ -55,9 +54,9 @@
 
 ### Tujuan Proyek
 
-- 🎯 **Tujuan Utama**: [Membantu pelajar/mahasiswa/orang-orang untuk mendapatkan pekerjaan]
-- 📊 **Target Pengguna**: [Mahasiswa, Pengangguran, Freelancer, Pekerja part-time]
-- 💡 **Value Proposition**: [Website pencari pekerjaan dengan sistem matchmaking dan fokus pada usaha UMKM]
+- 🎯 **Tujuan Utama**: Membantu pelajar/mahasiswa/orang-orang untuk mendapatkan pekerjaan
+- 📊 **Target Pengguna**: Mahasiswa, Pengangguran, Freelancer, Pekerja part-time
+- 💡 **Value Proposition**: Website pencari pekerjaan dengan sistem matchmaking dan fokus pada usaha UMKM
 
 ---
 
@@ -139,10 +138,10 @@ Monitoring   : -
 
 | Teknologi | Alasan Pemilihan |
 |-----------|------------------|
-| **[Next.js]** | [Mendukung frontend dan backend dalam satu codebase,supaya tidak perlu melakukan development dalam server terpisah.] |
-| **[Prisma]** | [Mempermudah pengelolaan database dan TypeScript, mengurangi risiko error saat mengelola data pengguna dan proyek.] |
-| **[TypeScript]** | [Membantu menangkap bug lebih awal pada form dan komponen yang kompleks, mempermudah kolaborasi tim.] |
-| **[TailwindCSS]** | [Mempercepat proses desain langsung tanpa berpindah file CSS terpisah, mempercepat proses desain dan pengembangan dalam project.] |
+| **Next.js** | Mendukung frontend dan backend dalam satu codebase,supaya tidak perlu melakukan development dalam server terpisah. |
+| **Prisma** | Mempermudah pengelolaan database dan TypeScript, mengurangi risiko error saat mengelola data pengguna dan proyek. |
+| **TypeScript** | Membantu menangkap bug lebih awal pada form dan komponen yang kompleks, mempermudah kolaborasi tim. |
+| **TailwindCSS** | Mempercepat proses desain langsung tanpa berpindah file CSS terpisah, mempercepat proses desain dan pengembangan dalam project. |
 
 ### Dependencies Utama
 
@@ -284,7 +283,7 @@ npm run build
 npm run start
 
 # Run tests
-npm run test
+npm test --run
 
 # Linting
 npm run lint
@@ -391,7 +390,7 @@ Proyek ini dilisensikan di bawah [MIT License](LICENSE) - lihat file LICENSE unt
 
 <div align="center">
 
-  **Made with ❤️ by [Terserah] for ITECHNO CUP 2026**
+  **Made with ❤️ by Terserah for ITECHNO CUP 2026**
 
   
 </div>

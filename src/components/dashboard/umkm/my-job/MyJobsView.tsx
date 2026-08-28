@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Plus } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 import MyJobRow from "@/components/dashboard/umkm/my-job/MyJobRow";
 import type {
@@ -45,21 +47,31 @@ export default function MyJobsView({ data }: { data: MyJobsData }) {
         avatarUrl={data.ownerAvatarUrl}
       />
 
-      <div className="mb-6 flex flex-wrap gap-2">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => setActiveTab(tab)}
-            className={`rounded-full px-4 py-2 text-sm font-display font-bold transition-colors ${
-              activeTab === tab
-                ? "bg-ink text-white"
-                : "border border-hairline bg-card text-ink hover:border-brand hover:text-brand"
-            }`}
-          >
-            {tab} ({tabCount(tab)})
-          </button>
-        ))}
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-wrap gap-2">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setActiveTab(tab)}
+              className={`rounded-full px-4 py-2 text-sm font-display font-bold transition-colors ${
+                activeTab === tab
+                  ? "bg-ink text-white"
+                  : "border border-hairline bg-card text-ink hover:border-brand hover:text-brand"
+              }`}
+            >
+              {tab} ({tabCount(tab)})
+            </button>
+          ))}
+        </div>
+
+        <Link
+          href="/dashboard/pasang-lowongan"
+          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+        >
+          <Plus size={17} aria-hidden="true" />
+          Pasang Lowongan
+        </Link>
       </div>
 
       {filteredListings.length > 0 ? (
