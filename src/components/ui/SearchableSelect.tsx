@@ -21,6 +21,7 @@ type SearchableSelectProps = {
   placeholder: string;
   searchPlaceholder?: string;
   labelClassName?: string;
+  showSearch?: boolean;
 };
 
 const defaultLabelClassName =
@@ -39,6 +40,7 @@ export default function SearchableSelect({
   placeholder,
   searchPlaceholder = "Cari...",
   labelClassName = defaultLabelClassName,
+  showSearch = true,
 }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -68,10 +70,10 @@ export default function SearchableSelect({
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && showSearch) {
       searchInputRef.current?.focus();
     }
-  }, [isOpen]);
+  }, [isOpen, showSearch]);
 
   function toggleOpen() {
     if (isDisabled) return;
@@ -138,17 +140,19 @@ export default function SearchableSelect({
 
       {isOpen ? (
         <div className="absolute left-0 top-full z-20 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
-          <div className="flex items-center gap-2 border-b border-gray-100 px-3 py-2">
-            <Search size={14} className="shrink-0 text-gray-400" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={searchPlaceholder}
-              className="w-full bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400 font-body"
-            />
-          </div>
+          {showSearch ? (
+            <div className="flex items-center gap-2 border-b border-gray-100 px-3 py-2">
+              <Search size={14} className="shrink-0 text-gray-400" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={searchPlaceholder}
+                className="w-full bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400 font-body"
+              />
+            </div>
+          ) : null}
 
           <div className="max-h-56 overflow-y-auto py-1">
             {filteredOptions.length === 0 ? (

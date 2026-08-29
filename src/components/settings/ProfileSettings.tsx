@@ -5,7 +5,8 @@ import { Camera, Globe, Pencil, X } from "lucide-react";
 import Swal from "sweetalert2";
 import { updateProfileAction } from "@/app/actions/profile";
 import { useRouter } from "next/navigation";
-import { FaBehance, FaGithub, FaLinkedin } from "react-icons/fa"; // Behance, Github, Linkedin from react-icons
+import { FaBehance, FaGithub, FaLinkedin } from "react-icons/fa";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import type { ProfileData } from "@/lib/profile";
 import {
   educationLevelOptions,
@@ -220,7 +221,9 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Nama Lengkap</label>
+              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
+                Nama Lengkap <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 name="name"
@@ -230,7 +233,9 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
               />
             </div>
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Email</label>
+              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
+                Email <span className="text-red-500">*</span>
+              </label>
               <input
                 type="email"
                 defaultValue={initialData.email || ""}
@@ -262,8 +267,8 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
             {isUmkm ? (
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <div>
-                  <label htmlFor="businessName" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
-                    Nama Usaha
+                  <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
+                    Nama Usaha <span className="text-red-500">*</span>
                   </label>
                   <input
                     id="businessName"
@@ -279,8 +284,8 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                   />
                 </div>
                 <div>
-                  <label htmlFor="businessCategory" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
-                    Kategori Usaha
+                  <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
+                    Kategori Usaha <span className="text-red-500">*</span>
                   </label>
                   <input
                     id="businessCategory"
@@ -325,26 +330,27 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
             ) : (
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <div>
-                  <label htmlFor="tingkat_pendidikan" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Jenjang Pendidikan</label>
-                  <select
+                  <SearchableSelect
                     id="tingkat_pendidikan"
                     name="tingkat_pendidikan"
+                    label="Jenjang Pendidikan"
+                    labelClassName="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5"
                     value={educationLevel}
-                    onChange={(event) => setEducationLevel(event.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-                  >
-                    <option value="">Pilih jenjang pendidikan</option>
-                    {hasLegacyEducationLevel && (
-                      <option value={initialData.tingkat_pendidikan}>
-                        {initialData.tingkat_pendidikan}
-                      </option>
-                    )}
-                    {educationLevelOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(code) => setEducationLevel(code)}
+                    options={[
+                      ...(hasLegacyEducationLevel
+                        ? [{ code: initialData.tingkat_pendidikan, name: initialData.tingkat_pendidikan }]
+                        : []),
+                      ...educationLevelOptions.map((option) => ({
+                        code: option.value,
+                        name: option.label,
+                      })),
+                    ]}
+                    placeholder="Pilih jenjang pendidikan"
+                    searchPlaceholder="Cari jenjang..."
+                    showSearch={false}
+                    required
+                  />
                 </div>
                 <div>
                   <label htmlFor="school" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Nama Universitas/Sekolah</label>

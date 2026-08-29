@@ -1,12 +1,12 @@
 "use client";
 
-
 import { useActionState, useMemo, useState, type FormEvent } from "react";
-import { Check } from "lucide-react";
+import { Check, Plus, X } from "lucide-react";
 import { createProjectAction } from "@/app/actions/projects";
 import PageHeader from "@/components/layout/PageHeader";
 import Button from "@/components/ui/Button";
 import SearchableSelect from "@/components/ui/SearchableSelect";
+import DatePicker from "@/components/ui/DatePicker";
 import type {
   ProjectCreationData,
   ProjectWorkMode,
@@ -39,15 +39,48 @@ export default function PasangLowonganView({
     {},
   );
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
+  const [deadline, setDeadline] = useState("");
+  const [customSkills, setCustomSkills] = useState<string[]>([]);
+  const [isAddingSkill, setIsAddingSkill] = useState(false);
+  const [customSkillError, setCustomSkillError] = useState("");
+  const [newSkillName, setNewSkillName] = useState("");
   const [workMode, setWorkMode] = useState<ProjectWorkMode>("REMOTE");
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [budgetValue, setBudgetValue] = useState("");
 
   function handleBudgetChange(event: React.ChangeEvent<HTMLInputElement>) {
-      const rawValue = event.target.value.replace(/\D/g, "");
-      const formatted = new Intl.NumberFormat("id-ID").format(Number(rawValue || 0));
-      setBudgetValue(formatted);
+    const rawValue = event.target.value.replace(/\D/g, "");
+    const formatted = new Intl.NumberFormat("id-ID").format(Number(rawValue || 0));
+    setBudgetValue(formatted);
+  }
+
+  function handleAddCustomSkill() {
+    const trimmed = newSkillName.trim();
+    if (!trimmed) return;
+
+    const matchesExistingSkill = data.skillOptions.some(
+      (skill) => skill.name.toLowerCase() === trimmed.toLowerCase(),
+    );
+    if (matchesExistingSkill) {
+      setCustomSkillError(`"${trimmed}" sudah ada di daftar skill di atas, tinggal pilih itu.`);
+      return;
     }
+
+    const alreadyAdded = customSkills.some(
+      (skill) => skill.toLowerCase() === trimmed.toLowerCase(),
+    );
+    if (!alreadyAdded) {
+      setCustomSkills((current) => [...current, trimmed]);
+    }
+    setNewSkillName("");
+    setCustomSkillError("");
+    setIsAddingSkill(false);
+  }
+
+  function removeCustomSkill(name: string) {
+    setCustomSkills((current) => current.filter((skill) => skill !== name));
+  }
+  
 
   const groupedSkills = useMemo(() => {
     return data.skillOptions.reduce<Record<string, typeof data.skillOptions>>(
@@ -150,7 +183,7 @@ export default function PasangLowonganView({
                 </span>
               )}
             </label>
-            </div>
+          </div>
 
           {/* Deskripsi */}
           <label className={pageLabelClassName}>
@@ -218,6 +251,98 @@ export default function PasangLowonganView({
               </p>
             )}
 
+            {/* Skill baru (usulan) */}
+            <div>
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-muted">
+                Skill baru (usulan)
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                {customSkills.map((name) => (
+                  <span
+                    key={name}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-brand/50 bg-brand-soft px-3 py-1.5 text-sm font-semibold text-brand"
+                  >
+                    {name}
+                    <button
+                      type="button"
+                      onClick={() => removeCustomSkill(name)}
+                      aria-label={`Hapus usulan skill ${name}`}
+                      className="rounded-full p-0.5 hover:bg-brand/20"
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+
+                {isAddingSkill ? (
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={newSkillName}
+                        onChange={(event) => {
+                          setNewSkillName(event.target.value);
+                          if (customSkillError) setCustomSkillError("");
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            handleAddCustomSkill();
+                          }
+                          if (event.key === "Escape") {
+                            setIsAddingSkill(false);
+                            setNewSkillName("");
+                            setCustomSkillError("");
+                          }
+                        }}
+                        autoFocus
+                        maxLength={40}
+                        placeholder="Nama skill baru"
+                        className={`rounded-full border bg-white px-3 py-1.5 text-sm text-ink outline-none ${
+                          customSkillError ? "border-danger" : "border-hairline focus:border-brand"
+                        }`}
+                      />
+                      <button type="button" onClick={handleAddCustomSkill} className="rounded-full bg-brand px-3 py-1.5 text-sm font-semibold text-white">
+                        Tambah
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsAddingSkill(false);
+                          setNewSkillName("");
+                          setCustomSkillError("");
+                        }}
+                        className="text-sm font-semibold text-ink-muted hover:text-ink"
+                      >
+                        Batal
+                      </button>
+                    </div>
+                    {customSkillError && (
+                      <span className="text-xs font-normal text-danger">{customSkillError}</span>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAddingSkill(true);
+                      setCustomSkillError("");
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-hairline px-3 py-1.5 text-sm font-semibold text-ink-muted transition hover:border-brand hover:text-brand"
+                  >
+                    <Plus size={14} /> Tambah skill baru
+                  </button>
+                )}
+              </div>
+              <p className="mt-1.5 text-xs text-ink-muted">
+                Skill usulan di atas belum tersimpan ke sistem — nunggu backend buka endpoint skill baru. Tetap pilih minimal 1 skill dari daftar di atas biar project bisa dipublikasikan.
+              </p>
+            </div>
+
+            {customSkills.map((name) => (
+              <input key={name} type="hidden" name="customSkillNames" value={name} />
+            ))}
+
             {selectedSkillIds.map((skillId) => (
               <input key={skillId} type="hidden" name="skillIds" value={skillId} />
             ))}
@@ -235,22 +360,22 @@ export default function PasangLowonganView({
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {/* Deadline */}
-            <label className={pageLabelClassName}>
-              <span className={pageLabelTextClassName}>
-                Deadline <span className="text-red-500">*</span>
-              </span>
-              <input
+            <div>
+              <DatePicker
+                id="deadline"
                 name="deadline"
-                type="date"
+                label="Deadline"
+                labelClassName={pageLabelClassName}
+                value={deadline}
+                onChange={setDeadline}
                 required
-                className={`${fieldClass} [&::-webkit-datetime-edit]:w-full [&::-webkit-datetime-edit-fields-wrapper]:w-full`}
               />
               {state.fieldErrors?.deadline?.[0] && (
                 <span className="text-sm font-normal text-danger">
                   {state.fieldErrors.deadline[0]}
                 </span>
               )}
-            </label>
+            </div>
 
             {/* Mode Kerja */}
             <SearchableSelect
