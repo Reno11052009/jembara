@@ -6,15 +6,11 @@ import {
   selectRoleAction,
   type RoleSelectionActionState,
 } from "@/app/actions/auth";
-<<<<<<< HEAD
 import SearchableSelect from "@/components/ui/SearchableSelect";
-=======
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
 import IndonesiaRegionFields from "@/components/regions/IndonesiaRegionFields";
 
 const initialState: RoleSelectionActionState = {};
 
-<<<<<<< HEAD
 const businessCategoryOptions = [
   { value: "kuliner", label: "Kuliner" },
   { value: "fashion", label: "Fashion" },
@@ -29,8 +25,6 @@ const businessCategoryOptions = [
   { value: "hiburan", label: "Hiburan" },
 ];
 
-=======
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
 const inputClassName =
   "w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-brand focus:ring-3 focus:ring-brand/10";
 
@@ -40,11 +34,10 @@ export default function RoleSelectionCards() {
     selectRoleAction,
     initialState,
   );
-<<<<<<< HEAD
+
   const [website, setWebsite] = useState("");
   const [businessCategory, setBusinessCategory] = useState("");
   const [websiteError, setWebsiteError] = useState("");
-  const [phoneError, setPhoneError] = useState("");
 
   function handleWebsiteChange(event: React.ChangeEvent<HTMLInputElement>) {
     const value = event.target.value.replace(/\s/g, "");
@@ -57,15 +50,11 @@ export default function RoleSelectionCards() {
     } else {
       setWebsiteError("");
     }
-
-
-
   }
-=======
 
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
   return (
     <div className="grid items-start gap-6 md:grid-cols-2">
+      {/* Card Pelajar */}
       <div className="group relative rounded-2xl border border-zinc-200 bg-white/80 p-8 shadow-sm backdrop-blur-sm">
         <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-brand/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
@@ -86,7 +75,7 @@ export default function RoleSelectionCards() {
             <button
               type="submit"
               disabled={pending}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition-all duration-300 hover:scale-[1.02] hover:bg-brand hover:shadow-lg hover:shadow-brand/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex w-full scale-[1.02] items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-brand hover:shadow-lg hover:shadow-brand/30 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {pending && !showBusinessForm ? (
                 <LoaderCircle size={17} className="animate-spin" />
@@ -97,6 +86,7 @@ export default function RoleSelectionCards() {
         </div>
       </div>
 
+      {/* Card UMKM */}
       <div className="group relative rounded-2xl border border-zinc-200 bg-white/80 p-8 shadow-sm backdrop-blur-sm">
         <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-brand/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
@@ -117,7 +107,7 @@ export default function RoleSelectionCards() {
               type="button"
               onClick={() => setShowBusinessForm(true)}
               aria-expanded={showBusinessForm}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition-all duration-300 hover:scale-[1.02] hover:bg-brand hover:shadow-lg hover:shadow-brand/30 active:scale-[0.98]"
+              className="inline-flex w-full scale-[1.02] items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-brand hover:shadow-lg hover:shadow-brand/30 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Isi Profil Usaha
             </button>
@@ -142,7 +132,6 @@ export default function RoleSelectionCards() {
               </div>
 
               <div>
-<<<<<<< HEAD
                 <SearchableSelect
                   id="businessCategory"
                   name="businessCategory"
@@ -158,19 +147,6 @@ export default function RoleSelectionCards() {
                   searchPlaceholder="Cari kategori..."
                   showSearch={true}
                   required
-=======
-                <label htmlFor="businessCategory" className="mb-1.5 block text-sm font-semibold text-zinc-700">
-                  Kategori usaha <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="businessCategory"
-                  name="businessCategory"
-                  required
-                  minLength={2}
-                  maxLength={100}
-                  placeholder="Contoh: Kuliner, Fashion, atau Jasa"
-                  className={inputClassName}
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
                 />
               </div>
 
@@ -198,8 +174,6 @@ export default function RoleSelectionCards() {
                     }}
                     className={inputClassName}
                   />
-                  {/* TODO (dicatat, belum dikerjakan): kalau nomor diisi format +62,
-                     otomatis convert ke 08 setelah dipakai telfon/di-blur. Menyusul. */}
                 </div>
 
                 <div>
@@ -210,16 +184,12 @@ export default function RoleSelectionCards() {
                     id="website"
                     name="website"
                     type="text"
-<<<<<<< HEAD
                     value={website}
                     onChange={handleWebsiteChange}
-=======
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
                     maxLength={2048}
                     inputMode="url"
                     autoComplete="url"
                     placeholder="tokokamu.id"
-<<<<<<< HEAD
                     onKeyDown={(event) => {
                       if (event.key === " ") event.preventDefault();
                     }}
@@ -228,18 +198,6 @@ export default function RoleSelectionCards() {
                   {websiteError && (
                     <p className="mt-1 text-xs text-red-500">{websiteError}</p>
                   )}
-=======
-                    pattern="^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$"
-                    title="Wajib mengandung domain, contoh: tokokamu.com"
-                    onKeyDown={(event) => {
-                      if (event.key === " ") event.preventDefault();
-                    }}
-                    onChange={(event) => {
-                      event.target.value = event.target.value.replace(/\s/g, "");
-                    }}
-                    className={inputClassName}
-                  />
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
                 </div>
               </div>
 
@@ -251,33 +209,21 @@ export default function RoleSelectionCards() {
 
               <div className="flex gap-3 pt-1">
                 <button
-<<<<<<< HEAD
-                  type="submit"
-                  disabled={pending || Boolean(websiteError)}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand/90 
-                  disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                  <ArrowLeft size={17} />
-                  {pending ? <LoaderCircle size={17} className="animate-spin" /> : null}
-                  {pending ? "Menyimpan..." : "Simpan dan Lanjutkan"}
-                  </button>
-=======
                   type="button"
                   onClick={() => setShowBusinessForm(false)}
                   disabled={pending}
                   className="inline-flex items-center justify-center rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-600 transition hover:border-brand hover:bg-orange-50 hover:text-brand disabled:opacity-60"
-                  >
+                >
                   <ArrowLeft size={17} />
                 </button>
                 <button
                   type="submit"
-                  disabled={pending}
+                  disabled={pending || Boolean(websiteError)}
                   className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {pending ? <LoaderCircle size={17} className="animate-spin" /> : null}
                   {pending ? "Menyimpan..." : "Simpan dan Lanjutkan"}
                 </button>
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
               </div>
             </form>
           )}

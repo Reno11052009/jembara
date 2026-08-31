@@ -149,11 +149,7 @@ export default function SearchableSelect({
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={searchPlaceholder}
-<<<<<<< HEAD
                 className="w-full bg-transparent text-sm text-gray-900 outline-none focus:outline-none focus:ring-0 placeholder:text-gray-400 font-body"
-=======
-                className="w-full bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400 font-body"
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
               />
             </div>
           ) : null}

@@ -36,20 +36,12 @@ export default function ChatBubble({ message }: ChatBubbleProps) {
       >
         <p>{message.text}</p>
         <span
-<<<<<<< HEAD
           className={`mt-5 flex items-center justify-end gap-1 text-right text-sm ${
-=======
-          className={`mt-5 block text-right text-sm ${
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
             isMe ? "text-white/70" : "text-ink"
           }`}
         >
           {message.timeLabel}
-<<<<<<< HEAD
           {isMe && <MessageStatusTicks status={message.status} />}
-=======
-          {message.deliveryStatus === "sending" ? " · Mengirim…" : ""}
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
         </span>
       </div>
     </div>

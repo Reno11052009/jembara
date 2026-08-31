@@ -133,8 +133,4 @@ export default async function ProjectDetailPage({
       </div>
     </div>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63

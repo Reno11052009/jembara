@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { connection } from "next/server";
-<<<<<<< HEAD
-=======
-import SmoothScroll from "@/components/providers/SmoothScroll";
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
 import { PreferencesProvider } from "@/contexts/PreferencesContext";
 import "./global.css";
 

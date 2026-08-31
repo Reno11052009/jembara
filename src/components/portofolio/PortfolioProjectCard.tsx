@@ -15,11 +15,8 @@ export default function PortfolioProjectCard({ project }: PortfolioProjectCardPr
           <img
             src={project.imageUrl}
             alt={project.title}
-<<<<<<< HEAD
             loading="lazy"
             decoding="async"
-=======
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
             className="h-full w-full object-cover"
           />
         ) : (

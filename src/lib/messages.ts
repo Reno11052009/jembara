@@ -1,9 +1,4 @@
 import "server-only";
-
-<<<<<<< HEAD
-=======
-import { after } from "next/server";
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
 import { z } from "zod";
 import prisma from "./prisma";
 import { requireAuthenticatedSession } from "./auth-guard";
@@ -20,17 +15,6 @@ import type {
 const PROJECT_MESSAGE_STATUSES = ["IN_PROGRESS", "REVIEW", "COMPLETED"];
 const SENDABLE_PROJECT_STATUSES = ["IN_PROGRESS", "REVIEW"];
 const MAX_MESSAGES_PER_PROJECT = 100;
-<<<<<<< HEAD
-=======
-const JEMBARA_TIME_ZONE = "Asia/Jakarta";
-
-const calendarDateFormatter = new Intl.DateTimeFormat("en-CA", {
-  timeZone: JEMBARA_TIME_ZONE,
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-});
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
 
 const projectIdSchema = z.string().uuid("ID proyek tidak valid.");
 const sendMessageSchema = z.object({
@@ -42,7 +26,6 @@ const sendMessageSchema = z.object({
     .max(2000, "Pesan maksimal 2000 karakter."),
 });
 
-<<<<<<< HEAD
 function isSameCalendarDay(first: Date, second: Date) {
   return (
     first.getFullYear() === second.getFullYear() &&
@@ -53,38 +36,10 @@ function isSameCalendarDay(first: Date, second: Date) {
 
 function startOfDay(value: Date) {
   return new Date(value.getFullYear(), value.getMonth(), value.getDate());
-=======
-function getCalendarDate(value: Date) {
-  const parts = Object.fromEntries(
-    calendarDateFormatter
-      .formatToParts(value)
-      .filter(({ type }) => type !== "literal")
-      .map(({ type, value: partValue }) => [type, Number(partValue)]),
-  );
-
-  return {
-    year: parts.year,
-    month: parts.month,
-    day: parts.day,
-    ordinal: Date.UTC(parts.year, parts.month - 1, parts.day) / 86_400_000,
-  };
-}
-
-function calendarDayDifference(later: Date, earlier: Date) {
-  return getCalendarDate(later).ordinal - getCalendarDate(earlier).ordinal;
-}
-
-function isSameCalendarDay(first: Date, second: Date) {
-  return calendarDayDifference(first, second) === 0;
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
 }
 
 function formatClock(value: Date) {
   return new Intl.DateTimeFormat("id-ID", {
-<<<<<<< HEAD
-=======
-    timeZone: JEMBARA_TIME_ZONE,
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
@@ -92,7 +47,6 @@ function formatClock(value: Date) {
 }
 
 function formatDateLabel(value: Date, now: Date) {
-<<<<<<< HEAD
   if (isSameCalendarDay(value, now)) return "Hari ini";
 
   const yesterday = new Date(now);
@@ -103,25 +57,10 @@ function formatDateLabel(value: Date, now: Date) {
     day: "numeric",
     month: "long",
     year: value.getFullYear() === now.getFullYear() ? undefined : "numeric",
-=======
-  const dayDifference = calendarDayDifference(now, value);
-  if (dayDifference === 0) return "Hari ini";
-  if (dayDifference === 1) return "Kemarin";
-
-  const valueYear = getCalendarDate(value).year;
-  const currentYear = getCalendarDate(now).year;
-
-  return new Intl.DateTimeFormat("id-ID", {
-    timeZone: JEMBARA_TIME_ZONE,
-    day: "numeric",
-    month: "long",
-    year: valueYear === currentYear ? undefined : "numeric",
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
   }).format(value);
 }
 
 function formatConversationTime(value: Date, now: Date) {
-<<<<<<< HEAD
   if (isSameCalendarDay(value, now)) return formatClock(value);
 
   const dayDifference = Math.floor(
@@ -133,20 +72,6 @@ function formatConversationTime(value: Date, now: Date) {
   }
 
   return new Intl.DateTimeFormat("id-ID", {
-=======
-  const dayDifference = calendarDayDifference(now, value);
-  if (dayDifference === 0) return formatClock(value);
-  if (dayDifference === 1) return "Kemarin";
-  if (dayDifference > 1 && dayDifference < 7) {
-    return new Intl.DateTimeFormat("id-ID", {
-      timeZone: JEMBARA_TIME_ZONE,
-      weekday: "long",
-    }).format(value);
-  }
-
-  return new Intl.DateTimeFormat("id-ID", {
-    timeZone: JEMBARA_TIME_ZONE,
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
     day: "2-digit",
     month: "short",
   }).format(value);
@@ -372,7 +297,6 @@ export async function sendCurrentMessage(
     });
   });
 
-<<<<<<< HEAD
   try {
     await createUserNotification({
       userId: recipientId,
@@ -385,22 +309,6 @@ export async function sendCurrentMessage(
   } catch (error) {
     console.error("Pesan tersimpan, tetapi notifikasi gagal dibuat:", error);
   }
-=======
-  after(async () => {
-    try {
-      await createUserNotification({
-        userId: recipientId,
-        type: "MESSAGE",
-        title: `Pesan baru dari ${session.name}`,
-        message: `${project.title}: ${parsed.data.content.slice(0, 120)}`,
-        href: "/dashboard/messages",
-        preferenceKey: "pesanBaru",
-      });
-    } catch (error) {
-      console.error("Pesan tersimpan, tetapi notifikasi gagal dibuat:", error);
-    }
-  });
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
 
   return { success: true };
 }
@@ -421,8 +329,3 @@ export async function markCurrentProjectMessagesAsRead(projectId: unknown) {
 
   return true;
 }
-<<<<<<< HEAD
-
-
-=======
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63

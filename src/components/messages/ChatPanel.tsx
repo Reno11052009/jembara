@@ -48,21 +48,11 @@ export default function ChatPanel({ conversation, messages }: ChatPanelProps) {
   return (
     <div className="flex h-full flex-1 flex-col bg-card">
       <ChatHeader conversation={conversation} />
-<<<<<<< HEAD
       <ChatThread messages={messages} />
       <ChatComposer
         key={conversation.id}
         conversationId={conversation.id}
         canSend={conversation.canSend}
-=======
-      <ChatThread messages={displayMessages} />
-      <ChatComposer
-        conversationId={conversation.id}
-        canSend={conversation.canSend}
-        onOptimisticSend={addOptimisticMessage}
-        onSendSuccess={confirmOptimisticMessage}
-        onSendError={removeOptimisticMessage}
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
       />
     </div>
   );
