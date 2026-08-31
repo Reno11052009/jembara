@@ -22,8 +22,8 @@ export default function MyJobRow({ listing }: { listing: MyJobListing }) {
 
   return (
     <article className="rounded-xl border border-hairline bg-card px-6 py-5">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-start">
-        <div className="lg:col-span-7 min-w-0">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-3">
             <h3 className="font-display text-lg font-black text-ink">
               {listing.title}
@@ -49,29 +49,25 @@ export default function MyJobRow({ listing }: { listing: MyJobListing }) {
           </div>
         </div>
 
-        <div className="lg:col-span-5 flex flex-col gap-3 text-sm content-start self-start items-start lg:items-end">
-          <div className="flex flex-wrap items-start justify-start lg:justify-end gap-x-8 gap-y-2 text-left lg:text-right">
-            <div>
-              <p className="text-xs text-ink-muted">Budget</p>
-              <p className="mt-0.5 font-display font-black text-ink">
-                {listing.budgetLabel}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-ink-muted">Proposal Masuk</p>
-              <p className="mt-0.5 font-display font-black text-ink">
-                {listing.applicantCount} proposal
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center justify-start lg:justify-end gap-x-6 gap-y-1.5 text-ink-muted">
-            <p className="flex items-center gap-1.5">
-              <CalendarDays size={14} className="shrink-0" /> {listing.deadlineLabel}
-            </p>
-            <p className="flex items-center gap-1.5">
-              <MapPin size={14} className="shrink-0" /> {listing.workModeLabel} · {listing.locationLabel}
+        <div className="grid min-w-64 grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          <div>
+            <p className="text-xs text-ink-muted">Budget</p>
+            <p className="mt-0.5 font-display font-black text-ink">
+              {listing.budgetLabel}
             </p>
           </div>
+          <div>
+            <p className="text-xs text-ink-muted">Proposal Masuk</p>
+            <p className="mt-0.5 font-display font-black text-ink">
+              {listing.applicantCount} proposal
+            </p>
+          </div>
+          <p className="flex items-center gap-1.5 text-ink-muted">
+            <CalendarDays size={14} /> {listing.deadlineLabel}
+          </p>
+          <p className="flex items-center gap-1.5 text-ink-muted">
+            <MapPin size={14} /> {listing.workModeLabel} · {listing.locationLabel}
+          </p>
         </div>
       </div>
 
@@ -96,20 +92,13 @@ export default function MyJobRow({ listing }: { listing: MyJobListing }) {
         ) : listing.statusCode === "OPEN" ||
           (listing.statusCode === "PROPOSAL" && !listing.hasSelectedStudent) ? (
           <div className="flex flex-wrap items-center gap-2">
-            {listing.applicantCount > 0 ? (
+            {listing.applicantCount > 0 && (
               <Link
                 href={`/dashboard/pelamar?project=${encodeURIComponent(listing.id)}`}
                 className="rounded-full border border-ink px-4 py-2 text-xs font-display font-bold uppercase text-ink hover:border-brand hover:text-brand"
               >
                 Lihat Pelamar
               </Link>
-            ) : (
-              <span
-                title="Belum ada proposal yang masuk"
-                className="rounded-full border border-hairline bg-canvas px-4 py-2 text-xs font-display font-bold uppercase text-ink-muted cursor-not-allowed opacity-60"
-              >
-                Belum Ada Pelamar
-              </span>
             )}
             <Link
               href={`/dashboard/cari-talent?project=${encodeURIComponent(listing.id)}`}

@@ -36,7 +36,10 @@ describe("ChatPanel optimistic messages", () => {
         conversation={{
           id: "project-1",
           contactName: "Kopi Maju",
+<<<<<<< HEAD
           projectName: "Project Kopi",
+=======
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
           lastMessagePreview: "Belum ada pesan.",
           timeLabel: "",
           unread: false,
@@ -73,7 +76,10 @@ describe("ChatPanel optimistic messages", () => {
         conversation={{
           id: "project-1",
           contactName: "Kopi Maju",
+<<<<<<< HEAD
           projectName: "Project Kopi",
+=======
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
           lastMessagePreview: "Belum ada pesan.",
           timeLabel: "",
           unread: false,

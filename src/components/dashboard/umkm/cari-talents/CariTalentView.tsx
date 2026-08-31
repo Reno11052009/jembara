@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import TalentFilterBar from "@/components/dashboard/umkm/cari-talents/TalentFilterBar";
 import TalentCard from "@/components/dashboard/umkm/cari-talents/TalentCard";
+<<<<<<< HEAD
 import SearchableSelect from "@/components/ui/SearchableSelect";
+=======
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
 import type { TalentFilters, TalentSearchData } from "@/types/talent";
 
 const initialFilters: TalentFilters = {
@@ -47,7 +50,11 @@ export default function CariTalentView({ data }: { data: TalentSearchData }) {
   return (
     <>
       <PageHeader
+<<<<<<< HEAD
         title="Cari Talent"
+=======
+        title="Cari Talent 🚀"
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
         subtitle="Temukan mahasiswa dan fresh graduate terbaik untuk kebutuhan proyek UMKM Anda."
         userName={data.ownerName}
         avatarUrl={data.ownerAvatarUrl}
@@ -61,6 +68,7 @@ export default function CariTalentView({ data }: { data: TalentSearchData }) {
           >
             Hitung kecocokan skill untuk proyek
           </label>
+<<<<<<< HEAD
           <SearchableSelect
             id="matching-project"
             name="matching-project"
@@ -79,6 +87,24 @@ export default function CariTalentView({ data }: { data: TalentSearchData }) {
             searchPlaceholder="Cari project..."
             showSearch={false}
           />
+=======
+          <select
+            id="matching-project"
+            value={data.selectedProjectId ?? ""}
+            onChange={(event) =>
+              router.replace(
+                `/dashboard/cari-talent?project=${encodeURIComponent(event.target.value)}`,
+              )
+            }
+            className="w-full rounded-lg border border-hairline bg-canvas px-4 py-3 text-sm text-ink focus:border-brand focus:outline-none"
+          >
+            {data.projects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.title}
+              </option>
+            ))}
+          </select>
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
         </div>
       )}
 

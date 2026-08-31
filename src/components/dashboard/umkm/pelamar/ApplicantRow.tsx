@@ -1,4 +1,17 @@
+<<<<<<< HEAD
 import { CheckCircle2, Star } from "lucide-react";
+=======
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { CheckCircle2, Star } from "lucide-react";
+import {
+  acceptProposalAction,
+  rejectProposalAction,
+  type ProposalDecisionResult,
+} from "@/app/actions/proposals";
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
 import type { Applicant } from "@/types/applicant";
 
 const statusStyles: Record<Applicant["status"], string> = {
@@ -8,6 +21,15 @@ const statusStyles: Record<Applicant["status"], string> = {
 };
 
 export default function ApplicantRow({ applicant }: { applicant: Applicant }) {
+<<<<<<< HEAD
+=======
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [pendingDecision, setPendingDecision] = useState<
+    "accept" | "reject" | null
+  >(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
   const initials = applicant.name
     .split(" ")
     .map((part) => part[0])
@@ -15,6 +37,49 @@ export default function ApplicantRow({ applicant }: { applicant: Applicant }) {
     .slice(0, 2)
     .toUpperCase();
 
+<<<<<<< HEAD
+=======
+  function runDecision(
+    decision: "accept" | "reject",
+    action: (proposalId: unknown) => Promise<ProposalDecisionResult>,
+  ) {
+    setActionError(null);
+    setPendingDecision(decision);
+    startTransition(async () => {
+      try {
+        const result = await action(applicant.id);
+        if (!result.success) {
+          setActionError(result.error || "Keputusan proposal gagal disimpan.");
+        } else if (
+          decision === "accept" &&
+          result.paymentRequired &&
+          result.projectId
+        ) {
+          router.push(`/dashboard/payments/${result.projectId}`);
+        }
+      } catch {
+        setActionError("Keputusan proposal gagal disimpan. Silakan coba lagi.");
+      } finally {
+        setPendingDecision(null);
+      }
+    });
+  }
+
+  function handleAccept() {
+    const confirmed = window.confirm(
+      `Terima ${applicant.name}? Proposal kandidat lain akan ditolak dan Anda akan diarahkan ke pembayaran Midtrans.`,
+    );
+    if (confirmed) runDecision("accept", acceptProposalAction);
+  }
+
+  function handleReject() {
+    const confirmed = window.confirm(
+      `Tolak proposal dari ${applicant.name}?`,
+    );
+    if (confirmed) runDecision("reject", rejectProposalAction);
+  }
+
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
   return (
     <article className="rounded-xl border border-hairline bg-card p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -89,8 +154,43 @@ export default function ApplicantRow({ applicant }: { applicant: Applicant }) {
           ) : (
             <span className="text-xs text-ink-muted">Portofolio belum tersedia</span>
           )}
+<<<<<<< HEAD
         </div>
       </div>
+=======
+
+          {applicant.status === "Pending" && (
+            <>
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={handleReject}
+                className="rounded-full border border-danger px-4 py-2 text-xs font-display font-bold uppercase text-danger transition-colors hover:bg-danger-soft disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {pendingDecision === "reject" ? "Menolak..." : "Tolak"}
+              </button>
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={handleAccept}
+                className="rounded-full bg-success px-4 py-2 text-xs font-display font-bold uppercase text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {pendingDecision === "accept" ? "Menerima..." : "Terima"}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {actionError && (
+        <p
+          role="alert"
+          className="mt-4 rounded-lg border border-danger/20 bg-danger-soft px-4 py-3 text-sm font-semibold text-danger"
+        >
+          {actionError}
+        </p>
+      )}
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
     </article>
   );
 }

@@ -1,6 +1,10 @@
 "use client";
 
+<<<<<<< HEAD
 import { useActionState, useMemo, useState, useRef, type FormEvent } from "react";
+=======
+import { useActionState, useMemo, useState, type FormEvent } from "react";
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
 import { Check, Plus, X } from "lucide-react";
 import { createProjectAction } from "@/app/actions/projects";
 import PageHeader from "@/components/layout/PageHeader";
@@ -23,8 +27,11 @@ const workModeOptions: Array<{
 
 const fieldClass =
   "w-full rounded-lg bg-canvas px-4 py-3 text-sm font-body text-ink placeholder:text-ink-muted outline-none focus:ring-2 focus:ring-brand/30";
+<<<<<<< HEAD
 const whiteFieldClass =
   "w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-body text-ink placeholder:text-ink-muted outline-none transition focus:ring-2 focus:ring-brand/30 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400";
+=======
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
 const pageLabelClassName = "flex flex-col gap-2 text-base font-bold text-ink";
 const pageLabelTextClassName = "inline-flex items-center gap-1";
 
@@ -49,6 +56,7 @@ export default function PasangLowonganView({
   const [workMode, setWorkMode] = useState<ProjectWorkMode>("REMOTE");
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [budgetValue, setBudgetValue] = useState("");
+<<<<<<< HEAD
   const budgetInputRef = useRef<HTMLInputElement>(null);
   const [titleError, setTitleError] = useState("");
 
@@ -80,6 +88,13 @@ export default function PasangLowonganView({
         budgetInputRef.current.setSelectionRange(newPosition, newPosition);
       }
     });
+=======
+
+  function handleBudgetChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const rawValue = event.target.value.replace(/\D/g, "");
+    const formatted = new Intl.NumberFormat("id-ID").format(Number(rawValue || 0));
+    setBudgetValue(formatted);
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
   }
 
   function handleAddCustomSkill() {
@@ -108,6 +123,10 @@ export default function PasangLowonganView({
   function removeCustomSkill(name: string) {
     setCustomSkills((current) => current.filter((skill) => skill !== name));
   }
+<<<<<<< HEAD
+=======
+  
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
 
   const groupedSkills = useMemo(() => {
     return data.skillOptions.reduce<Record<string, typeof data.skillOptions>>(
@@ -130,6 +149,7 @@ export default function PasangLowonganView({
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
+<<<<<<< HEAD
     event.preventDefault();
     setAttemptedSubmit(true);
 
@@ -159,6 +179,12 @@ export default function PasangLowonganView({
     }
 
     form.requestSubmit();
+=======
+    setAttemptedSubmit(true);
+    if (selectedSkillIds.length === 0) {
+      event.preventDefault();
+    }
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
   }
 
   const showSkillRequiredError = attemptedSubmit && selectedSkillIds.length === 0;
@@ -184,7 +210,11 @@ export default function PasangLowonganView({
           </div>
         </div>
 
+<<<<<<< HEAD
         <form action={formAction} onSubmit={handleSubmit} noValidate className="mt-6 flex flex-col gap-6">
+=======
+        <form action={formAction} onSubmit={handleSubmit} className="mt-6 flex flex-col gap-6">
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* Judul */}
             <label className={pageLabelClassName}>
@@ -197,6 +227,7 @@ export default function PasangLowonganView({
                 required
                 minLength={5}
                 maxLength={120}
+<<<<<<< HEAD
                 placeholder="Contoh: Website katalog produk furnitur"
                 className={fieldClass}
               />
@@ -204,6 +235,14 @@ export default function PasangLowonganView({
                 <span className="text-sm font-normal text-danger">{titleError}</span>
               )}
               {state.fieldErrors?.title?.[0] && !titleError && (
+=======
+                pattern={titleMustContainLetterPattern}
+                title="Judul harus mengandung huruf, nggak boleh cuma angka"
+                placeholder="Contoh: Website katalog produk furnitur"
+                className={fieldClass}
+              />
+              {state.fieldErrors?.title?.[0] && (
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
                 <span className="text-sm font-normal text-danger">
                   {state.fieldErrors.title[0]}
                 </span>
@@ -216,7 +255,10 @@ export default function PasangLowonganView({
                 Budget Tetap (Rp) <span className="text-red-500">*</span>
               </span>
               <input
+<<<<<<< HEAD
                 ref={budgetInputRef}
+=======
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
                 name="budget"
                 type="text"
                 inputMode="numeric"
@@ -445,7 +487,10 @@ export default function PasangLowonganView({
               }))}
               placeholder="Pilih mode kerja"
               searchPlaceholder="Cari mode kerja..."
+<<<<<<< HEAD
               showSearch={false}
+=======
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
               required
             />
 
@@ -461,7 +506,11 @@ export default function PasangLowonganView({
                 disabled={workMode === "REMOTE"}
                 maxLength={120}
                 placeholder={workMode === "REMOTE" ? "Tidak diperlukan" : "Contoh: Malang"}
+<<<<<<< HEAD
                 className={whiteFieldClass}
+=======
+                className={fieldClass}
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
               />
               {state.fieldErrors?.location?.[0] && (
                 <span className="text-sm font-normal text-danger">

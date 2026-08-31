@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 import {
   useActionState,
   useRef,
@@ -23,6 +24,11 @@ function formatFileSize(bytes: number) {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
+=======
+import { useActionState } from "react";
+import { createProposalAction } from "@/app/actions/proposals";
+import Button from "@/components/ui/Button";
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
 
 export default function ProposalForm({
   projectId,
@@ -36,6 +42,7 @@ export default function ProposalForm({
     {},
   );
 
+<<<<<<< HEAD
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [cvError, setCvError] = useState("");
   const cvInputRef = useRef<HTMLInputElement>(null);
@@ -88,6 +95,11 @@ export default function ProposalForm({
     <form action={formAction} noValidate className="mt-5 flex flex-col gap-4">
       <input type="hidden" name="projectId" value={projectId} />
 
+=======
+  return (
+    <form action={formAction} className="mt-5 flex flex-col gap-4">
+      <input type="hidden" name="projectId" value={projectId} />
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
       <label className="flex flex-col gap-2 text-sm font-bold text-ink">
         Proposal Anda
         <textarea
@@ -126,6 +138,7 @@ export default function ProposalForm({
         </span>
       )}
 
+<<<<<<< HEAD
       {/* Upload CV */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-bold text-ink">CV (opsional)</label>
@@ -169,6 +182,8 @@ export default function ProposalForm({
         {cvError && <span className="text-sm text-danger">{cvError}</span>}
       </div>
 
+=======
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
       {state.error && (
         <p
           role="alert"
@@ -188,4 +203,8 @@ export default function ProposalForm({
       </Button>
     </form>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63

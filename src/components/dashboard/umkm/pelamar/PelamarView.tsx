@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import ApplicantRow from "@/components/dashboard/umkm/pelamar/ApplicantRow";
+<<<<<<< HEAD
 import SearchableSelect from "@/components/ui/SearchableSelect";
+=======
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
 import type {
   ApplicantStatus,
   ApplicantsData,
@@ -41,6 +44,7 @@ export default function PelamarView({ data }: { data: ApplicantsData }) {
         userName={data.ownerName}
         avatarUrl={data.ownerAvatarUrl}
       />
+<<<<<<< HEAD
         
       {data.projects.length > 0 && (
         <div className="mb-5 rounded-xl border border-hairline bg-card p-4">
@@ -63,6 +67,33 @@ export default function PelamarView({ data }: { data: ApplicantsData }) {
             searchPlaceholder="Cari project..."
             showSearch={false}
           />
+=======
+
+      {data.projects.length > 0 && (
+        <div className="mb-5 rounded-xl border border-hairline bg-card p-4">
+          <label
+            htmlFor="applicant-project"
+            className="mb-2 block text-sm font-display font-bold text-ink"
+          >
+            Pilih project
+          </label>
+          <select
+            id="applicant-project"
+            value={data.selectedProjectId ?? ""}
+            onChange={(event) =>
+              router.replace(
+                `/dashboard/pelamar?project=${encodeURIComponent(event.target.value)}`,
+              )
+            }
+            className="w-full rounded-lg border border-hairline bg-canvas px-4 py-3 text-sm text-ink focus:border-brand focus:outline-none"
+          >
+            {data.projects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.title} · {project.status}
+              </option>
+            ))}
+          </select>
+>>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
         </div>
       )}
 
