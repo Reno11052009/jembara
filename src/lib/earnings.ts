@@ -88,6 +88,7 @@ function buildChartData(
 
 function createEmptyData(now: Date): EarningsData {
   return {
+    walletBalanceLabel: formatRupiah(0),
     stats: [
       { id: "total", label: "Total Nilai Proyek Selesai", value: formatRupiah(0), icon: Wallet },
       { id: "month", label: "Nilai Selesai Bulan Ini", value: formatRupiah(0), icon: Calendar },
@@ -105,6 +106,7 @@ export async function getEarningsData(now = new Date()): Promise<EarningsData> {
     where: { id: session.userId },
     select: {
       role: true,
+      saldo: true,
       student: { select: { id: true } },
       umkm: { select: { id: true } },
     },
@@ -189,6 +191,7 @@ export async function getEarningsData(now = new Date()): Promise<EarningsData> {
     }));
 
   return {
+    walletBalanceLabel: formatRupiah(viewer.saldo ?? 0),
     stats: [
       {
         id: "total",

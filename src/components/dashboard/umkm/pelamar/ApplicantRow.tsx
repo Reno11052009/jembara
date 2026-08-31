@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { CheckCircle2, Star } from "lucide-react";
 import {
   acceptProposalAction,
@@ -16,6 +17,7 @@ const statusStyles: Record<Applicant["status"], string> = {
 };
 
 export default function ApplicantRow({ applicant }: { applicant: Applicant }) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [pendingDecision, setPendingDecision] = useState<
     "accept" | "reject" | null
@@ -39,6 +41,12 @@ export default function ApplicantRow({ applicant }: { applicant: Applicant }) {
         const result = await action(applicant.id);
         if (!result.success) {
           setActionError(result.error || "Keputusan proposal gagal disimpan.");
+        } else if (
+          decision === "accept" &&
+          result.paymentRequired &&
+          result.projectId
+        ) {
+          router.push(`/dashboard/payments/${result.projectId}`);
         }
       } catch {
         setActionError("Keputusan proposal gagal disimpan. Silakan coba lagi.");
@@ -50,7 +58,7 @@ export default function ApplicantRow({ applicant }: { applicant: Applicant }) {
 
   function handleAccept() {
     const confirmed = window.confirm(
-      `Terima ${applicant.name}? Project akan langsung dimulai dan proposal kandidat lain akan ditolak.`,
+      `Terima ${applicant.name}? Proposal kandidat lain akan ditolak dan Anda akan diarahkan ke pembayaran Midtrans.`,
     );
     if (confirmed) runDecision("accept", acceptProposalAction);
   }

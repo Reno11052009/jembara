@@ -5,6 +5,7 @@ import type { MyJobListing } from "@/types/my-jobs";
 const statusStyles: Record<MyJobListing["status"], string> = {
   Terbuka: "bg-emerald-50 text-success",
   Seleksi: "bg-blue-50 text-blue-600",
+  "Menunggu Pembayaran": "bg-amber-50 text-amber-700",
   Berjalan: "bg-brand-soft text-brand",
   "Dalam Review": "bg-violet-50 text-violet-600",
   Selesai: "bg-slate-100 text-slate-700",
@@ -74,14 +75,22 @@ export default function MyJobRow({ listing }: { listing: MyJobListing }) {
         <p className="text-xs text-ink-muted">
           Dipublikasikan {listing.postedDateLabel}
         </p>
-        {collaborationStarted ? (
+        {listing.status === "Menunggu Pembayaran" ? (
+          <Link
+            href={`/dashboard/payments/${encodeURIComponent(listing.id)}`}
+            className="rounded-full bg-brand px-4 py-2 text-xs font-display font-bold uppercase text-white hover:opacity-90"
+          >
+            Bayar via Midtrans
+          </Link>
+        ) : collaborationStarted ? (
           <Link
             href={`/dashboard/messages?project=${encodeURIComponent(listing.id)}`}
             className="rounded-full border border-ink px-4 py-2 text-xs font-display font-bold uppercase text-ink hover:border-brand hover:text-brand"
           >
             Buka Kolaborasi
           </Link>
-        ) : listing.statusCode === "OPEN" || listing.statusCode === "PROPOSAL" ? (
+        ) : listing.statusCode === "OPEN" ||
+          (listing.statusCode === "PROPOSAL" && !listing.hasSelectedStudent) ? (
           <div className="flex flex-wrap items-center gap-2">
             {listing.applicantCount > 0 && (
               <Link

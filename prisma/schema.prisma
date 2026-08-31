@@ -8,14 +8,14 @@ datasource db {
 }
 
 model user {
-  id         String   @id @default(uuid()) @db.Uuid
-  email      String   @unique
-  name       String?
-  no_telepon String?
-  password   String
-  avatar     String?
-  bio        String?
-  location   String?
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique
+  name         String?
+  no_telepon   String?
+  password     String
+  avatar       String?
+  bio          String?
+  location     String?
   role         String   @default("STUDENT") // STUDENT, UMKM, ADMIN
   portfolioUrl String?
   github       String?
@@ -23,16 +23,18 @@ model user {
   behance      String?
   saldo        Int      @default(0) @db.Integer
   createdAt    DateTime @default(now()) @db.Timestamp(6)
-  updateAt   DateTime @updatedAt @db.Timestamp(6)
+  updateAt     DateTime @updatedAt @db.Timestamp(6)
 
-  student student?
-  umkm    umkm?
-  admin   admin?
-  sentMessages message[] @relation("MessageSender")
-  receivedMessages message[] @relation("MessageRecipient")
-  notifications notification[]
+  student                student?
+  umkm                   umkm?
+  admin                  admin?
+  sentMessages           message[]                @relation("MessageSender")
+  receivedMessages       message[]                @relation("MessageRecipient")
+  notifications          notification[]
   notificationPreference notification_preference?
-  sessions auth_session[]
+  sessions               auth_session[]
+  releasedPayments       project_payment[]        @relation("PaymentReleasedTo")
+  balanceTransactions    balance_transaction[]
 }
 
 model auth_session {
@@ -83,31 +85,32 @@ model student {
   createdAt          DateTime @default(now()) @db.Timestamp(6)
   updateAt           DateTime @updatedAt @db.Timestamp(6)
 
-  user       user            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  skills     student_skill[]
-  portfolios portfolio[]
-  proposals  proposal[]
-  projects   project[]       @relation("ProjectStudent")
-  reviews    review[]
+  user        user                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills      student_skill[]
+  portfolios  portfolio[]
+  proposals   proposal[]
+  projects    project[]            @relation("ProjectStudent")
+  reviews     review[]
+  submissions project_submission[]
 }
 
 model umkm {
-  id               String   @id @default(uuid()) @db.Uuid
-  userId           String   @unique @db.Uuid
-  nama_usaha       String
-  kategori_usaha   String?
-  website          String?
-  alamat_detail    String?
-  provinsi_kode    String?
-  provinsi_nama    String?
-  kabupaten_kode   String?
-  kabupaten_nama   String?
-  kecamatan_kode   String?
-  kecamatan_nama   String?
-  kelurahan_kode   String?
-  kelurahan_nama   String?
-  createdAt        DateTime @default(now()) @db.Timestamp(6)
-  updateAt         DateTime @updatedAt @db.Timestamp(6)
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @unique @db.Uuid
+  nama_usaha     String
+  kategori_usaha String?
+  website        String?
+  alamat_detail  String?
+  provinsi_kode  String?
+  provinsi_nama  String?
+  kabupaten_kode String?
+  kabupaten_nama String?
+  kecamatan_kode String?
+  kecamatan_nama String?
+  kelurahan_kode String?
+  kelurahan_nama String?
+  createdAt      DateTime @default(now()) @db.Timestamp(6)
+  updateAt       DateTime @updatedAt @db.Timestamp(6)
 
   user     user      @relation(fields: [userId], references: [id], onDelete: Cascade)
   projects project[]
@@ -154,15 +157,15 @@ model notification {
 }
 
 model notification_preference {
-  id             String   @id @default(uuid()) @db.Uuid
-  userId         String   @unique @db.Uuid
-  proposalMasuk  Boolean  @default(true)
-  pesanBaru      Boolean  @default(true)
-  pembayaran     Boolean  @default(true)
-  updateProyek   Boolean  @default(true)
-  promosiInfo    Boolean  @default(false)
-  createdAt      DateTime @default(now()) @db.Timestamp(6)
-  updatedAt      DateTime @updatedAt @db.Timestamp(6)
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @unique @db.Uuid
+  proposalMasuk Boolean  @default(true)
+  pesanBaru     Boolean  @default(true)
+  pembayaran    Boolean  @default(true)
+  updateProyek  Boolean  @default(true)
+  promosiInfo   Boolean  @default(false)
+  createdAt     DateTime @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime @updatedAt @db.Timestamp(6)
 
   user user @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -232,12 +235,14 @@ model project {
   createdAt   DateTime  @default(now()) @db.Timestamp(6)
   updatedAt   DateTime  @updatedAt @db.Timestamp(6)
 
-  umkm         umkm            @relation(fields: [umkmId], references: [id], onDelete: Cascade)
-  student      student?        @relation("ProjectStudent", fields: [studentId], references: [id], onDelete: SetNull)
+  umkm         umkm                @relation(fields: [umkmId], references: [id], onDelete: Cascade)
+  student      student?            @relation("ProjectStudent", fields: [studentId], references: [id], onDelete: SetNull)
   skillsNeeded project_skill[]
   proposals    proposal[]
   review       review?
   messages     message[]
+  payment      project_payment?
+  submission   project_submission?
 
   @@index([umkmId, status, createdAt])
 }
@@ -290,4 +295,64 @@ model review {
   project project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   student student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   umkm    umkm    @relation(fields: [umkmId], references: [id], onDelete: Cascade)
+}
+
+model project_payment {
+  id                    String    @id @default(uuid()) @db.Uuid
+  projectId             String    @unique @db.Uuid
+  orderId               String    @unique @db.VarChar(50)
+  amount                Int       @db.Integer
+  status                String    @default("CREATING") // CREATING, PENDING, HELD, RELEASED, FAILED, EXPIRED, CANCELLED, REFUNDED, CHARGEBACK
+  snapToken             String?
+  redirectUrl           String?
+  midtransTransactionId String?
+  paymentType           String?
+  fraudStatus           String?
+  rawStatus             Json?
+  paidAt                DateTime? @db.Timestamp(6)
+  heldAt                DateTime? @db.Timestamp(6)
+  releasedAt            DateTime? @db.Timestamp(6)
+  releasedToUserId      String?   @db.Uuid
+  createdAt             DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime  @updatedAt @db.Timestamp(6)
+
+  project            project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  releasedTo         user?                @relation("PaymentReleasedTo", fields: [releasedToUserId], references: [id], onDelete: SetNull)
+  balanceTransaction balance_transaction?
+
+  @@index([status, createdAt])
+  @@index([releasedToUserId, releasedAt])
+}
+
+model balance_transaction {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @db.Uuid
+  projectPaymentId String   @unique @db.Uuid
+  type             String   @default("PROJECT_EARNING")
+  amount           Int      @db.Integer
+  balanceBefore    Int      @db.Integer
+  balanceAfter     Int      @db.Integer
+  createdAt        DateTime @default(now()) @db.Timestamp(6)
+
+  user           user            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  projectPayment project_payment @relation(fields: [projectPaymentId], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt])
+}
+
+model project_submission {
+  id          String    @id @default(uuid()) @db.Uuid
+  projectId   String    @unique @db.Uuid
+  studentId   String    @db.Uuid
+  resultUrl   String?
+  notes       String    @db.VarChar(3000)
+  status      String    @default("SUBMITTED") // SUBMITTED, APPROVED
+  submittedAt DateTime  @default(now()) @db.Timestamp(6)
+  approvedAt  DateTime? @db.Timestamp(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamp(6)
+
+  project project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  student student @relation(fields: [studentId], references: [id], onDelete: Restrict)
+
+  @@index([studentId, submittedAt])
 }

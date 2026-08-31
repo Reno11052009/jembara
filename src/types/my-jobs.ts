@@ -3,6 +3,7 @@ export type ProjectWorkMode = "REMOTE" | "HYBRID" | "ONSITE";
 export type JobListingStatus =
   | "Terbuka"
   | "Seleksi"
+  | "Menunggu Pembayaran"
   | "Berjalan"
   | "Dalam Review"
   | "Selesai"
@@ -35,6 +36,8 @@ export interface MyJobListing {
   skills: string[];
   status: JobListingStatus;
   statusCode: string;
+  paymentStatus: string | null;
+  hasSelectedStudent: boolean;
 }
 
 export interface MyJobsData {

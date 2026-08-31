@@ -17,6 +17,7 @@ export interface ChatMessage {
   text: string;
   timeLabel: string;
   dateDividerLabel?: string;
+  deliveryStatus?: "sending";
 }
 
 export interface MessagesData {

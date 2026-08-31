@@ -6,11 +6,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   acceptProposal: vi.fn(),
   rejectProposal: vi.fn(),
+  routerPush: vi.fn(),
 }));
 
 vi.mock("@/app/actions/proposals", () => ({
   acceptProposalAction: mocks.acceptProposal,
   rejectProposalAction: mocks.rejectProposal,
+}));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mocks.routerPush }),
 }));
 
 import ApplicantRow from "@/components/dashboard/umkm/pelamar/ApplicantRow";

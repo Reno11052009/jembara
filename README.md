@@ -317,6 +317,8 @@ npm run lint
 4. Gunakan halaman **Lowongan** untuk melihat seluruh project, jumlah proposal yang masuk, dan status masing-masing project.
 5. Buka menu **Pelamar** atau tombol **Lihat Pelamar** pada lowongan untuk meninjau proposal dan profil Student yang mendaftar.
 6. Gunakan **Cari Talent** untuk menemukan Student berdasarkan kebutuhan project, lalu pantau kolaborasi melalui **Proyek Aktif** dan **Pesan**.
+7. Setelah menerima proposal, selesaikan pembayaran melalui Midtrans. Proyek baru dimulai setelah pembayaran terverifikasi.
+8. Saat Student mengirim hasil, periksa hasil pada **Proyek Aktif**, lalu pilih **Setujui & Lepas Saldo** untuk menyelesaikan proyek.
 
 #### Sebagai Admin
 
@@ -325,6 +327,38 @@ npm run lint
 3. Buka menu **Daftar User**, **Daftar UMKM**, **Relasi**, **Lowongan**, atau **Monitor Pesan** sesuai data yang ingin ditinjau.
 
 > **Catatan:** Setiap pengguna hanya dapat mengakses halaman dan tindakan yang sesuai dengan perannya. Jangan membagikan kata sandi atau kredensial admin kepada pihak lain.
+
+---
+
+## Integrasi Pembayaran Midtrans
+
+Jembara memakai **Snap Redirect**. Pembayaran masuk ke akun merchant platform dan dicatat sebagai dana `HELD` pada ledger internal. Dana tidak langsung menjadi saldo Student. Setelah Student mengirim hasil dan UMKM menyetujuinya, pelepasan dana dan penambahan `user.saldo` dilakukan dalam satu transaksi database yang idempoten.
+
+Tambahkan konfigurasi berikut ke `.env`:
+
+```env
+MIDTRANS_SERVER_KEY="SB-Mid-server-..."
+MIDTRANS_CLIENT_KEY="SB-Mid-client-..."
+MIDTRANS_ENVIRONMENT="sandbox"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
+
+Konfigurasikan **Payment Notification URL** pada Midtrans MAP:
+
+```text
+https://domain-anda/api/payments/midtrans/notification
+```
+
+Webhook memverifikasi signature SHA-512, mencocokkan `order_id` dan nominal dari database, serta memproses notifikasi berulang secara aman. Untuk produksi, gunakan `MIDTRANS_ENVIRONMENT="production"`, URL aplikasi HTTPS, dan Server Key produksi. Saldo Jembara adalah saldo internal; transfer aktual ke rekening Student memerlukan workflow payout/disbursement terpisah.
+
+Alur status:
+
+```text
+Proposal diterima (PROPOSAL)
+  -> pembayaran Midtrans terverifikasi (HELD, IN_PROGRESS)
+  -> Student kirim hasil (REVIEW)
+  -> UMKM menyetujui (RELEASED, COMPLETED, saldo Student bertambah)
+```
 
 ---
 

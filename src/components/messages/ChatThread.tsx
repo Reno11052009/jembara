@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import { ChatMessage } from "@/types/messages";
 import ChatBubble from "@/components/messages/ChatBubble";
 import ChatDateDivider from "@/components/messages/ChatDateDivider";
@@ -7,6 +10,12 @@ interface ChatThreadProps {
 }
 
 export default function ChatThread({ messages }: ChatThreadProps) {
+  const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView?.({ block: "end" });
+  }, [messages.length]);
+
   if (messages.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center">
@@ -26,6 +35,7 @@ export default function ChatThread({ messages }: ChatThreadProps) {
             <ChatBubble message={message} />
           </div>
         ))}
+        <div ref={endRef} aria-hidden="true" />
       </div>
     </div>
   );

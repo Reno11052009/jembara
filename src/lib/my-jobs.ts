@@ -26,8 +26,19 @@ function formatWorkMode(value: string) {
   return "Remote";
 }
 
-function mapProjectStatus(status: string): JobListingStatus {
+function mapProjectStatus(
+  status: string,
+  hasSelectedStudent = false,
+  paymentStatus?: string | null,
+): JobListingStatus {
   if (status === "OPEN") return "Terbuka";
+  if (
+    status === "PROPOSAL" &&
+    hasSelectedStudent &&
+    !["HELD", "RELEASED"].includes(paymentStatus ?? "")
+  ) {
+    return "Menunggu Pembayaran";
+  }
   if (status === "PROPOSAL") return "Seleksi";
   if (status === "IN_PROGRESS") return "Berjalan";
   if (status === "REVIEW") return "Dalam Review";
@@ -103,6 +114,8 @@ export async function getMyJobsData(): Promise<MyJobsData> {
       workMode: true,
       location: true,
       status: true,
+      studentId: true,
+      payment: { select: { status: true } },
       createdAt: true,
       skillsNeeded: {
         select: { skill: { select: { name: true } } },
@@ -131,8 +144,14 @@ export async function getMyJobsData(): Promise<MyJobsData> {
           ? "Remote"
           : project.location || viewer.location || "Lokasi belum ditentukan",
       skills: project.skillsNeeded.map(({ skill }) => skill.name),
-      status: mapProjectStatus(project.status),
+      status: mapProjectStatus(
+        project.status,
+        Boolean(project.studentId),
+        project.payment?.status,
+      ),
       statusCode: project.status,
+      paymentStatus: project.payment?.status ?? null,
+      hasSelectedStudent: Boolean(project.studentId),
     })),
   };
 }

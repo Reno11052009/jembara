@@ -31,6 +31,7 @@ export interface UpcomingWithdrawal {
 }
 
 export interface EarningsData {
+  walletBalanceLabel: string;
   stats: DashboardStat[];
   chartData: EarningsChartPoint[];
   transactions: Transaction[];

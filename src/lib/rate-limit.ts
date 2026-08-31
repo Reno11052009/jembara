@@ -3,6 +3,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { isIP } from "node:net";
 import { headers } from "next/headers";
+import { Prisma } from "@/generated/prisma/client";
 import prisma from "./prisma";
 
 type RateLimitOptions = {
@@ -42,82 +43,58 @@ function toResult(count: number, limit: number): RateLimitResult {
   };
 }
 
-async function consumeRateLimitAttempt(
-  options: RateLimitOptions,
-  attempt = 0,
-): Promise<RateLimitResult> {
-  const now = options.now ?? Date.now();
-  const currentTime = new Date(now);
-  const nextResetAt = new Date(now + options.windowMs);
-
-  // Sampling cleanup menjaga tabel tetap terbatas tanpa query tambahan pada
-  // setiap request.
-  if (options.key.endsWith("00")) {
-    await prisma.security_rate_limit.deleteMany({
-      where: { resetAt: { lt: new Date(now - CLEANUP_GRACE_MS) } },
-    });
-  }
-
-  const resetBucket = await prisma.security_rate_limit.updateMany({
-    where: { key: options.key, resetAt: { lte: currentTime } },
-    data: { count: 1, resetAt: nextResetAt },
-  });
-  if (resetBucket.count === 1) return toResult(1, options.limit);
-
-  const incrementedBucket = await prisma.security_rate_limit.updateMany({
-    where: {
-      key: options.key,
-      resetAt: { gt: currentTime },
-      count: { lt: options.limit },
-    },
-    data: { count: { increment: 1 } },
-  });
-  if (incrementedBucket.count === 1) {
-    const bucket = await prisma.security_rate_limit.findUnique({
-      where: { key: options.key },
-      select: { count: true },
-    });
-    return toResult(bucket?.count ?? options.limit, options.limit);
-  }
-
-  const existingBucket = await prisma.security_rate_limit.findUnique({
-    where: { key: options.key },
-    select: { count: true, resetAt: true },
-  });
-  if (existingBucket && existingBucket.resetAt > currentTime) {
-    return {
-      allowed: false,
-      remaining: 0,
-      retryAfterSeconds: Math.max(
-        1,
-        Math.ceil((existingBucket.resetAt.getTime() - now) / 1000),
-      ),
-    };
-  }
-
-  try {
-    await prisma.security_rate_limit.create({
-      data: {
-        key: options.key,
-        count: 1,
-        resetAt: nextResetAt,
-      },
-      select: { key: true },
-    });
-    return toResult(1, options.limit);
-  } catch (error) {
-    // Dua instance dapat membuat bucket yang sama secara bersamaan. Instance
-    // yang kalah mengulang update atomik dan tidak melewati pembatasan.
-    if (attempt < 2) return consumeRateLimitAttempt(options, attempt + 1);
-    throw error;
-  }
-}
-
 export async function consumeRateLimit(
   options: RateLimitOptions,
 ): Promise<RateLimitResult> {
   validateOptions(options);
-  return consumeRateLimitAttempt(options);
+  const now = options.now ?? Date.now();
+  const currentTime = new Date(now);
+  const nextResetAt = new Date(now + options.windowMs);
+  const cleanupBefore = new Date(now - CLEANUP_GRACE_MS);
+  const shouldCleanup = options.key.endsWith("00");
+  const maximumStoredCount = options.limit + 1;
+
+  // Satu statement atomik menangani create, reset, increment, penolakan, dan
+  // sampled cleanup. Nilai limit + 1 menandai request yang ditolak tanpa
+  // membutuhkan SELECT lanjutan.
+  const [bucket] = await prisma.$queryRaw<Array<{ count: number; resetAt: Date }>>(
+    Prisma.sql`
+      WITH cleanup AS (
+        DELETE FROM "security_rate_limit"
+        WHERE ${shouldCleanup}
+          AND "resetAt" < ${cleanupBefore}
+        RETURNING "key"
+      )
+      INSERT INTO "security_rate_limit" (
+        "key", "count", "resetAt", "updatedAt"
+      )
+      VALUES (${options.key}, 1, ${nextResetAt}, CURRENT_TIMESTAMP)
+      ON CONFLICT ("key") DO UPDATE
+      SET
+        "count" = CASE
+          WHEN "security_rate_limit"."resetAt" <= ${currentTime} THEN 1
+          ELSE LEAST("security_rate_limit"."count" + 1, ${maximumStoredCount})
+        END,
+        "resetAt" = CASE
+          WHEN "security_rate_limit"."resetAt" <= ${currentTime} THEN ${nextResetAt}
+          ELSE "security_rate_limit"."resetAt"
+        END,
+        "updatedAt" = CURRENT_TIMESTAMP
+      RETURNING "count", "resetAt"
+    `,
+  );
+
+  if (!bucket) throw new Error("Rate-limit bucket tidak dapat diperbarui");
+  if (bucket.count <= options.limit) return toResult(bucket.count, options.limit);
+
+  return {
+    allowed: false,
+    remaining: 0,
+    retryAfterSeconds: Math.max(
+      1,
+      Math.ceil((bucket.resetAt.getTime() - now) / 1000),
+    ),
+  };
 }
 
 export async function clearRateLimit(key: string) {

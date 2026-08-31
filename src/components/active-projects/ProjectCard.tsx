@@ -2,6 +2,7 @@ import type {
   ActiveProject,
   ActiveProjectsViewerRole,
 } from "@/types/active-project";
+import ProjectWorkflowActions from "@/components/active-projects/ProjectWorkflowActions";
 
 interface ProjectCardProps {
   project: ActiveProject;
@@ -87,6 +88,12 @@ export default function ProjectCard({ project, viewerRole }: ProjectCardProps) {
           </div>
         )}
       </div>
+      {project.paymentStatus === "HELD" && (
+        <p className="mt-4 rounded-lg bg-success/10 px-4 py-3 text-xs font-semibold text-success">
+          Dana proyek sudah diamankan dan ditahan sampai hasil disetujui UMKM.
+        </p>
+      )}
+      <ProjectWorkflowActions project={project} />
     </div>
   );
 }

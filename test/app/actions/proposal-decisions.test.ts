@@ -98,9 +98,11 @@ describe("proposal decisions", () => {
     );
   });
 
-  it("selects one candidate, starts the project, and rejects other proposals", async () => {
+  it("selects one candidate, waits for payment, and rejects other proposals", async () => {
     await expect(acceptProposalAction(PROPOSAL_ID)).resolves.toEqual({
       success: true,
+      projectId: PROJECT_ID,
+      paymentRequired: true,
     });
 
     expect(mocks.projectUpdateMany).toHaveBeenCalledWith({
@@ -110,7 +112,7 @@ describe("proposal decisions", () => {
         studentId: null,
         status: { in: ["OPEN", "PROPOSAL"] },
       },
-      data: { studentId: "student-1", status: "IN_PROGRESS" },
+      data: { studentId: "student-1", status: "PROPOSAL" },
     });
     expect(mocks.proposalUpdateMany).toHaveBeenNthCalledWith(1, {
       where: { id: PROPOSAL_ID, status: "PENDING" },

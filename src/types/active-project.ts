@@ -19,6 +19,12 @@ export interface ActiveProject {
   tags?: string[];
   proposalCount?: number;
   updatedLabel?: string;
+  paymentStatus?: string | null;
+  workflowAction?: "SUBMIT_RESULT" | "APPROVE_RESULT" | null;
+  submission?: {
+    notes: string;
+    resultUrl: string | null;
+  } | null;
 }
 
 export interface MonthlyActivityStats {

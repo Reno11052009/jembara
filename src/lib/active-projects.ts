@@ -29,6 +29,8 @@ const projectSelect = {
   student: { select: { user: { select: { name: true } } } },
   skillsNeeded: { select: { skill: { select: { name: true } } } },
   _count: { select: { proposals: true } },
+  payment: { select: { status: true } },
+  submission: { select: { notes: true, resultUrl: true, status: true } },
 } satisfies Prisma.projectSelect;
 
 type ActiveProjectRecord = Prisma.projectGetPayload<{
@@ -100,6 +102,25 @@ function mapProject(
     tags: project.skillsNeeded.map(({ skill }) => skill.name),
     proposalCount: project._count.proposals,
     updatedLabel: formatRelativeDate(project.updatedAt),
+    paymentStatus: project.payment?.status ?? null,
+    workflowAction:
+      role === "STUDENT" &&
+      project.status === "IN_PROGRESS" &&
+      project.payment?.status === "HELD"
+        ? "SUBMIT_RESULT"
+        : role === "UMKM" &&
+            project.status === "REVIEW" &&
+            project.payment?.status === "HELD" &&
+            project.submission?.status === "SUBMITTED"
+          ? "APPROVE_RESULT"
+          : null,
+    submission:
+      role !== "STUDENT" && project.submission
+        ? {
+            notes: project.submission.notes,
+            resultUrl: project.submission.resultUrl,
+          }
+        : null,
   };
 }
 

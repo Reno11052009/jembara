@@ -18,6 +18,8 @@ export interface ProposalActionState {
 export interface ProposalDecisionResult {
   success: boolean;
   error?: string;
+  projectId?: string;
+  paymentRequired?: boolean;
 }
 
 const DECIDABLE_PROJECT_STATUSES = ["OPEN", "PROPOSAL"];
@@ -212,7 +214,7 @@ export async function acceptProposalAction(
       if (
         proposal.status === "ACCEPTED" &&
         proposal.project.studentId === proposal.studentId &&
-        proposal.project.status === "IN_PROGRESS"
+        proposal.project.status === "PROPOSAL"
       ) {
         return {
           newlyAccepted: false,
@@ -247,7 +249,7 @@ export async function acceptProposalAction(
         },
         data: {
           studentId: proposal.studentId,
-          status: "IN_PROGRESS",
+          status: "PROPOSAL",
         },
       });
       if (claimedProject.count !== 1) {
@@ -299,8 +301,8 @@ export async function acceptProposalAction(
           userId: outcome.acceptedUserId,
           type: "PROJECT",
           title: "Proposal diterima",
-          message: `Anda terpilih untuk mengerjakan ${outcome.projectTitle}.`,
-          href: "/dashboard/active-projects",
+          message: `Anda terpilih untuk ${outcome.projectTitle}. Pengerjaan dimulai setelah pembayaran UMKM terverifikasi.`,
+          href: "/dashboard/proposals",
           preferenceKey: "updateProyek",
         }),
         ...outcome.rejectedUserIds.map((userId) =>
@@ -323,7 +325,11 @@ export async function acceptProposalAction(
     }
 
     revalidateProposalDecisionPaths();
-    return { success: true };
+    return {
+      success: true,
+      projectId: outcome.projectId,
+      paymentRequired: true,
+    };
   } catch (error) {
     if (error instanceof ProposalDecisionError) {
       return { success: false, error: error.message };

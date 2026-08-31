@@ -2,15 +2,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const rateLimitMock = vi.hoisted(() => ({
   deleteMany: vi.fn(),
-  updateMany: vi.fn(),
-  findUnique: vi.fn(),
-  create: vi.fn(),
+  queryRaw: vi.fn(),
   headers: vi.fn(),
 }));
 
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/prisma", () => ({
-  default: { security_rate_limit: rateLimitMock },
+  default: {
+    security_rate_limit: { deleteMany: rateLimitMock.deleteMany },
+    $queryRaw: rateLimitMock.queryRaw,
+  },
 }));
 vi.mock("next/headers", () => ({ headers: rateLimitMock.headers }));
 
@@ -33,18 +34,20 @@ describe("persistent rate limit", () => {
   });
 
   it("creates a new bucket for the first request", async () => {
-    rateLimitMock.updateMany.mockResolvedValueOnce({ count: 0 }).mockResolvedValueOnce({ count: 0 });
-    rateLimitMock.findUnique.mockResolvedValue(null);
-    rateLimitMock.create.mockResolvedValue({ key: "test" });
+    rateLimitMock.queryRaw.mockResolvedValue([
+      { count: 1, resetAt: new Date(1_000) },
+    ]);
 
     await expect(
       consumeRateLimit({ key: "test:bucket", limit: 2, windowMs: 1_000, now: 0 }),
     ).resolves.toEqual({ allowed: true, remaining: 1, retryAfterSeconds: 0 });
+    expect(rateLimitMock.queryRaw).toHaveBeenCalledTimes(1);
   });
 
   it("blocks a bucket that has reached its limit", async () => {
-    rateLimitMock.updateMany.mockResolvedValueOnce({ count: 0 }).mockResolvedValueOnce({ count: 0 });
-    rateLimitMock.findUnique.mockResolvedValue({ count: 2, resetAt: new Date(1_000) });
+    rateLimitMock.queryRaw.mockResolvedValue([
+      { count: 3, resetAt: new Date(1_000) },
+    ]);
 
     await expect(
       consumeRateLimit({ key: "test:bucket", limit: 2, windowMs: 1_000, now: 1 }),
@@ -52,7 +55,9 @@ describe("persistent rate limit", () => {
   });
 
   it("resets an expired bucket atomically", async () => {
-    rateLimitMock.updateMany.mockResolvedValueOnce({ count: 1 });
+    rateLimitMock.queryRaw.mockResolvedValue([
+      { count: 1, resetAt: new Date(2_000) },
+    ]);
 
     await expect(
       consumeRateLimit({ key: "test:bucket", limit: 2, windowMs: 1_000, now: 1_000 }),

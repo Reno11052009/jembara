@@ -11,9 +11,12 @@ const mocks = vi.hoisted(() => ({
   createUserNotification: vi.fn(),
   consumeRateLimit: vi.fn(),
   transaction: vi.fn(),
+  after: vi.fn(),
+  afterCallbacks: [] as Array<() => unknown>,
 }));
 
 vi.mock("server-only", () => ({}));
+vi.mock("next/server", () => ({ after: mocks.after }));
 vi.mock("@/lib/auth-guard", () => ({
   requireAuthenticatedSession: mocks.requireAuthenticatedSession,
 }));
@@ -65,6 +68,10 @@ const projectId = "44444444-4444-4444-8444-444444444444";
 describe("messages", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.afterCallbacks.length = 0;
+    mocks.after.mockImplementation((callback: () => unknown) => {
+      mocks.afterCallbacks.push(callback);
+    });
     mocks.requireAuthenticatedSession.mockResolvedValue({
       userId: viewerId,
       role: "STUDENT",
@@ -237,6 +244,9 @@ describe("messages", () => {
       data: { updatedAt: expect.any(Date) },
       select: { id: true },
     });
+    expect(mocks.createUserNotification).not.toHaveBeenCalled();
+    expect(mocks.afterCallbacks).toHaveLength(1);
+    await mocks.afterCallbacks[0]();
     expect(mocks.createUserNotification).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: umkmUserId,

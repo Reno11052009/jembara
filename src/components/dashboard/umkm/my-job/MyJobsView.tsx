@@ -16,6 +16,7 @@ const tabs: TabValue[] = [
   "Semua",
   "Terbuka",
   "Seleksi",
+  "Menunggu Pembayaran",
   "Berjalan",
   "Dalam Review",
   "Selesai",

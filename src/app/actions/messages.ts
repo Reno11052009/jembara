@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import {
   markCurrentProjectMessagesAsRead,
   sendCurrentMessage,
@@ -13,7 +14,9 @@ export async function sendMessageAction(
 ): Promise<MessageActionResult> {
   try {
     const result = await sendCurrentMessage(projectId, content);
-    if (result.success) revalidatePath("/dashboard/messages");
+    if (result.success) {
+      after(() => revalidatePath("/dashboard/messages"));
+    }
     return result;
   } catch (error) {
     console.error("Gagal mengirim pesan:", error);

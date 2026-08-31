@@ -43,6 +43,12 @@ export default function MessagesView({
       />
       {selectedConversation ? (
         <ChatPanel
+          key={
+            selectedConversation.id +
+            ":" +
+            ((conversationMessages[selectedConversation.id] ?? []).at(-1)?.id ??
+              "empty")
+          }
           conversation={selectedConversation}
           messages={conversationMessages[selectedConversation.id] ?? []}
         />

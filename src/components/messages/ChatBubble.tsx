@@ -21,6 +21,7 @@ export default function ChatBubble({ message }: ChatBubbleProps) {
           }`}
         >
           {message.timeLabel}
+          {message.deliveryStatus === "sending" ? " · Mengirim…" : ""}
         </span>
       </div>
     </div>

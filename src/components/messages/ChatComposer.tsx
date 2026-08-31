@@ -1,20 +1,32 @@
 "use client";
 
 import { useState, useTransition, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import { Paperclip, Send } from "lucide-react";
 import { sendMessageAction } from "@/app/actions/messages";
+import type { ChatMessage } from "@/types/messages";
 
 interface ChatComposerProps {
   conversationId: string;
   canSend: boolean;
+  onOptimisticSend: (message: ChatMessage) => void;
+  onSendSuccess: (messageId: string) => void;
+  onSendError: (messageId: string) => void;
 }
+
+const jakartaClockFormatter = new Intl.DateTimeFormat("id-ID", {
+  timeZone: "Asia/Jakarta",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
 
 export default function ChatComposer({
   conversationId,
   canSend,
+  onOptimisticSend,
+  onSendSuccess,
+  onSendError,
 }: ChatComposerProps) {
-  const router = useRouter();
   const [draft, setDraft] = useState("");
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -23,16 +35,28 @@ export default function ChatComposer({
     event.preventDefault();
     if (!canSend || !draft.trim() || isPending) return;
 
+    const content = draft.trim();
+    const optimisticId = `optimistic-${crypto.randomUUID()}`;
     setError("");
+    setDraft("");
+    onOptimisticSend({
+      id: optimisticId,
+      sender: "me",
+      text: content,
+      timeLabel: jakartaClockFormatter.format(new Date()),
+      deliveryStatus: "sending",
+    });
+
     startTransition(async () => {
-      const result = await sendMessageAction(conversationId, draft);
+      const result = await sendMessageAction(conversationId, content);
       if (!result.success) {
+        onSendError(optimisticId);
+        setDraft((currentDraft) => currentDraft || content);
         setError(result.error || "Pesan gagal dikirim.");
         return;
       }
 
-      setDraft("");
-      router.refresh();
+      onSendSuccess(optimisticId);
     });
   };
 

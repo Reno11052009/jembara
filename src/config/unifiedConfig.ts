@@ -51,6 +51,10 @@ export const config = {
           limit: 10,
           windowMs: 60 * 60 * 1000,
         },
+        paymentCreateByProject: {
+          limit: 5,
+          windowMs: 10 * 60 * 1000,
+        },
       },
     },
   },
