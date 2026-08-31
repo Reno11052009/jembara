@@ -5,6 +5,11 @@ import bcrypt from "bcryptjs";
 import { Pool } from "pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { createDatabasePoolConfig } from "../src/lib/database-connection";
+import {
+  skillTaxonomy,
+  skillTaxonomyGroups,
+} from "../src/lib/skill-taxonomy";
+import { businessCategorySeeds } from "../src/lib/business-category-taxonomy";
 
 const MAX_BCRYPT_PASSWORD_BYTES = 72;
 const MINIMUM_ADMIN_PASSWORD_BYTES = 16;
@@ -57,6 +62,55 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
+  await prisma.skill.createMany({
+    data: skillTaxonomy.map(({ name, category }) => ({ name, category })),
+    skipDuplicates: true,
+  });
+
+  for (const group of skillTaxonomyGroups) {
+    await prisma.skill.updateMany({
+      where: { name: { in: [...group.skills] } },
+      data: { category: group.category },
+    });
+  }
+
+  const seededSkills = await prisma.skill.count({
+    where: { name: { in: skillTaxonomy.map(({ name }) => name) } },
+  });
+
+  await prisma.business_category.createMany({
+    data: businessCategorySeeds.map(({ name, groupName, groupOrder, sortOrder }) => ({
+      name,
+      groupName,
+      groupOrder,
+      sortOrder,
+    })),
+    skipDuplicates: true,
+  });
+
+  // Query langsung dipakai agar seeder tetap stabil pada connection pooler
+  // Supabase yang membatasi interactive transaction berdurasi panjang.
+  for (const category of businessCategorySeeds) {
+    await prisma.business_category.update({
+      where: { name: category.name },
+      data: {
+        groupName: category.groupName,
+        groupOrder: category.groupOrder,
+        isActive: true,
+        sortOrder: category.sortOrder,
+      },
+    });
+  }
+
+  await prisma.business_category.updateMany({
+    where: { name: { notIn: businessCategorySeeds.map(({ name }) => name) } },
+    data: { isActive: false },
+  });
+
+  const seededBusinessCategories = await prisma.business_category.count({
+    where: { name: { in: businessCategorySeeds.map(({ name }) => name) } },
+  });
+
   const existingUser = await prisma.user.findFirst({
     where: { email: { equals: adminEmail, mode: "insensitive" } },
     select: {
@@ -80,45 +134,50 @@ async function main() {
     ? existingUser!.password
     : await bcrypt.hash(adminPassword, 12);
 
-  const adminUser = await prisma.$transaction(async (transaction) => {
-    const user = await transaction.user.upsert({
-      where: { email: existingUser?.email ?? adminEmail },
-      update: {
-        email: adminEmail,
-        name: adminName,
-        password: passwordHash,
-        role: "ADMIN",
-        admin: {
-          upsert: {
-            create: {},
-            update: {},
-          },
+  const adminUser = await prisma.user.upsert({
+    where: { email: existingUser?.email ?? adminEmail },
+    update: {
+      email: adminEmail,
+      name: adminName,
+      password: passwordHash,
+      role: "ADMIN",
+      admin: {
+        upsert: {
+          create: {},
+          update: {},
         },
       },
-      create: {
-        email: adminEmail,
-        name: adminName,
-        password: passwordHash,
-        role: "ADMIN",
-        admin: { create: {} },
-      },
-      select: {
-        id: true,
-        role: true,
-        admin: { select: { id: true } },
-      },
-    });
-
-    if (existingUser && !passwordAlreadyMatches) {
-      await transaction.auth_session.deleteMany({ where: { userId: existingUser.id } });
-    }
-    return user;
+    },
+    create: {
+      email: adminEmail,
+      name: adminName,
+      password: passwordHash,
+      role: "ADMIN",
+      admin: { create: {} },
+    },
+    select: {
+      id: true,
+      role: true,
+      admin: { select: { id: true } },
+    },
   });
+
+  if (existingUser && !passwordAlreadyMatches) {
+    await prisma.auth_session.deleteMany({ where: { userId: existingUser.id } });
+  }
 
   console.info("Seeder admin selesai:", {
     role: adminUser.role,
     adminProfileReady: Boolean(adminUser.admin),
     passwordRotated: Boolean(existingUser && !passwordAlreadyMatches),
+  });
+  console.info("Seeder master skill selesai:", {
+    expected: skillTaxonomy.length,
+    available: seededSkills,
+  });
+  console.info("Seeder master kategori usaha selesai:", {
+    expected: businessCategorySeeds.length,
+    available: seededBusinessCategories,
   });
 }
 

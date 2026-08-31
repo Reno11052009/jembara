@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   userFindFirst: vi.fn(),
+  userCreate: vi.fn(),
   compare: vi.fn(),
   consumeRateLimit: vi.fn(),
   clearRateLimit: vi.fn(),
@@ -16,7 +17,7 @@ vi.mock("@/lib/prisma", () => ({
   default: {
     user: {
       findFirst: mocks.userFindFirst,
-      create: vi.fn(),
+      create: mocks.userCreate,
     },
   },
 }));
@@ -49,7 +50,7 @@ vi.mock("@/config/unifiedConfig", () => ({
   },
 }));
 
-import { loginAction } from "@/app/actions/auth";
+import { loginAction, registerAction } from "@/app/actions/auth";
 
 describe("login rate-limit security", () => {
   beforeEach(() => {
@@ -80,5 +81,23 @@ describe("login rate-limit security", () => {
       "auth:login:ip-identity",
       "203.0.113.15:student@example.com",
     );
+  });
+
+  it("returns a dedicated error when a registration email already exists", async () => {
+    mocks.userFindFirst.mockResolvedValue({ id: "existing-user" });
+
+    await expect(
+      registerAction({
+        fullName: "Andi Pelajar",
+        email: "andi@example.com",
+        address: "Jalan Merdeka 10",
+        password: "Password123!",
+        confirmPassword: "Password123!",
+      }),
+    ).resolves.toEqual({
+      error: "Email sudah terdaftar. Silakan masuk atau gunakan email lain.",
+      code: "EMAIL_ALREADY_REGISTERED",
+    });
+    expect(mocks.userCreate).not.toHaveBeenCalled();
   });
 });

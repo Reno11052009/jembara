@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Camera, Globe, Pencil, X } from "lucide-react";
 import Swal from "sweetalert2";
 import { updateProfileAction } from "@/app/actions/profile";
@@ -14,14 +14,32 @@ import {
 } from "@/lib/education";
 import { skillTaxonomy } from "@/lib/skill-taxonomy";
 import IndonesiaRegionFields from "@/components/regions/IndonesiaRegionFields";
+import type { BusinessCategoryOption } from "@/lib/business-categories";
 
-export default function ProfileSettings({ initialData }: { initialData: ProfileData }) {
+type ProfileSettingsProps = {
+  initialData: ProfileData;
+  businessCategoryOptions: BusinessCategoryOption[];
+};
+
+export default function ProfileSettings({
+  initialData,
+  businessCategoryOptions,
+}: ProfileSettingsProps) {
+  const initialBusinessCategory =
+    businessCategoryOptions.find(
+      ({ code }) =>
+        code.toLocaleLowerCase("id-ID") ===
+        initialData.businessCategory.toLocaleLowerCase("id-ID"),
+    )?.code ?? initialData.businessCategory;
   const [isLoading, setIsLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string>(initialData.avatarUrl);
   const [avatarBase64, setAvatarBase64] = useState<string | null>(null);
   const [skills, setSkills] = useState<string[]>(initialData.skills || []);
   const [educationLevel, setEducationLevel] = useState(
     initialData.tingkat_pendidikan || "",
+  );
+  const [businessCategory, setBusinessCategory] = useState(
+    initialBusinessCategory || "",
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -32,6 +50,26 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
     !educationLevelOptions.some(
       (option) => option.value === initialData.tingkat_pendidikan,
     );
+  const selectableBusinessCategories = useMemo(() => {
+    if (
+      !initialData.businessCategory ||
+      businessCategoryOptions.some(
+        ({ code }) =>
+          code.toLocaleLowerCase("id-ID") ===
+          initialData.businessCategory.toLocaleLowerCase("id-ID"),
+      )
+    ) {
+      return businessCategoryOptions;
+    }
+
+    return [
+      {
+        code: initialData.businessCategory,
+        name: `${initialData.businessCategory} (kategori tersimpan)`,
+      },
+      ...businessCategoryOptions,
+    ];
+  }, [businessCategoryOptions, initialData.businessCategory]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -259,6 +297,21 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
             </div>
           </div>
 
+          <IndonesiaRegionFields
+            initialValue={{
+              addressDetail: initialData.addressDetail,
+              provinceCode: initialData.provinceCode,
+              provinceName: initialData.provinceName,
+              regencyCode: initialData.regencyCode,
+              regencyName: initialData.regencyName,
+              districtCode: initialData.districtCode,
+              districtName: initialData.districtName,
+              villageCode: initialData.villageCode,
+              villageName: initialData.villageName,
+            }}
+            allowManualFallback
+          />
+
           <div className="border-t border-gray-100 pt-6">
             <h3 className="mb-5 text-lg font-bold text-gray-900">
               {isUmkm ? "Informasi Usaha" : "Informasi Pendidikan"}
@@ -284,20 +337,22 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
-                    Kategori Usaha <span className="text-red-500">*</span>
-                  </label>
-                  <input
+                  <SearchableSelect
                     id="businessCategory"
-                    type="text"
                     name="businessCategory"
-                    defaultValue={initialData.businessCategory}
-                    minLength={2}
-                    maxLength={100}
-                    placeholder="Contoh: Kuliner, Fashion, atau Jasa"
-                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                    label="Kategori Usaha"
+                    value={businessCategory}
+                    onChange={setBusinessCategory}
+                    options={selectableBusinessCategories}
+                    placeholder="Pilih kategori usaha"
+                    searchPlaceholder="Cari kategori usaha..."
                     required
                   />
+                  {selectableBusinessCategories.length === 0 ? (
+                    <p className="mt-1.5 text-xs text-red-600">
+                      Master kategori usaha belum tersedia.
+                    </p>
+                  ) : null}
                 </div>
                 <div>
                   <label htmlFor="businessWebsite" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
@@ -313,17 +368,6 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                     autoComplete="url"
                     placeholder="tokokamu.id"
                     className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <IndonesiaRegionFields
-                    initialValue={{
-                      addressDetail: initialData.addressDetail,
-                      provinceCode: initialData.provinceCode,
-                      regencyCode: initialData.regencyCode,
-                      districtCode: initialData.districtCode,
-                      villageCode: initialData.villageCode,
-                    }}
                   />
                 </div>
               </div>
@@ -389,17 +433,6 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                     />
                   </div>
                 )}
-                <div className="md:col-span-2">
-                  <IndonesiaRegionFields
-                    initialValue={{
-                      addressDetail: initialData.addressDetail,
-                      provinceCode: initialData.provinceCode,
-                      regencyCode: initialData.regencyCode,
-                      districtCode: initialData.districtCode,
-                      villageCode: initialData.villageCode,
-                    }}
-                  />
-                </div>
               </div>
             )}
           </div>

@@ -120,7 +120,8 @@ export async function validateRegionSelection(
   };
 }
 
-export function formatRegionLocation(region: ValidatedRegionSelection) {
+export function formatRegionLocation(
+  region: Pick<ValidatedRegionSelection, "regencyName" | "provinceName">,
+) {
   return `${region.regencyName}, ${region.provinceName}`;
 }
-

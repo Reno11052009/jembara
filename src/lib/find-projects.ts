@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import type { Prisma } from "@/generated/prisma/client";
 import prisma from "./prisma";
 import { requireAuthenticatedSession } from "./auth-guard";
@@ -243,11 +244,23 @@ function toPublicProject(
   };
 }
 
-export async function getFindProjectsData(
-  searchParams: FindProjectsSearchParams,
-): Promise<FindProjectsData> {
+const getCachedFindProjectsData = cache(async (
+  query: string,
+  skill: string,
+  location: string,
+  budget: FindProjectFilters["budget"],
+  sort: FindProjectFilters["sort"],
+  page: number,
+): Promise<FindProjectsData> => {
+  const filters: FindProjectFilters = {
+    query,
+    skill,
+    location,
+    budget,
+    sort,
+    page,
+  };
   const session = await requireAuthenticatedSession();
-  const filters = parseFindProjectFilters(searchParams);
   const viewer = await prisma.user.findUnique({
     where: { id: session.userId },
     select: {
@@ -323,4 +336,18 @@ export async function getFindProjectsData(
     viewerRole,
     canApply: viewerRole === "STUDENT",
   };
+});
+
+export function getFindProjectsData(
+  searchParams: FindProjectsSearchParams,
+): Promise<FindProjectsData> {
+  const filters = parseFindProjectFilters(searchParams);
+  return getCachedFindProjectsData(
+    filters.query,
+    filters.skill,
+    filters.location,
+    filters.budget,
+    filters.sort,
+    filters.page,
+  );
 }

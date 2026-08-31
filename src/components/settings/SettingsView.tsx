@@ -91,6 +91,7 @@ import { usePreferences } from "@/contexts/PreferencesContext";
 import type { ProfileData } from "@/lib/profile";
 import type { NotificationPreferences } from "@/types/notification";
 import type { ActiveSession } from "@/types/settings";
+import type { BusinessCategoryOption } from "@/lib/business-categories";
 
 const tabIds = ["profil", "keamanan", "notifikasi", "pembayaran", "privasi", "bahasa"] as const;
 
@@ -98,12 +99,14 @@ interface SettingsViewProps {
   initialData: ProfileData;
   initialNotificationPreferences: NotificationPreferences;
   initialSessions: ActiveSession[];
+  businessCategoryOptions: BusinessCategoryOption[];
 }
 
 export default function SettingsView({
   initialData,
   initialNotificationPreferences,
   initialSessions,
+  businessCategoryOptions,
 }: SettingsViewProps) {
   const [activeTab, setActiveTab] = useState<(typeof tabIds)[number]>("profil");
   const { dict } = usePreferences();
@@ -167,7 +170,12 @@ export default function SettingsView({
 
         {/* Content Area */}
         <div className="flex-1 min-w-0">
-          {activeTab === "profil" && <ProfileSettings initialData={initialData} />}
+          {activeTab === "profil" && (
+            <ProfileSettings
+              initialData={initialData}
+              businessCategoryOptions={businessCategoryOptions}
+            />
+          )}
           {activeTab === "keamanan" && (
             <SecuritySettingsView sessions={initialSessions} />
           )}

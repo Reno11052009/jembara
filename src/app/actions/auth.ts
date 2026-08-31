@@ -27,6 +27,8 @@ import {
 
 const INVALID_CREDENTIALS_MESSAGE = "Email atau password salah";
 const RATE_LIMIT_MESSAGE = "Terlalu banyak percobaan. Silakan coba lagi nanti";
+const EMAIL_ALREADY_REGISTERED_MESSAGE =
+  "Email sudah terdaftar. Silakan masuk atau gunakan email lain.";
 const DUMMY_PASSWORD_HASH = "$2b$10$4VcIQIWwB9giOWgG9HFHbOlk5D5ut/ZfJf7gD3yhMgEzKAxcTcraS";
 
 async function checkLoginRateLimit(email: string) {
@@ -96,7 +98,12 @@ export async function loginAction(formData: LoginFormData): Promise<{ error?: st
   redirect("/dashboard");
 }
 
-export async function registerAction(formData: RegisterFormData): Promise<{ error?: string } | never> {
+export async function registerAction(
+  formData: RegisterFormData,
+): Promise<{
+  error?: string;
+  code?: "EMAIL_ALREADY_REGISTERED";
+} | never> {
   const parsed = registerSchema.safeParse(formData);
   if (!parsed.success) {
     return { error: getValidationMessage(parsed.error) };
@@ -112,7 +119,10 @@ export async function registerAction(formData: RegisterFormData): Promise<{ erro
     select: { id: true },
   });
   if (existingUser) {
-    return { error: "Pendaftaran tidak dapat diproses dengan data tersebut" };
+    return {
+      error: EMAIL_ALREADY_REGISTERED_MESSAGE,
+      code: "EMAIL_ALREADY_REGISTERED",
+    };
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);

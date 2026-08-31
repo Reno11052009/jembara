@@ -27,6 +27,14 @@ const educationLevels = new Set<string>(
 const optionalText = (maximum: number) =>
   z.string().trim().max(maximum).optional();
 
+const manualRegionName = (label: string) =>
+  z
+    .string()
+    .trim()
+    .min(2, `${label} minimal 2 karakter`)
+    .max(150, `${label} terlalu panjang`)
+    .optional();
+
 const profileSchema = z.object({
   name: z.string().trim().min(3, "Nama minimal 3 karakter").max(100),
   headline: optionalText(100),
@@ -62,6 +70,11 @@ const profileSchema = z.object({
     .string()
     .regex(/^\d{2}\.\d{2}\.\d{2}\.\d{4}$/, "Kelurahan/desa tidak valid")
     .optional(),
+  regionMode: z.enum(["api", "manual"]).optional(),
+  provinceName: manualRegionName("Nama provinsi"),
+  regencyName: manualRegionName("Nama kabupaten/kota"),
+  districtName: manualRegionName("Nama kecamatan"),
+  villageName: manualRegionName("Nama kelurahan/desa"),
   location: optionalText(255),
   tingkat_pendidikan: optionalText(10).refine(
     (value) => value === undefined || value === "" || educationLevels.has(value),
@@ -195,6 +208,11 @@ export async function updateProfileAction(formData: FormData) {
     regencyCode: formEntry(formData, "regencyCode"),
     districtCode: formEntry(formData, "districtCode"),
     villageCode: formEntry(formData, "villageCode"),
+    regionMode: formEntry(formData, "regionMode"),
+    provinceName: formEntry(formData, "provinceName"),
+    regencyName: formEntry(formData, "regencyName"),
+    districtName: formEntry(formData, "districtName"),
+    villageName: formEntry(formData, "villageName"),
     location: formEntry(formData, "location"),
     tingkat_pendidikan: formEntry(formData, "tingkat_pendidikan"),
     school: formEntry(formData, "school"),
@@ -222,15 +240,46 @@ export async function updateProfileAction(formData: FormData) {
 
   const authenticatedUser = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { role: true },
+    select: {
+      role: true,
+      umkm: { select: { kategori_usaha: true } },
+    },
   });
   if (!authenticatedUser || !["STUDENT", "UMKM"].includes(authenticatedUser.role)) {
     return { error: "Akun tidak diizinkan memperbarui profil ini." };
   }
-  let validatedRegion: ValidatedRegionSelection | null = null;
+  type ProfileRegionSelection = Omit<
+    ValidatedRegionSelection,
+    "provinceCode" | "regencyCode" | "districtCode" | "villageCode"
+  > & {
+    provinceCode: string | null;
+    regencyCode: string | null;
+    districtCode: string | null;
+    villageCode: string | null;
+  };
+  let validatedRegion: ProfileRegionSelection | null = null;
+  let validatedBusinessCategory: string | null = null;
   if (authenticatedUser.role === "UMKM") {
     if (!parsed.data.businessName) return { error: "Nama usaha wajib diisi" };
     if (!parsed.data.businessCategory) return { error: "Kategori usaha wajib diisi" };
+
+    const businessCategory = await prisma.business_category.findFirst({
+      where: {
+        name: { equals: parsed.data.businessCategory, mode: "insensitive" },
+        isActive: true,
+      },
+      select: { name: true },
+    });
+    const currentCategory = authenticatedUser.umkm?.kategori_usaha?.trim();
+    const isUnchangedLegacyCategory =
+      currentCategory?.localeCompare(parsed.data.businessCategory, "id-ID", {
+        sensitivity: "accent",
+      }) === 0;
+
+    if (!businessCategory && !isUnchangedLegacyCategory) {
+      return { error: "Kategori usaha tidak tersedia. Silakan pilih dari daftar." };
+    }
+    validatedBusinessCategory = businessCategory?.name ?? currentCategory ?? null;
   }
 
   const hasRegionInput = Boolean(
@@ -238,32 +287,59 @@ export async function updateProfileAction(formData: FormData) {
       parsed.data.provinceCode ||
       parsed.data.regencyCode ||
       parsed.data.districtCode ||
-      parsed.data.villageCode,
+      parsed.data.villageCode ||
+      parsed.data.regionMode === "manual" ||
+      parsed.data.provinceName ||
+      parsed.data.regencyName ||
+      parsed.data.districtName ||
+      parsed.data.villageName,
   );
   if (authenticatedUser.role === "UMKM" || hasRegionInput) {
     if (!parsed.data.addressDetail) return { error: "Detail alamat wajib diisi" };
-    if (
-      !parsed.data.provinceCode ||
-      !parsed.data.regencyCode ||
-      !parsed.data.districtCode ||
-      !parsed.data.villageCode
-    ) {
-      return { error: "Wilayah wajib dilengkapi" };
-    }
-
-    try {
-      validatedRegion = await validateRegionSelection({
-        provinceCode: parsed.data.provinceCode,
-        regencyCode: parsed.data.regencyCode,
-        districtCode: parsed.data.districtCode,
-        villageCode: parsed.data.villageCode,
-      });
-    } catch (error) {
-      if (error instanceof RegionInputError) return { error: error.message };
-      if (error instanceof RegionServiceError) {
-        return { error: "Data wilayah belum dapat diverifikasi. Silakan coba lagi." };
+    if (parsed.data.regionMode === "manual") {
+      if (
+        !parsed.data.provinceName ||
+        !parsed.data.regencyName ||
+        !parsed.data.districtName ||
+        !parsed.data.villageName
+      ) {
+        return { error: "Nama wilayah manual wajib dilengkapi" };
       }
-      throw error;
+
+      validatedRegion = {
+        provinceCode: null,
+        provinceName: parsed.data.provinceName,
+        regencyCode: null,
+        regencyName: parsed.data.regencyName,
+        districtCode: null,
+        districtName: parsed.data.districtName,
+        villageCode: null,
+        villageName: parsed.data.villageName,
+      };
+    } else {
+      if (
+        !parsed.data.provinceCode ||
+        !parsed.data.regencyCode ||
+        !parsed.data.districtCode ||
+        !parsed.data.villageCode
+      ) {
+        return { error: "Wilayah wajib dilengkapi" };
+      }
+
+      try {
+        validatedRegion = await validateRegionSelection({
+          provinceCode: parsed.data.provinceCode,
+          regencyCode: parsed.data.regencyCode,
+          districtCode: parsed.data.districtCode,
+          villageCode: parsed.data.villageCode,
+        });
+      } catch (error) {
+        if (error instanceof RegionInputError) return { error: error.message };
+        if (error instanceof RegionServiceError) {
+          return { error: "Data wilayah belum dapat diverifikasi. Silakan coba lagi." };
+        }
+        throw error;
+      }
     }
   }
 
@@ -433,7 +509,7 @@ export async function updateProfileAction(formData: FormData) {
           where: { userId: session.userId },
           update: {
             nama_usaha: parsed.data.businessName!,
-            kategori_usaha: parsed.data.businessCategory!,
+            kategori_usaha: validatedBusinessCategory!,
             ...(businessWebsite.value !== undefined
               ? { website: businessWebsite.value }
               : {}),
@@ -450,7 +526,7 @@ export async function updateProfileAction(formData: FormData) {
           create: {
             userId: session.userId,
             nama_usaha: parsed.data.businessName!,
-            kategori_usaha: parsed.data.businessCategory!,
+            kategori_usaha: validatedBusinessCategory!,
             website: businessWebsite.value ?? null,
             alamat_detail: parsed.data.addressDetail!,
             provinsi_kode: validatedRegion!.provinceCode,

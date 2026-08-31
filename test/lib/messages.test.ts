@@ -152,6 +152,56 @@ describe("messages", () => {
     });
   });
 
+  it("formats message time and calendar day in Asia/Jakarta on a UTC server", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-24T17:30:00.000Z"));
+    const messageTime = new Date("2026-08-24T17:05:00.000Z");
+    mocks.projectFindMany.mockResolvedValue([
+      {
+        id: projectId,
+        title: "Website UMKM",
+        status: "IN_PROGRESS",
+        updatedAt: messageTime,
+        umkm: {
+          nama_usaha: "Kopi Maju",
+          user: { id: umkmUserId, name: "Budi" },
+        },
+        student: { user: { id: viewerId, name: "Andi" } },
+        messages: [
+          {
+            id: "55555555-5555-4555-8555-555555555555",
+            senderId: umkmUserId,
+            recipientId: viewerId,
+            content: "Pesan setelah tengah malam WIB.",
+            readAt: null,
+            createdAt: messageTime,
+          },
+        ],
+        _count: { messages: 1 },
+      },
+    ]);
+    mocks.messageFindMany.mockResolvedValue([
+      {
+        id: "55555555-5555-4555-8555-555555555555",
+        senderId: umkmUserId,
+        content: "Pesan setelah tengah malam WIB.",
+        createdAt: messageTime,
+      },
+    ]);
+
+    try {
+      const result = await getMessagesData(projectId);
+
+      expect(result.conversations[0].timeLabel).toBe("00.05");
+      expect(result.conversationMessages[projectId][0]).toMatchObject({
+        timeLabel: "00.05",
+        dateDividerLabel: "Hari ini",
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("returns an empty state when the user has no collaboration project", async () => {
     mocks.projectFindMany.mockResolvedValue([]);
 

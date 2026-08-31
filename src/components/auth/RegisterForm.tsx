@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 import InputField from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { RegisterFormData, RegisterFormErrors, FormStatus } from "@/types/auth";
@@ -22,7 +22,6 @@ const initialData: RegisterFormData = {
 };
 
 export default function RegisterForm() {
-  const router = useRouter();
   const [formData, setFormData] = useState<RegisterFormData>(initialData);
   const [errors, setErrors] = useState<RegisterFormErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -64,6 +63,15 @@ export default function RegisterForm() {
     if (result?.error) {
       setServerError(result.error);
       setStatus("error");
+      if (result.code === "EMAIL_ALREADY_REGISTERED") {
+        await Swal.fire({
+          icon: "warning",
+          title: "Email sudah terdaftar",
+          text: "Silakan masuk dengan akun tersebut atau gunakan alamat email lain.",
+          confirmButtonColor: "#FF6B35",
+          confirmButtonText: "Mengerti",
+        });
+      }
     } else {
       setStatus("success");
     }

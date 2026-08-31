@@ -113,6 +113,40 @@ describe("getFindProjectsData", () => {
     expect(data.locationOptions).toEqual([{ label: "Malang", value: "Malang" }]);
   });
 
+  it("pushes search, skill, location, and budget filters into SQL", async () => {
+    mocks.projectFindMany.mockResolvedValue([]);
+
+    await getFindProjectsData({
+      q: "kopi",
+      skill: "Figma",
+      location: "Malang",
+      budget: "1m-3m",
+    });
+
+    expect(mocks.projectFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          status: "OPEN",
+          studentId: null,
+          budget: { gte: 1_000_000, lt: 3_000_000 },
+          OR: expect.arrayContaining([
+            { title: { contains: "kopi", mode: "insensitive" } },
+          ]),
+          skillsNeeded: {
+            some: {
+              skill: { name: { equals: "Figma", mode: "insensitive" } },
+            },
+          },
+          umkm: {
+            user: {
+              location: { equals: "Malang", mode: "insensitive" },
+            },
+          },
+        }),
+      }),
+    );
+  });
+
   it("allows a student account whose student profile is not created yet", async () => {
     mocks.userFindUnique.mockResolvedValue({
       role: "STUDENT",

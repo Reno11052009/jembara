@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   verifySession: vi.fn(),
   consumeRateLimit: vi.fn(),
   userFindUnique: vi.fn(),
+  businessCategoryFindFirst: vi.fn(),
   transaction: vi.fn(),
   userUpdate: vi.fn(),
   studentUpsert: vi.fn(),
@@ -44,6 +45,7 @@ vi.mock("@/config/unifiedConfig", () => ({
 vi.mock("@/lib/prisma", () => ({
   default: {
     user: { findUnique: mocks.userFindUnique },
+    business_category: { findFirst: mocks.businessCategoryFindFirst },
     $transaction: mocks.transaction,
   },
 }));
@@ -81,6 +83,7 @@ describe("profile action security", () => {
       retryAfterSeconds: 0,
     });
     mocks.userFindUnique.mockResolvedValue({ role: "STUDENT" });
+    mocks.businessCategoryFindFirst.mockResolvedValue({ name: "Kuliner" });
     mocks.studentUpsert.mockResolvedValue({ id: "student-1" });
     mocks.studentSkillFindMany.mockResolvedValue([]);
     mocks.skillFindFirst.mockResolvedValue({ id: "skill-1" });
@@ -212,6 +215,47 @@ describe("profile action security", () => {
     expect(mocks.umkmUpsert).not.toHaveBeenCalled();
   });
 
+  it("stores a complete manual address when the region is missing from the API", async () => {
+    const formData = profileForm();
+    formData.set("regionMode", "manual");
+    formData.set("addressDetail", "Jalan Perbatasan Nomor 12");
+    formData.set("provinceName", "Provinsi Contoh");
+    formData.set("regencyName", "Kabupaten Contoh");
+    formData.set("districtName", "Kecamatan Contoh");
+    formData.set("villageName", "Desa Contoh");
+
+    await expect(updateProfileAction(formData)).resolves.toEqual({ success: true });
+
+    expect(mocks.validateRegionSelection).not.toHaveBeenCalled();
+    expect(mocks.studentUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: expect.objectContaining({
+          alamat_detail: "Jalan Perbatasan Nomor 12",
+          provinsi_kode: null,
+          provinsi_nama: "Provinsi Contoh",
+          kabupaten_kode: null,
+          kabupaten_nama: "Kabupaten Contoh",
+          kecamatan_kode: null,
+          kecamatan_nama: "Kecamatan Contoh",
+          kelurahan_kode: null,
+          kelurahan_nama: "Desa Contoh",
+        }),
+      }),
+    );
+  });
+
+  it("rejects an incomplete manual address before opening a transaction", async () => {
+    const formData = profileForm();
+    formData.set("regionMode", "manual");
+    formData.set("addressDetail", "Jalan Perbatasan Nomor 12");
+    formData.set("provinceName", "Provinsi Contoh");
+
+    await expect(updateProfileAction(formData)).resolves.toEqual({
+      error: "Nama wilayah manual wajib dilengkapi",
+    });
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
   it("updates UMKM business information instead of education data", async () => {
     mocks.userFindUnique.mockResolvedValue({ role: "UMKM" });
     const formData = profileForm();
@@ -268,5 +312,45 @@ describe("profile action security", () => {
       error: "Nama usaha wajib diisi",
     });
     expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it("rejects a UMKM category that is not active in master data", async () => {
+    mocks.userFindUnique.mockResolvedValue({
+      role: "UMKM",
+      umkm: { kategori_usaha: "Kuliner" },
+    });
+    mocks.businessCategoryFindFirst.mockResolvedValue(null);
+    const formData = profileForm();
+    formData.set("businessName", "Kopi Jembara");
+    formData.set("businessCategory", "Kategori Buatan");
+
+    await expect(updateProfileAction(formData)).resolves.toEqual({
+      error: "Kategori usaha tidak tersedia. Silakan pilih dari daftar.",
+    });
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it("keeps an unchanged legacy UMKM category", async () => {
+    mocks.userFindUnique.mockResolvedValue({
+      role: "UMKM",
+      umkm: { kategori_usaha: "Kategori Lama" },
+    });
+    mocks.businessCategoryFindFirst.mockResolvedValue(null);
+    const formData = profileForm();
+    formData.set("businessName", "Usaha Warisan");
+    formData.set("businessCategory", "Kategori Lama");
+    formData.set("regionMode", "manual");
+    formData.set("addressDetail", "Jalan Lama Nomor 12");
+    formData.set("provinceName", "Jawa Timur");
+    formData.set("regencyName", "Kota Malang");
+    formData.set("districtName", "Lowokwaru");
+    formData.set("villageName", "Dinoyo");
+
+    await expect(updateProfileAction(formData)).resolves.toEqual({ success: true });
+    expect(mocks.umkmUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: expect.objectContaining({ kategori_usaha: "Kategori Lama" }),
+      }),
+    );
   });
 });

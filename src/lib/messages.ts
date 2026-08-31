@@ -16,6 +16,14 @@ import type {
 const PROJECT_MESSAGE_STATUSES = ["IN_PROGRESS", "REVIEW", "COMPLETED"];
 const SENDABLE_PROJECT_STATUSES = ["IN_PROGRESS", "REVIEW"];
 const MAX_MESSAGES_PER_PROJECT = 100;
+const JEMBARA_TIME_ZONE = "Asia/Jakarta";
+
+const calendarDateFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: JEMBARA_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
 
 const projectIdSchema = z.string().uuid("ID proyek tidak valid.");
 const sendMessageSchema = z.object({
@@ -27,20 +35,33 @@ const sendMessageSchema = z.object({
     .max(2000, "Pesan maksimal 2000 karakter."),
 });
 
-function isSameCalendarDay(first: Date, second: Date) {
-  return (
-    first.getFullYear() === second.getFullYear() &&
-    first.getMonth() === second.getMonth() &&
-    first.getDate() === second.getDate()
+function getCalendarDate(value: Date) {
+  const parts = Object.fromEntries(
+    calendarDateFormatter
+      .formatToParts(value)
+      .filter(({ type }) => type !== "literal")
+      .map(({ type, value: partValue }) => [type, Number(partValue)]),
   );
+
+  return {
+    year: parts.year,
+    month: parts.month,
+    day: parts.day,
+    ordinal: Date.UTC(parts.year, parts.month - 1, parts.day) / 86_400_000,
+  };
 }
 
-function startOfDay(value: Date) {
-  return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+function calendarDayDifference(later: Date, earlier: Date) {
+  return getCalendarDate(later).ordinal - getCalendarDate(earlier).ordinal;
+}
+
+function isSameCalendarDay(first: Date, second: Date) {
+  return calendarDayDifference(first, second) === 0;
 }
 
 function formatClock(value: Date) {
   return new Intl.DateTimeFormat("id-ID", {
+    timeZone: JEMBARA_TIME_ZONE,
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
@@ -48,31 +69,34 @@ function formatClock(value: Date) {
 }
 
 function formatDateLabel(value: Date, now: Date) {
-  if (isSameCalendarDay(value, now)) return "Hari ini";
+  const dayDifference = calendarDayDifference(now, value);
+  if (dayDifference === 0) return "Hari ini";
+  if (dayDifference === 1) return "Kemarin";
 
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
-  if (isSameCalendarDay(value, yesterday)) return "Kemarin";
+  const valueYear = getCalendarDate(value).year;
+  const currentYear = getCalendarDate(now).year;
 
   return new Intl.DateTimeFormat("id-ID", {
+    timeZone: JEMBARA_TIME_ZONE,
     day: "numeric",
     month: "long",
-    year: value.getFullYear() === now.getFullYear() ? undefined : "numeric",
+    year: valueYear === currentYear ? undefined : "numeric",
   }).format(value);
 }
 
 function formatConversationTime(value: Date, now: Date) {
-  if (isSameCalendarDay(value, now)) return formatClock(value);
-
-  const dayDifference = Math.floor(
-    (startOfDay(now).getTime() - startOfDay(value).getTime()) / 86_400_000,
-  );
+  const dayDifference = calendarDayDifference(now, value);
+  if (dayDifference === 0) return formatClock(value);
   if (dayDifference === 1) return "Kemarin";
   if (dayDifference > 1 && dayDifference < 7) {
-    return new Intl.DateTimeFormat("id-ID", { weekday: "long" }).format(value);
+    return new Intl.DateTimeFormat("id-ID", {
+      timeZone: JEMBARA_TIME_ZONE,
+      weekday: "long",
+    }).format(value);
   }
 
   return new Intl.DateTimeFormat("id-ID", {
+    timeZone: JEMBARA_TIME_ZONE,
     day: "2-digit",
     month: "short",
   }).format(value);
