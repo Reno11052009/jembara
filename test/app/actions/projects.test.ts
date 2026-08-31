@@ -106,6 +106,21 @@ describe("createProjectAction", () => {
     );
   });
 
+  it("uses the raw budget value when the visible input is formatted in rupiah", async () => {
+    const formData = createFormData({ budget: "500.000" });
+    formData.set("budgetRaw", "500000");
+
+    await expect(createProjectAction({}, formData)).rejects.toThrow(
+      "NEXT_REDIRECT:/dashboard/lowongan-saya",
+    );
+
+    expect(mocks.projectCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ budget: 500_000 }),
+      }),
+    );
+  });
+
   it("rejects invalid input before reading ownership data", async () => {
     const result = await createProjectAction(
       {},

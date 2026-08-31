@@ -48,6 +48,14 @@ const projectSchema = z
     }
   });
 
+function getBudgetInput(formData: FormData) {
+  const rawBudget = formData.get("budgetRaw");
+
+  return typeof rawBudget === "string" && rawBudget.trim()
+    ? rawBudget
+    : formData.get("budget");
+}
+
 export async function createProjectAction(
   _previousState: ProjectActionState,
   formData: FormData,
@@ -67,7 +75,7 @@ export async function createProjectAction(
   const parsed = projectSchema.safeParse({
     title: formData.get("title"),
     description: formData.get("description"),
-    budget: formData.get("budget"),
+    budget: getBudgetInput(formData),
     deadline: formData.get("deadline"),
     workMode: formData.get("workMode"),
     location: formData.get("location") ?? "",

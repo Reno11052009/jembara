@@ -1,4 +1,12 @@
+"use client";
+
+import { useState, useTransition } from "react";
 import { CheckCircle2, Star } from "lucide-react";
+import {
+  acceptProposalAction,
+  rejectProposalAction,
+  type ProposalDecisionResult,
+} from "@/app/actions/proposals";
 import type { Applicant } from "@/types/applicant";
 
 const statusStyles: Record<Applicant["status"], string> = {
@@ -8,12 +16,51 @@ const statusStyles: Record<Applicant["status"], string> = {
 };
 
 export default function ApplicantRow({ applicant }: { applicant: Applicant }) {
+  const [isPending, startTransition] = useTransition();
+  const [pendingDecision, setPendingDecision] = useState<
+    "accept" | "reject" | null
+  >(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const initials = applicant.name
     .split(" ")
     .map((part) => part[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
+
+  function runDecision(
+    decision: "accept" | "reject",
+    action: (proposalId: unknown) => Promise<ProposalDecisionResult>,
+  ) {
+    setActionError(null);
+    setPendingDecision(decision);
+    startTransition(async () => {
+      try {
+        const result = await action(applicant.id);
+        if (!result.success) {
+          setActionError(result.error || "Keputusan proposal gagal disimpan.");
+        }
+      } catch {
+        setActionError("Keputusan proposal gagal disimpan. Silakan coba lagi.");
+      } finally {
+        setPendingDecision(null);
+      }
+    });
+  }
+
+  function handleAccept() {
+    const confirmed = window.confirm(
+      `Terima ${applicant.name}? Project akan langsung dimulai dan proposal kandidat lain akan ditolak.`,
+    );
+    if (confirmed) runDecision("accept", acceptProposalAction);
+  }
+
+  function handleReject() {
+    const confirmed = window.confirm(
+      `Tolak proposal dari ${applicant.name}?`,
+    );
+    if (confirmed) runDecision("reject", rejectProposalAction);
+  }
 
   return (
     <article className="rounded-xl border border-hairline bg-card p-6">
@@ -89,8 +136,38 @@ export default function ApplicantRow({ applicant }: { applicant: Applicant }) {
           ) : (
             <span className="text-xs text-ink-muted">Portofolio belum tersedia</span>
           )}
+
+          {applicant.status === "Pending" && (
+            <>
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={handleReject}
+                className="rounded-full border border-danger px-4 py-2 text-xs font-display font-bold uppercase text-danger transition-colors hover:bg-danger-soft disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {pendingDecision === "reject" ? "Menolak..." : "Tolak"}
+              </button>
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={handleAccept}
+                className="rounded-full bg-success px-4 py-2 text-xs font-display font-bold uppercase text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {pendingDecision === "accept" ? "Menerima..." : "Terima"}
+              </button>
+            </>
+          )}
         </div>
       </div>
+
+      {actionError && (
+        <p
+          role="alert"
+          className="mt-4 rounded-lg border border-danger/20 bg-danger-soft px-4 py-3 text-sm font-semibold text-danger"
+        >
+          {actionError}
+        </p>
+      )}
     </article>
   );
 }

@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useRef, useState, useEffect } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Bell,
   BriefcaseBusiness,
@@ -17,6 +23,8 @@ import {
   markNotificationAsReadAction,
 } from "@/app/actions/notifications";
 import type { HeaderNotification } from "@/types/notification";
+
+const NOTIFICATION_REFRESH_INTERVAL_MS = 30_000;
 
 const notificationPresentation = {
   PROPOSAL: {
@@ -72,33 +80,68 @@ export default function NotificationMenu() {
   const [notifications, setNotifications] = useState<HeaderNotification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  // Lazy fetch: hanya fetch saat pertama kali dibuka, bukan saat mount
-  const hasFetched = useRef(false);
+  const hasLoadedInitially = useRef(false);
+  const isFetching = useRef(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const unreadCount = notifications.filter((notification) => !notification.isRead).length;
 
-  const loadNotifications = useCallback(async () => {
-    setIsLoading(true);
+  const loadNotifications = useCallback(async (showLoading = false) => {
+    if (isFetching.current) return;
+
+    isFetching.current = true;
+    if (showLoading) setIsLoading(true);
     try {
       setNotifications(await getNotificationsAction());
       setLoadError(null);
     } catch {
-      setLoadError("Notifikasi belum dapat dimuat.");
+      if (showLoading) {
+        setLoadError("Notifikasi belum dapat dimuat.");
+      }
     } finally {
-      setIsLoading(false);
+      isFetching.current = false;
+      if (showLoading) setIsLoading(false);
     }
   }, []);
 
   const handleToggle = useCallback(() => {
-    setIsOpen((current) => {
-      const next = !current;
-      // Fetch hanya saat pertama kali dibuka
-      if (next && !hasFetched.current) {
-        hasFetched.current = true;
-        void loadNotifications();
-      }
-      return next;
-    });
+    const next = !isOpen;
+    setIsOpen(next);
+    if (next) {
+      startTransition(async () => {
+        await loadNotifications();
+      });
+    }
+  }, [isOpen, loadNotifications]);
+
+  useEffect(() => {
+    if (!hasLoadedInitially.current) {
+      hasLoadedInitially.current = true;
+      startTransition(async () => {
+        await loadNotifications(true);
+      });
+    }
+
+    const refreshNotifications = () => {
+      startTransition(async () => {
+        await loadNotifications();
+      });
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") refreshNotifications();
+    };
+
+    window.addEventListener("focus", refreshNotifications);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    const refreshInterval = window.setInterval(
+      refreshNotifications,
+      NOTIFICATION_REFRESH_INTERVAL_MS,
+    );
+
+    return () => {
+      window.removeEventListener("focus", refreshNotifications);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.clearInterval(refreshInterval);
+    };
   }, [loadNotifications]);
 
   useEffect(() => {
@@ -206,8 +249,7 @@ export default function NotificationMenu() {
                 <button
                   type="button"
                   onClick={() => {
-                    setIsLoading(true);
-                    void loadNotifications();
+                    void loadNotifications(true);
                   }}
                   className="mt-3 text-xs font-bold text-brand hover:text-orange-700"
                 >
