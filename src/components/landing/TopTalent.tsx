@@ -1,36 +1,29 @@
-"use client";
 import { Star } from "lucide-react";
 import { topTalents } from "@/lib/mock-landing";
-import { useReveal } from "@/hooks/useReveal";
 
 export default function TopTalent() {
-  const { ref, isVisible } = useReveal<HTMLElement>();
-
   return (
     <section
-      ref={ref}
       id="talenta"
-      className={`bg-canvas px-6 py-20 transition-all duration-700 ease-out ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-      }`}
+      className="animate-reveal bg-canvas px-6 py-20"
     >
       <div className="mx-auto max-w-7xl text-center">
-        <p className="text-xs font-display font-black uppercase tracking-[0.15em] text-brand">
+        <p className="animate-reveal animate-reveal-d1 text-xs font-display font-black uppercase tracking-[0.15em] text-brand">
           Talenta Berbakat
         </p>
-        <h2 className="mt-2 font-display text-3xl font-black text-ink">
+        <h2 className="animate-reveal animate-reveal-d2 mt-2 font-display text-3xl font-black text-ink">
           Mahasiswa Terbaik Minggu Ini
-        </h2> 
-        <p className="mx-auto mt-3 max-w-xl text-sm font-body text-ink-muted">
+        </h2>
+        <p className="animate-reveal animate-reveal-d3 mx-auto mt-3 max-w-xl text-sm font-body text-ink-muted">
           Lihat profil mahasiswa berprestasi dengan rekam jejak penyelesaian
           project yang mengagumkan.
         </p>
 
         <div className="mt-12 grid grid-cols-1 gap-5 text-left sm:grid-cols-2 lg:grid-cols-3">
-          {topTalents.map((talent) => (
+          {topTalents.map((talent, i) => (
             <div
               key={talent.id}
-              className="rounded-xl border border-hairline bg-card p-10"
+              className={`animate-reveal animate-reveal-d${Math.min(i + 1, 6)} rounded-xl border border-hairline bg-card p-10`}
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand-soft text-base font-display font-black text-brand">

@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ActiveProject, ActiveProjectStatus } from "@/types/active-project";
+import type {
+  ActiveProject,
+  ActiveProjectStatus,
+  ActiveProjectsViewerRole,
+} from "@/types/active-project";
 import ActiveProjectFilterTabs from "@/components/active-projects/ActiveProjectFilterTabs";
 import ProjectList from "@/components/active-projects/ProjectList";
 
@@ -10,11 +14,15 @@ type FilterValue = "Semua" | ActiveProjectStatus;
 interface ActiveProjectsViewProps {
   projects: ActiveProject[];
   tabCounts: Record<ActiveProjectStatus, number>;
+  viewerRole: ActiveProjectsViewerRole;
+  emptyMessage: string;
 }
 
 export default function ActiveProjectsView({
   projects,
   tabCounts,
+  viewerRole,
+  emptyMessage,
 }: ActiveProjectsViewProps) {
   const [activeFilter, setActiveFilter] = useState<FilterValue>("Semua");
 
@@ -30,7 +38,11 @@ export default function ActiveProjectsView({
         counts={tabCounts}
         onChange={setActiveFilter}
       />
-      <ProjectList projects={filteredProjects} />
+      <ProjectList
+        projects={filteredProjects}
+        viewerRole={viewerRole}
+        emptyMessage={emptyMessage}
+      />
     </div>
   );
 }

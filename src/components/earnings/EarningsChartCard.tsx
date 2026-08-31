@@ -11,6 +11,12 @@ interface EarningsChartCardProps {
 
 export default function EarningsChartCard({ data }: EarningsChartCardProps) {
   const [range, setRange] = useState<"6 Bulan" | "1 Tahun" | "Semua">("6 Bulan");
+  const visibleData =
+    range === "6 Bulan"
+      ? data.slice(-6)
+      : range === "1 Tahun"
+        ? data.slice(-12)
+        : data;
 
   return (
     <div className="rounded-xl border border-hairline bg-card p-6">
@@ -19,7 +25,7 @@ export default function EarningsChartCard({ data }: EarningsChartCardProps) {
         <EarningsChartRangeTabs active={range} onChange={setRange} />
       </div>
       <div className="mt-6">
-        <EarningsBarChart data={data} />
+        <EarningsBarChart data={visibleData} />
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ export default function ChatThread({ messages }: ChatThreadProps) {
 
   return (
     <div className="flex-1 overflow-y-auto px-6 py-5">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
         {messages.map((message) => (
           <div key={message.id}>
             {message.dateDividerLabel && (

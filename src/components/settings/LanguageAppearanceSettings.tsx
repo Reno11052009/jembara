@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+// import { ChevronDown } from "lucide-react";
 import { usePreferences, FontSize } from "@/contexts/PreferencesContext";
 import { languageOptions, Language } from "@/lib/i18n/dictionary";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 
 type ThemeOption = "light" | "dark" | "system";
 
@@ -24,26 +25,21 @@ export default function LanguageAppearanceSettings() {
           {dict.settings.language.cardTitle}
         </h2>
 
-        <label className="font-body text-xs font-semibold tracking-wide text-neutral-500 mb-2 block">
-          {dict.settings.language.selectLabel}
-        </label>
-        <div className="relative">
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value as Language)}
-            className="w-full appearance-none rounded-xl border border-gray-200 bg-white pl-4 pr-10 py-3 font-body text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500"
-          >
-            {languageOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            size={18}
-            className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400"
-          />
-        </div>
+        <SearchableSelect
+          id="language"
+          name="language"
+          label={dict.settings.language.selectLabel}
+          labelClassName="font-body text-xs font-semibold tracking-wide text-neutral-500 mb-2 block"
+          value={language}
+          onChange={(code) => setLanguage(code as Language)}
+          options={languageOptions.map((option) => ({
+            code: option.value,
+            name: option.label,
+          }))}
+          placeholder="Pilih bahasa"
+          searchPlaceholder="Cari bahasa..."
+          required
+        />
       </section>
 
       {/* Tema Aplikasi — placeholder, no real functionality yet */}

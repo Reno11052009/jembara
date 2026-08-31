@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import SmoothScroll from "@/components/providers/SmoothScroll";
+import { connection } from "next/server";
 import { PreferencesProvider } from "@/contexts/PreferencesContext";
 import "./global.css";
 
 const unbounded = localFont({
-  src: "../fonts/Unbounded-Variable.ttf",
+  src: "../fonts/Unbounded-Variable.woff2",
   variable: "--font-unbounded",
   weight: "200 900",
+  display: "swap",
 });
 
 const geistSans = localFont({
@@ -27,7 +28,11 @@ export const metadata: Metadata = {
   description: "Temukan talenta. Selesaikan project.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // CSP nonce dibuat per request di proxy dan harus dipasangkan ke script yang
+  // dirender Next.js, sehingga root layout tidak boleh diprerender statis.
+  await connection();
+
   return (
     <html
       lang="id"
@@ -35,9 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${unbounded.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <PreferencesProvider>
-          <SmoothScroll>{children}</SmoothScroll>
-        </PreferencesProvider>
+        <PreferencesProvider>{children}</PreferencesProvider>
       </body>
     </html>
   );

@@ -10,11 +10,21 @@ export interface ActiveProject {
   id: string;
   title: string;
   clientName: string;
+  counterpartLabel?: string;
   status: ActiveProjectStatus;
-  progressPercent: number;
-  milestones: ProjectMilestone[];
+  progressPercent?: number;
+  milestones?: ProjectMilestone[];
   budgetLabel: string;
   deadlineLabel: string;
+  tags?: string[];
+  proposalCount?: number;
+  updatedLabel?: string;
+  paymentStatus?: string | null;
+  workflowAction?: "SUBMIT_RESULT" | "APPROVE_RESULT" | null;
+  submission?: {
+    notes: string;
+    resultUrl: string | null;
+  } | null;
 }
 
 export interface MonthlyActivityStats {
@@ -22,4 +32,24 @@ export interface MonthlyActivityStats {
   completedThisMonthLabel: string;
   totalEarningsLabel: string;
   averageRatingLabel: string;
+}
+
+export type ActiveProjectsViewerRole = "STUDENT" | "UMKM" | "ADMIN";
+
+export interface ActiveProjectMetric {
+  id: string;
+  label: string;
+  value: string;
+  tone?: "default" | "brand" | "success";
+}
+
+export interface ActiveProjectsData {
+  role: ActiveProjectsViewerRole;
+  projects: ActiveProject[];
+  tabCounts: Record<ActiveProjectStatus, number>;
+  metrics: ActiveProjectMetric[];
+  pageTitle: string;
+  pageSubtitle: string;
+  emptyMessage: string;
+  collaborationTip: string;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 import InputField from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { RegisterFormData, RegisterFormErrors, FormStatus } from "@/types/auth";
@@ -22,7 +22,6 @@ const initialData: RegisterFormData = {
 };
 
 export default function RegisterForm() {
-  const router = useRouter();
   const [formData, setFormData] = useState<RegisterFormData>(initialData);
   const [errors, setErrors] = useState<RegisterFormErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -64,15 +63,24 @@ export default function RegisterForm() {
     if (result?.error) {
       setServerError(result.error);
       setStatus("error");
+      if (result.code === "EMAIL_ALREADY_REGISTERED") {
+        await Swal.fire({
+          icon: "warning",
+          title: "Email sudah terdaftar",
+          text: "Silakan masuk dengan akun tersebut atau gunakan alamat email lain.",
+          confirmButtonColor: "#FF6B35",
+          confirmButtonText: "Mengerti",
+        });
+      }
     } else {
       setStatus("success");
     }
   }
 
-  const completion = useMemo(() => {
+  const progress = useMemo(() => {
     const fields = Object.values(formData);
     const filled = fields.filter((v) => v.trim().length > 0).length;
-    return Math.round((filled / fields.length) * 100);
+    return { filled, total: fields.length };
   }, [formData]);
 
   return (
@@ -80,18 +88,25 @@ export default function RegisterForm() {
       <div>
         <div className="mb-1.5 flex justify-between text-xs text-ink-muted">
           <span>Profile Progress</span>
-          <span className="font-medium text-brand">{completion}%</span>
+          <span className="font-medium text-brand">
+            {progress.filled}/{progress.total}
+          </span>
         </div>
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-hairline">
-          <div
-            className="h-full rounded-full bg-brand transition-all duration-300"
-            style={{ width: `${completion}%` }}
-          />
+        <div className="flex gap-1.5">
+          {Array.from({ length: progress.total }).map((_, i) => (
+            <div
+              key={i}
+              className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
+                i < progress.filled ? "bg-brand" : "bg-hairline"
+              }`}
+            />
+          ))}
         </div>
       </div>
 
       <InputField
         label="Nama Lengkap"
+        required
         autoComplete="name"
         placeholder="Nama kamu"
         value={formData.fullName}
@@ -100,6 +115,7 @@ export default function RegisterForm() {
       />
       <InputField
         label="Email"
+        required
         type="email"
         autoComplete="email"
         placeholder="kamu@email.com"
@@ -109,6 +125,7 @@ export default function RegisterForm() {
       />
       <InputField
         label="Alamat"
+        required
         type="text"
         autoComplete="street-address"
         placeholder="Alamat lengkap (min. 5 karakter)"
@@ -118,6 +135,7 @@ export default function RegisterForm() {
       />
       <InputField
         label="Password"
+        required
         type="password"
         autoComplete="new-password"
         placeholder="Minimal 8 karakter"
@@ -127,6 +145,7 @@ export default function RegisterForm() {
       />
       <InputField
         label="Konfirmasi Password"
+        required
         type="password"
         autoComplete="new-password"
         placeholder="Ulangi password"

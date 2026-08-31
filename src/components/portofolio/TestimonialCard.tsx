@@ -20,9 +20,14 @@ export default function TestimonialCard({ testimonial }: TestimonialCardProps) {
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-display font-black text-brand">
             {initials}
           </div>
-          <p className="font-display text-base font-black text-ink">
-            {testimonial.clientName}
-          </p>
+          <div>
+            <p className="font-display text-base font-black text-ink">
+              {testimonial.clientName}
+            </p>
+            <p className="mt-0.5 text-xs text-ink-muted">
+              {testimonial.projectTitle}
+            </p>
+          </div>
         </div>
         <span className="flex shrink-0 items-center gap-1 font-display text-sm font-black text-ink">
           <Star size={14} className="fill-brand text-brand" />

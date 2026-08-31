@@ -1,0 +1,125 @@
+import Link from "next/link";
+import { CalendarDays, MapPin } from "lucide-react";
+import type { MyJobListing } from "@/types/my-jobs";
+
+const statusStyles: Record<MyJobListing["status"], string> = {
+  Terbuka: "bg-emerald-50 text-success",
+  Seleksi: "bg-blue-50 text-blue-600",
+  "Menunggu Pembayaran": "bg-amber-50 text-amber-700",
+  Berjalan: "bg-brand-soft text-brand",
+  "Dalam Review": "bg-violet-50 text-violet-600",
+  Selesai: "bg-slate-100 text-slate-700",
+  Dibatalkan: "bg-danger-soft text-danger",
+  Lainnya: "bg-neutral-100 text-neutral-600",
+};
+
+export default function MyJobRow({ listing }: { listing: MyJobListing }) {
+  const collaborationStarted = [
+    "IN_PROGRESS",
+    "REVIEW",
+    "COMPLETED",
+  ].includes(listing.statusCode);
+
+  return (
+    <article className="rounded-xl border border-hairline bg-card px-6 py-5">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-start">
+        <div className="lg:col-span-7 min-w-0">
+          <div className="flex flex-wrap items-center gap-3">
+            <h3 className="font-display text-lg font-black text-ink">
+              {listing.title}
+            </h3>
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-bold ${statusStyles[listing.status]}`}
+            >
+              {listing.status}
+            </span>
+          </div>
+          <p className="mt-2 line-clamp-2 text-sm text-ink-muted">
+            {listing.description}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {listing.skills.map((skill) => (
+              <span
+                key={skill}
+                className="rounded-md bg-canvas px-2.5 py-1 text-xs text-ink"
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="lg:col-span-5 flex flex-col gap-3 text-sm content-start self-start items-start lg:items-end">
+          <div className="flex flex-wrap items-start justify-start lg:justify-end gap-x-8 gap-y-2 text-left lg:text-right">
+            <div>
+              <p className="text-xs text-ink-muted">Budget</p>
+              <p className="mt-0.5 font-display font-black text-ink">
+                {listing.budgetLabel}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-ink-muted">Proposal Masuk</p>
+              <p className="mt-0.5 font-display font-black text-ink">
+                {listing.applicantCount} proposal
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center justify-start lg:justify-end gap-x-6 gap-y-1.5 text-ink-muted">
+            <p className="flex items-center gap-1.5">
+              <CalendarDays size={14} className="shrink-0" /> {listing.deadlineLabel}
+            </p>
+            <p className="flex items-center gap-1.5">
+              <MapPin size={14} className="shrink-0" /> {listing.workModeLabel} · {listing.locationLabel}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-4">
+        <p className="text-xs text-ink-muted">
+          Dipublikasikan {listing.postedDateLabel}
+        </p>
+        {listing.status === "Menunggu Pembayaran" ? (
+          <Link
+            href={`/dashboard/payments/${encodeURIComponent(listing.id)}`}
+            className="rounded-full bg-brand px-4 py-2 text-xs font-display font-bold uppercase text-white hover:opacity-90"
+          >
+            Bayar via Midtrans
+          </Link>
+        ) : collaborationStarted ? (
+          <Link
+            href={`/dashboard/messages?project=${encodeURIComponent(listing.id)}`}
+            className="rounded-full border border-ink px-4 py-2 text-xs font-display font-bold uppercase text-ink hover:border-brand hover:text-brand"
+          >
+            Buka Kolaborasi
+          </Link>
+        ) : listing.statusCode === "OPEN" ||
+          (listing.statusCode === "PROPOSAL" && !listing.hasSelectedStudent) ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {listing.applicantCount > 0 ? (
+              <Link
+                href={`/dashboard/pelamar?project=${encodeURIComponent(listing.id)}`}
+                className="rounded-full border border-ink px-4 py-2 text-xs font-display font-bold uppercase text-ink hover:border-brand hover:text-brand"
+              >
+                Lihat Pelamar
+              </Link>
+            ) : (
+              <span
+                title="Belum ada proposal yang masuk"
+                className="rounded-full border border-hairline bg-canvas px-4 py-2 text-xs font-display font-bold uppercase text-ink-muted cursor-not-allowed opacity-60"
+              >
+                Belum Ada Pelamar
+              </span>
+            )}
+            <Link
+              href={`/dashboard/cari-talent?project=${encodeURIComponent(listing.id)}`}
+              className="rounded-full bg-brand px-4 py-2 text-xs font-display font-bold uppercase text-white hover:opacity-90"
+            >
+              Cari Talent
+            </Link>
+          </div>
+        ) : null}
+      </div>
+    </article>
+  );
+}

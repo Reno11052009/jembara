@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Bell,
   BriefcaseBusiness,
@@ -17,6 +23,8 @@ import {
   markNotificationAsReadAction,
 } from "@/app/actions/notifications";
 import type { HeaderNotification } from "@/types/notification";
+
+const NOTIFICATION_REFRESH_INTERVAL_MS = 30_000;
 
 const notificationPresentation = {
   PROPOSAL: {
@@ -70,42 +78,71 @@ function formatRelativeTime(value: string) {
 export default function NotificationMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<HeaderNotification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const hasLoadedInitially = useRef(false);
+  const isFetching = useRef(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const unreadCount = notifications.filter((notification) => !notification.isRead).length;
 
-  const loadNotifications = useCallback(async () => {
+  const loadNotifications = useCallback(async (showLoading = false) => {
+    if (isFetching.current) return;
+
+    isFetching.current = true;
+    if (showLoading) setIsLoading(true);
     try {
       setNotifications(await getNotificationsAction());
       setLoadError(null);
     } catch {
-      setLoadError("Notifikasi belum dapat dimuat.");
+      if (showLoading) {
+        setLoadError("Notifikasi belum dapat dimuat.");
+      }
     } finally {
-      setIsLoading(false);
+      isFetching.current = false;
+      if (showLoading) setIsLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    let active = true;
-
-    getNotificationsAction()
-      .then((nextNotifications) => {
-        if (!active) return;
-        setNotifications(nextNotifications);
-        setLoadError(null);
-      })
-      .catch(() => {
-        if (active) setLoadError("Notifikasi belum dapat dimuat.");
-      })
-      .finally(() => {
-        if (active) setIsLoading(false);
+  const handleToggle = useCallback(() => {
+    const next = !isOpen;
+    setIsOpen(next);
+    if (next) {
+      startTransition(async () => {
+        await loadNotifications();
       });
+    }
+  }, [isOpen, loadNotifications]);
+
+  useEffect(() => {
+    if (!hasLoadedInitially.current) {
+      hasLoadedInitially.current = true;
+      startTransition(async () => {
+        await loadNotifications(true);
+      });
+    }
+
+    const refreshNotifications = () => {
+      startTransition(async () => {
+        await loadNotifications();
+      });
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") refreshNotifications();
+    };
+
+    window.addEventListener("focus", refreshNotifications);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    const refreshInterval = window.setInterval(
+      refreshNotifications,
+      NOTIFICATION_REFRESH_INTERVAL_MS,
+    );
 
     return () => {
-      active = false;
+      window.removeEventListener("focus", refreshNotifications);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.clearInterval(refreshInterval);
     };
-  }, []);
+  }, [loadNotifications]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -164,7 +201,7 @@ export default function NotificationMenu() {
         aria-label={`Notifikasi${unreadCount > 0 ? `, ${unreadCount} belum dibaca` : ""}`}
         aria-expanded={isOpen}
         aria-controls="header-notification-menu"
-        onClick={() => setIsOpen((current) => !current)}
+        onClick={handleToggle}
         className="relative rounded-full p-2 text-ink transition-colors hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
       >
         <Bell size={20} />
@@ -212,8 +249,7 @@ export default function NotificationMenu() {
                 <button
                   type="button"
                   onClick={() => {
-                    setIsLoading(true);
-                    void loadNotifications();
+                    void loadNotifications(true);
                   }}
                   className="mt-3 text-xs font-bold text-brand hover:text-orange-700"
                 >

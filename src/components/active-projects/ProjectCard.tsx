@@ -1,10 +1,12 @@
-import { ActiveProject } from "@/types/active-project";
-import Button from "@/components/ui/Button";
-import ProgressBar from "@/components/active-projects/ProgressBar";
-import MilestoneChecklist from "@/components/active-projects/MilestoneChecklist";
+import type {
+  ActiveProject,
+  ActiveProjectsViewerRole,
+} from "@/types/active-project";
+import ProjectWorkflowActions from "@/components/active-projects/ProjectWorkflowActions";
 
 interface ProjectCardProps {
   project: ActiveProject;
+  viewerRole: ActiveProjectsViewerRole;
 }
 
 const statusStyles: Record<ActiveProject["status"], string> = {
@@ -13,7 +15,7 @@ const statusStyles: Record<ActiveProject["status"], string> = {
   Completed: "bg-success/10 text-success",
 };
 
-export default function ProjectCard({ project }: ProjectCardProps) {
+export default function ProjectCard({ project, viewerRole }: ProjectCardProps) {
   return (
     <div className="rounded-xl border border-hairline bg-card p-6">
       <div className="flex items-start justify-between gap-3">
@@ -31,7 +33,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               {project.title}
             </h3>
             <p className="mt-0.5 font-body text-sm text-ink-muted">
-              {project.clientName}  
+              {project.counterpartLabel}: {project.clientName}
             </p>
           </div>
         </div>
@@ -42,13 +44,18 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         </span>
       </div>
 
-      <div className="mt-5">
-        <ProgressBar percent={project.progressPercent} />
-      </div>
-
-      <div className="mt-4">
-        <MilestoneChecklist milestones={project.milestones} />
-      </div>
+      {project.tags && project.tags.length > 0 && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {project.tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-md bg-canvas px-2.5 py-1 text-xs font-body text-ink"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-6">
@@ -64,17 +71,29 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               {project.deadlineLabel}
             </p>
           </div>
+          <div>
+            <p className="font-body text-xs text-ink-muted">Update Terakhir</p>
+            <p className="mt-0.5 font-body text-sm font-bold text-ink">
+              {project.updatedLabel}
+            </p>
+          </div>
         </div>
 
-        <div className="flex gap-3">
-          <Button variant="outline" className="border-2 px-5 py-2 text-xs">
-            Lihat Detail
-          </Button>
-          <Button variant="primary" className="px-5 py-2 text-xs">
-            Kirim Update
-          </Button>
-        </div>
+        {viewerRole !== "STUDENT" && (
+          <div className="rounded-lg bg-canvas px-4 py-3 text-right">
+            <p className="font-body text-xs text-ink-muted">Proposal Masuk</p>
+            <p className="mt-0.5 font-display text-sm font-black text-ink">
+              {project.proposalCount ?? 0} Proposal
+            </p>
+          </div>
+        )}
       </div>
+      {project.paymentStatus === "HELD" && (
+        <p className="mt-4 rounded-lg bg-success/10 px-4 py-3 text-xs font-semibold text-success">
+          Dana proyek sudah diamankan dan ditahan sampai hasil disetujui UMKM.
+        </p>
+      )}
+      <ProjectWorkflowActions project={project} />
     </div>
   );
 }

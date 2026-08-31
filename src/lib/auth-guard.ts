@@ -11,3 +11,13 @@ export async function requireAuthenticatedSession() {
 
   return session;
 }
+
+export async function requireAdminSession() {
+  const session = await requireAuthenticatedSession();
+
+  if (session.role !== "ADMIN") {
+    redirect("/forbidden");
+  }
+
+  return session;
+}

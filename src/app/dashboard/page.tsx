@@ -9,13 +9,13 @@ import {
   Users,
 } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
-import Footer from "@/components/landing/Footer";
 import ProfileCompletionBanner from "@/components/dashboard/ProfileCompletionBanner";
 import StatCard from "@/components/dashboard/StatCard";
 import RecommendedProjectCard from "@/components/dashboard/RecommendedProjectCard";
 import RunningActivityCard from "@/components/dashboard/RunningActivityCard";
-import ManagedProjectCard from "@/components/dashboard/ManagedProjectCard";
 import RecentNotificationsCard from "@/components/dashboard/RecentNotificationsCard";
+import OwnerDashboardView from "@/components/dashboard/umkm/OwnerDashboardView";
+import AdminDashboardView from "@/components/dashboard/admin/AdminDashboardView";
 import { getDashboardData } from "@/lib/dashboard";
 
 const metricIcons = {
@@ -37,6 +37,38 @@ const dashboardSubtitles = {
 
 export default async function DashboardPage() {
   const dashboard = await getDashboardData();
+
+  // Tampilan UMKM memakai istilah lowongan/pelamar, sedangkan sumber tepercayanya
+  // tetap project/proposal yang difilter berdasarkan pemilik pada server.
+  if (dashboard.role === "UMKM") {
+    if (!dashboard.umkmOverview) {
+      throw new Error("Data dashboard UMKM tidak tersedia");
+    }
+
+    return (
+      <OwnerDashboardView
+        ownerName={dashboard.userName}
+        ownerAvatarUrl={dashboard.avatarUrl}
+        data={dashboard.umkmOverview}
+      />
+    );
+  }
+
+  // Admin memakai tampilan khusus, tetapi seluruh datanya tetap berasal dari
+  // pipeline getDashboardData() yang sudah mengautorisasi sesi di server.
+  if (dashboard.role === "ADMIN") {
+    if (!dashboard.adminOverview) {
+      throw new Error("Data dashboard admin tidak tersedia");
+    }
+
+    return (
+      <AdminDashboardView
+        adminName={dashboard.userName}
+        data={dashboard.adminOverview}
+      />
+    );
+  }
+
   const firstName = dashboard.userName.trim().split(/\s+/)[0] || "Pengguna";
 
   return (
@@ -49,7 +81,7 @@ export default async function DashboardPage() {
       />
 
       <div className="flex flex-col gap-6">
-        {dashboard.role !== "ADMIN" && dashboard.profileCompletionPercent < 100 && (
+        {dashboard.profileCompletionPercent < 100 && (
           <ProfileCompletionBanner
             percent={dashboard.profileCompletionPercent}
             role={dashboard.role}
@@ -69,36 +101,25 @@ export default async function DashboardPage() {
               {dashboard.projectSectionTitle}
             </h2>
             <div className="flex flex-col gap-7">
-              {dashboard.role === "STUDENT"
-                ? dashboard.recommendedProjects.map((project) => (
-                    <RecommendedProjectCard key={project.id} project={project} />
-                  ))
-                : dashboard.managedProjects.map((project) => (
-                    <ManagedProjectCard key={project.id} project={project} />
-                  ))}
+              {dashboard.recommendedProjects.map((project) => (
+                <RecommendedProjectCard key={project.id} project={project} />
+              ))}
 
-              {dashboard.recommendedProjects.length === 0 &&
-                dashboard.managedProjects.length === 0 && (
-                  <div className="rounded-xl border border-dashed border-hairline bg-card px-6 py-10 text-center">
-                    <p className="text-sm text-ink-muted">
-                      {dashboard.projectSectionEmptyMessage}
-                    </p>
-                  </div>
-                )}
+              {dashboard.recommendedProjects.length === 0 && (
+                <div className="rounded-xl border border-dashed border-hairline bg-card px-6 py-10 text-center">
+                  <p className="text-sm text-ink-muted">
+                    {dashboard.projectSectionEmptyMessage}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
           <div className="flex flex-col gap-6">
-            {dashboard.role !== "ADMIN" && (
-              <RunningActivityCard activities={dashboard.runningActivities} />
-            )}
+            <RunningActivityCard activities={dashboard.runningActivities} />
             <RecentNotificationsCard notifications={dashboard.notifications} />
           </div>
         </div>
-      </div>
-
-      <div className="-mx-6 mt-10 sm:-mx-8">
-        <Footer />
       </div>
     </>
   );

@@ -2,7 +2,6 @@ import Link from "next/link";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import FilterBar from "@/components/projects/FilterBar";
 import ProjectCard from "@/components/projects/ProjectCard";
-import Footer from "@/components/landing/Footer";
 import {
   getFindProjectsData,
   type FindProjectsSearchParams,
@@ -122,10 +121,6 @@ export default async function FindProjectsPage({
           )}
         </nav>
       )}
-
-      <div className="-mx-6 mt-10 sm:-mx-8">
-        <Footer />
-      </div>
     </>
   );
 }

@@ -2,13 +2,15 @@
 // npm install --save-dev prisma dotenv
 import "dotenv/config";
 import { defineConfig, env } from "prisma/config";
+import { requireEncryptedDatabaseUrl } from "./src/lib/database-connection";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
+    seed: "tsx prisma/seed.ts",
   },
   datasource: {
-    url: process.env.DIRECT_URL,
+    url: requireEncryptedDatabaseUrl(env("DIRECT_URL"), "DIRECT_URL"),
   },
 });

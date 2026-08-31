@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { markMessagesAsReadAction } from "@/app/actions/messages";
 import { Conversation, ChatMessage } from "@/types/messages";
 import ConversationListPanel from "@/components/messages/ConversationListPanel";
 import ChatPanel from "@/components/messages/ChatPanel";
@@ -8,29 +10,45 @@ import ChatPanel from "@/components/messages/ChatPanel";
 interface MessagesViewProps {
   conversations: Conversation[];
   conversationMessages: Record<string, ChatMessage[]>;
+  selectedConversationId: string;
 }
 
 export default function MessagesView({
   conversations,
   conversationMessages,
+  selectedConversationId: initialSelectedConversationId,
 }: MessagesViewProps) {
-  const [selectedConversationId, setSelectedConversationId] = useState(
-    conversations[0]?.id ?? ""
+  const router = useRouter();
+  const selectedConversation = conversations.find(
+    (conversation) => conversation.id === initialSelectedConversationId,
   );
 
-  const selectedConversation = conversations.find(
-    (c) => c.id === selectedConversationId
-  );
+  useEffect(() => {
+    if (!selectedConversation?.unread) return;
+    void markMessagesAsReadAction(selectedConversation.id);
+  }, [selectedConversation?.id, selectedConversation?.unread]);
+
+  const handleSelectConversation = (id: string) => {
+    router.replace(`/dashboard/messages?project=${encodeURIComponent(id)}`, {
+      scroll: false,
+    });
+  };
 
   return (
     <div className="flex h-full">
       <ConversationListPanel
         conversations={conversations}
-        selectedConversationId={selectedConversationId}
-        onSelectConversation={setSelectedConversationId}
+        selectedConversationId={initialSelectedConversationId}
+        onSelectConversation={handleSelectConversation}
       />
       {selectedConversation ? (
         <ChatPanel
+          key={
+            selectedConversation.id +
+            ":" +
+            ((conversationMessages[selectedConversation.id] ?? []).at(-1)?.id ??
+              "empty")
+          }
           conversation={selectedConversation}
           messages={conversationMessages[selectedConversation.id] ?? []}
         />

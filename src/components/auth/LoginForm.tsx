@@ -60,6 +60,7 @@ export default function LoginForm() {
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
         <InputField
           label="Email"
+          required
           type="email"
           autoComplete="email"
           placeholder="kamu@email.com"
@@ -69,6 +70,7 @@ export default function LoginForm() {
         />
         <InputField
           label="Password"
+          required
           type="password"
           autoComplete="current-password"
           placeholder="••••••••"

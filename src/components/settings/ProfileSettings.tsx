@@ -1,18 +1,36 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Camera, Globe, Pencil, X } from "lucide-react";
 import Swal from "sweetalert2";
 import { updateProfileAction } from "@/app/actions/profile";
 import { useRouter } from "next/navigation";
-import { FaBehance, FaGithub, FaLinkedin } from "react-icons/fa"; // Behance, Github, Linkedin from react-icons
+import { FaBehance, FaGithub, FaLinkedin } from "react-icons/fa";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import type { ProfileData } from "@/lib/profile";
 import {
   educationLevelOptions,
   educationUsesSemester,
 } from "@/lib/education";
+import { skillTaxonomy } from "@/lib/skill-taxonomy";
+import IndonesiaRegionFields from "@/components/regions/IndonesiaRegionFields";
+import type { BusinessCategoryOption } from "@/lib/business-categories";
 
-export default function ProfileSettings({ initialData }: { initialData: ProfileData }) {
+type ProfileSettingsProps = {
+  initialData: ProfileData;
+  businessCategoryOptions: BusinessCategoryOption[];
+};
+
+export default function ProfileSettings({
+  initialData,
+  businessCategoryOptions,
+}: ProfileSettingsProps) {
+  const initialBusinessCategory =
+    businessCategoryOptions.find(
+      ({ code }) =>
+        code.toLocaleLowerCase("id-ID") ===
+        initialData.businessCategory.toLocaleLowerCase("id-ID"),
+    )?.code ?? initialData.businessCategory;
   const [isLoading, setIsLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string>(initialData.avatarUrl);
   const [avatarBase64, setAvatarBase64] = useState<string | null>(null);
@@ -20,18 +38,52 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
   const [educationLevel, setEducationLevel] = useState(
     initialData.tingkat_pendidikan || "",
   );
+  const [businessCategory, setBusinessCategory] = useState(
+    initialBusinessCategory || "",
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const isUmkm = initialData.role === "UMKM";
   const showSemester = educationUsesSemester(educationLevel);
   const hasLegacyEducationLevel =
     Boolean(initialData.tingkat_pendidikan) &&
     !educationLevelOptions.some(
       (option) => option.value === initialData.tingkat_pendidikan,
     );
+  const selectableBusinessCategories = useMemo(() => {
+    if (
+      !initialData.businessCategory ||
+      businessCategoryOptions.some(
+        ({ code }) =>
+          code.toLocaleLowerCase("id-ID") ===
+          initialData.businessCategory.toLocaleLowerCase("id-ID"),
+      )
+    ) {
+      return businessCategoryOptions;
+    }
+
+    return [
+      {
+        code: initialData.businessCategory,
+        name: `${initialData.businessCategory} (kategori tersimpan)`,
+      },
+      ...businessCategoryOptions,
+    ];
+  }, [businessCategoryOptions, initialData.businessCategory]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+      void Swal.fire({
+        icon: "error",
+        title: "Foto tidak valid",
+        text: "Pilih gambar PNG, JPEG, atau WebP dengan ukuran maksimal 5 MB.",
+        confirmButtonColor: "#f97316",
+      });
+      e.target.value = "";
+      return;
+    }
 
     const objectUrl = URL.createObjectURL(file);
     setAvatarPreview(objectUrl);
@@ -58,7 +110,19 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
       ctx?.drawImage(img, 0, 0, width, height);
       
       const webpDataUrl = canvas.toDataURL("image/webp", 0.75);
+      if (webpDataUrl.length > 360_000) {
+        void Swal.fire({
+          icon: "error",
+          title: "Foto masih terlalu besar",
+          text: "Gunakan gambar yang lebih sederhana atau beresolusi lebih kecil.",
+          confirmButtonColor: "#f97316",
+        });
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+      setAvatarPreview(webpDataUrl);
       setAvatarBase64(webpDataUrl);
+      URL.revokeObjectURL(objectUrl);
     };
   };
 
@@ -67,26 +131,47 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
   };
 
   const handleAddSkill = async () => {
+    if (skills.length >= 20) {
+      await Swal.fire({
+        icon: "info",
+        title: "Batas skill tercapai",
+        text: "Maksimal 20 skill dapat ditambahkan.",
+        confirmButtonColor: "#FF6B35",
+      });
+      return;
+    }
+
+    const existingSkillKeys = new Set(
+      skills.map((skill) => skill.toLocaleLowerCase("id-ID")),
+    );
+    const availableSkills = skillTaxonomy.filter(
+      (skill) => !existingSkillKeys.has(skill.name.toLocaleLowerCase("id-ID")),
+    );
+    if (availableSkills.length === 0) {
+      await Swal.fire({
+        icon: "info",
+        title: "Semua skill sudah dipilih",
+        confirmButtonColor: "#FF6B35",
+      });
+      return;
+    }
+
     const { value: newSkill } = await Swal.fire({
-      title: 'Tambah Skill',
-      input: 'text',
-      inputPlaceholder: 'Contoh: Next.js, Figma, dsb...',
+      title: "Tambah Skill",
+      input: "select",
+      inputOptions: Object.fromEntries(
+        availableSkills.map((skill) => [skill.name, skill.name]),
+      ),
+      inputPlaceholder: "Pilih skill resmi Jembara",
       showCancelButton: true,
-      confirmButtonColor: '#FF6B35',
-      confirmButtonText: 'Tambah',
-      cancelButtonText: 'Batal',
-      inputValidator: (value) => {
-        if (!value) {
-          return 'Skill tidak boleh kosong!';
-        }
-        if (skills.includes(value.trim())) {
-          return 'Skill sudah ada!';
-        }
-      }
+      confirmButtonColor: "#FF6B35",
+      confirmButtonText: "Tambah",
+      cancelButtonText: "Batal",
+      inputValidator: (value) => (value ? undefined : "Pilih salah satu skill."),
     });
 
     if (newSkill) {
-      setSkills([...skills, newSkill.trim()]);
+      setSkills([...skills, newSkill]);
     }
   };
 
@@ -95,7 +180,9 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
     setIsLoading(true);
     
     const formData = new FormData(e.currentTarget);
-    formData.append("skills", skills.join(","));
+    if (!isUmkm) {
+      formData.append("skills", skills.join(","));
+    }
     if (avatarBase64) {
       formData.append("avatarBase64", avatarBase64);
     }
@@ -172,7 +259,9 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Nama Lengkap</label>
+              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
+                Nama Lengkap <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 name="name"
@@ -182,7 +271,9 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
               />
             </div>
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Email</label>
+              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
+                Email <span className="text-red-500">*</span>
+              </label>
               <input
                 type="email"
                 defaultValue={initialData.email || ""}
@@ -204,82 +295,152 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               />
             </div>
-            <div>
-              <label htmlFor="tingkat_pendidikan" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Jenjang Pendidikan</label>
-              <select
-                id="tingkat_pendidikan"
-                name="tingkat_pendidikan"
-                value={educationLevel}
-                onChange={(event) => setEducationLevel(event.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-              >
-                <option value="">Pilih jenjang pendidikan</option>
-                {hasLegacyEducationLevel && (
-                  <option value={initialData.tingkat_pendidikan}>
-                    {initialData.tingkat_pendidikan}
-                  </option>
+          </div>
+
+          <IndonesiaRegionFields
+            initialValue={{
+              addressDetail: initialData.addressDetail,
+              provinceCode: initialData.provinceCode,
+              provinceName: initialData.provinceName,
+              regencyCode: initialData.regencyCode,
+              regencyName: initialData.regencyName,
+              districtCode: initialData.districtCode,
+              districtName: initialData.districtName,
+              villageCode: initialData.villageCode,
+              villageName: initialData.villageName,
+            }}
+            allowManualFallback
+          />
+
+          <div className="border-t border-gray-100 pt-6">
+            <h3 className="mb-5 text-lg font-bold text-gray-900">
+              {isUmkm ? "Informasi Usaha" : "Informasi Pendidikan"}
+            </h3>
+
+            {isUmkm ? (
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
+                    Nama Usaha <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="businessName"
+                    type="text"
+                    name="businessName"
+                    defaultValue={initialData.businessName}
+                    minLength={3}
+                    maxLength={120}
+                    autoComplete="organization"
+                    placeholder="Contoh: Kopi Jembara"
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                    required
+                  />
+                </div>
+                <div>
+                  <SearchableSelect
+                    id="businessCategory"
+                    name="businessCategory"
+                    label="Kategori Usaha"
+                    value={businessCategory}
+                    onChange={setBusinessCategory}
+                    options={selectableBusinessCategories}
+                    placeholder="Pilih kategori usaha"
+                    searchPlaceholder="Cari kategori usaha..."
+                    required
+                  />
+                  {selectableBusinessCategories.length === 0 ? (
+                    <p className="mt-1.5 text-xs text-red-600">
+                      Master kategori usaha belum tersedia.
+                    </p>
+                  ) : null}
+                </div>
+                <div>
+                  <label htmlFor="businessWebsite" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
+                    Website Usaha
+                  </label>
+                  <input
+                    id="businessWebsite"
+                    type="text"
+                    name="businessWebsite"
+                    defaultValue={initialData.businessWebsite}
+                    maxLength={2048}
+                    inputMode="url"
+                    autoComplete="url"
+                    placeholder="tokokamu.id"
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div>
+                  <SearchableSelect
+                    id="tingkat_pendidikan"
+                    name="tingkat_pendidikan"
+                    label="Jenjang Pendidikan"
+                    labelClassName="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5"
+                    value={educationLevel}
+                    onChange={(code) => setEducationLevel(code)}
+                    options={[
+                      ...(hasLegacyEducationLevel
+                        ? [{ code: initialData.tingkat_pendidikan, name: initialData.tingkat_pendidikan }]
+                        : []),
+                      ...educationLevelOptions.map((option) => ({
+                        code: option.value,
+                        name: option.label,
+                      })),
+                    ]}
+                    placeholder="Pilih jenjang pendidikan"
+                    searchPlaceholder="Cari jenjang..."
+                    showSearch={false}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="school" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Nama Universitas/Sekolah</label>
+                  <input
+                    id="school"
+                    type="text"
+                    name="school"
+                    defaultValue={initialData.school}
+                    placeholder="Contoh: Universitas Brawijaya"
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="headline" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Jurusan</label>
+                  <input
+                    id="headline"
+                    type="text"
+                    name="headline"
+                    defaultValue={initialData.headline}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                  />
+                </div>
+                {showSemester && (
+                  <div>
+                    <label htmlFor="semester" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Semester</label>
+                    <input
+                      id="semester"
+                      type="number"
+                      name="semester"
+                      defaultValue={initialData.semester ?? ""}
+                      min={1}
+                      max={20}
+                      step={1}
+                      placeholder="Contoh: 6"
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                    />
+                  </div>
                 )}
-                {educationLevelOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label htmlFor="school" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Nama Universitas/Sekolah</label>
-              <input
-                id="school"
-                type="text"
-                name="school"
-                defaultValue={initialData.school}
-                placeholder="Contoh: Universitas Brawijaya"
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Jurusan</label>
-              <input
-                type="text"
-                name="headline"
-                defaultValue={initialData.headline}
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-              />
-            </div>
-          </div>
-
-          <div className={`grid grid-cols-1 gap-5 ${showSemester ? "md:grid-cols-2" : ""}`}>
-            {showSemester && (
-              <div>
-                <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Semester</label>
-                <input
-                  type="number"
-                  name="semester"
-                  defaultValue={initialData.semester ?? ""}
-                  min={1}
-                  max={20}
-                  step={1}
-                  placeholder="Contoh: 6"
-                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-                />
               </div>
             )}
-            <div>
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Lokasi</label>
-              <input
-                type="text"
-                name="location"
-                defaultValue={initialData.location}
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-              />
-            </div>
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Bio</label>
+            <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
+              {isUmkm ? "Deskripsi Usaha" : "Bio"}
+            </label>
             <textarea
               name="about"
               rows={2}
@@ -299,8 +460,8 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
           </div>
         </div>
 
-        {/* Skill & Keahlian Card */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 lg:p-7 shadow-sm">
+        {/* Skill & Keahlian hanya relevan untuk profil pelajar. */}
+        {!isUmkm && <div className="bg-white rounded-2xl border border-gray-100 p-6 lg:p-7 shadow-sm">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
             <h3 className="text-lg font-bold text-gray-900">Skill & Keahlian</h3>
             <button 
@@ -332,7 +493,7 @@ export default function ProfileSettings({ initialData }: { initialData: ProfileD
               <p className="text-sm text-gray-500 italic">Belum ada skill yang ditambahkan.</p>
             )}
           </div>
-        </div>
+        </div>}
 
 
         {/* Link Portfolio & Sosial Media Card */}
