@@ -135,7 +135,7 @@ export default function ChatBubbleWidget({
     if (!trimmed || isLoading) return;
 
     const userMsg: Message = {
-      id: String(Date.now()),
+      id: crypto.randomUUID(),
       sender: "user",
       text: trimmed,
       timeLabel: new Date().toLocaleTimeString("id-ID", {
@@ -166,7 +166,7 @@ export default function ChatBubbleWidget({
         data.message || data.error || "Maaf, terjadi kendala saat merespon.";
 
       const botMsg: Message = {
-        id: String(Date.now() + 1),
+        id: crypto.randomUUID(),
         sender: "assistant",
         text: botReplyText,
         timeLabel: new Date().toLocaleTimeString("id-ID", {
@@ -178,7 +178,7 @@ export default function ChatBubbleWidget({
       setMessages((prev) => [...prev, botMsg]);
     } catch {
       const errorMsg: Message = {
-        id: String(Date.now() + 1),
+        id: crypto.randomUUID(),
         sender: "assistant",
         text: "Maaf, gagal menghubungkan ke layanan AI. Pastikan koneksi internet Anda stabil.",
         timeLabel: new Date().toLocaleTimeString("id-ID", {
@@ -379,7 +379,7 @@ export default function ChatBubbleWidget({
       */}
       {isOpen && (
         <div
-          className={`fixed z-50 flex h-[560px] max-h-[calc(100vh-4rem)] w-[380px] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-3xl border border-hairline bg-white shadow-2xl transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 ${getModalPositionClass(
+          className={`fixed z-50 flex h-140 max-h-[calc(100vh-4rem)] w-140 max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-3xl border border-hairline bg-white shadow-2xl transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 ${getModalPositionClass(
             dockEdge
           )}`}
         >
@@ -427,14 +427,14 @@ export default function ChatBubbleWidget({
                     className="h-full w-full rounded-full object-cover shadow-sm"
                   />
                 </div>
-                <h4 className="max-w-[260px] font-display text-base font-bold text-ink">
+                <h4 className="max-w-65 font-display text-base font-bold text-ink">
                   Halo! Saya Jelita AI
                 </h4>
-                <p className="mt-1 max-w-[270px] font-body text-xs text-ink-muted">
+                <p className="mt-1 max-w-67.5 font-body text-xs text-ink-muted">
                   Asisten cerdas platform Jembara. Ada yang bisa saya bantu terkait proyek atau fitur platform?
                 </p>
 
-                <div className="mt-6 flex w-full max-w-[300px] flex-col gap-2">
+                <div className="mt-6 flex w-full max-w-75 flex-col gap-2">
                   {suggestions.map((suggestion) => (
                     <button
                       key={suggestion}

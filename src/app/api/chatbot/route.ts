@@ -6,6 +6,7 @@ import { config } from "@/config/unifiedConfig";
 import { getSafeChatbotRecommendation } from "@/lib/chatbot-recommendations";
 import { consumeRateLimits, createRateLimitKey } from "@/lib/rate-limit";
 import { verifySession } from "@/lib/session";
+import { getChatbotContext } from "@/lib/chatbot-context";
 
 const MAX_BODY_BYTES = 24 * 1024;
 const MAX_PROVIDER_REPLY_LENGTH = 6_000;
@@ -188,6 +189,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const platformContext = await getChatbotContext(session.userId, session.role);
+
     const apiKeys = Array.from(
       new Set(
         [process.env.CHATBOT_AI, process.env.CHATBOT_AI_BACKUP]
@@ -208,7 +211,15 @@ export async function POST(request: NextRequest) {
           : "Administrator";
     const systemPrompt = {
       role: "system" as const,
-      content: `${getBaseSystemPrompt()}\n\nRole pengguna terautentikasi: ${roleLabel}. Jangan meminta atau mengungkap data pribadi maupun data rahasia.`,
+      content: [
+        getBaseSystemPrompt(),
+        `Role pengguna terautentikasi: ${roleLabel}. Jangan meminta atau mengungkap data pribadi maupun data rahasia.`,
+        platformContext
+          ? `Data platform terkait pengguna ini saat ini (real-time dari database — gunakan ini untuk menjawab pertanyaan spesifik dan memberi rekomendasi; JANGAN mengarang data proyek/talent/angka di luar yang tercantum di sini):\n${platformContext}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n\n"),
     };
 
     let providerResponse: Response | null = null;
