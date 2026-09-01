@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
+import { Prisma } from "@/generated/prisma/client";
 import prisma from "@/lib/prisma";
 import { createSession, deleteSession, verifySession } from "@/lib/session";
 import { LoginFormData, RegisterFormData } from "@/types/auth";
@@ -126,23 +127,40 @@ export async function registerAction(
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password: hashedPassword,
-      name: fullName,
-      location: address,
-      role: "STUDENT",
-      notifications: {
-        create: {
-          type: "INFO",
-          title: "Selamat datang di JemBara",
-          message: "Lengkapi profil Anda agar lebih mudah ditemukan oleh pemilik proyek.",
-          href: "/dashboard/settings",
+  let user;
+  try {
+    user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name: fullName,
+        location: address,
+        role: "STUDENT",
+        notifications: {
+          create: {
+            type: "INFO",
+            title: "Selamat datang di JemBara",
+            message: "Lengkapi profil Anda agar lebih mudah ditemukan oleh pemilik proyek.",
+            href: "/dashboard/settings",
+          },
         },
       },
-    },
-  });
+    });
+  } catch (error) {
+    // Pemeriksaan findFirst di atas memberi respons cepat, sedangkan constraint
+    // unik tetap menjadi pengaman atomik untuk dua registrasi yang bersamaan.
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return {
+        error: EMAIL_ALREADY_REGISTERED_MESSAGE,
+        code: "EMAIL_ALREADY_REGISTERED",
+      };
+    }
+    console.error("Registrasi pengguna gagal:", error);
+    return { error: "Pendaftaran belum dapat diproses. Silakan coba lagi." };
+  }
 
   await createSession(user.id, user.role, user.name || "Pengguna Baru");
   redirect("/pilih-role");

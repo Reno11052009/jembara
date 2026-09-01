@@ -313,10 +313,14 @@ export async function applyMidtransStatus(payload: MidtransStatusPayload) {
       fraudStatus: payload.fraud_status ?? null,
       rawStatus: JSON.parse(JSON.stringify(payload)) as Prisma.InputJsonValue,
     };
+    // Tidak semua metode pembayaran Midtrans diperiksa oleh FDS. Jika field
+    // fraud_status tersedia, hanya "accept" yang boleh dianggap berhasil.
+    const hasAcceptedFraudStatus =
+      fraudStatus === undefined || fraudStatus === "accept";
     const isSuccessful =
       payload.status_code === "200" &&
       (transactionStatus === "capture" || transactionStatus === "settlement") &&
-      fraudStatus === "accept";
+      hasAcceptedFraudStatus;
 
     if (isSuccessful) {
       if (payment.status === "RELEASED" || payment.status === "HELD") {
@@ -376,9 +380,32 @@ export async function applyMidtransStatus(payload: MidtransStatusPayload) {
       partial_chargeback: "CHARGEBACK",
     };
     const nextStatus = failureMap[transactionStatus];
-    if (nextStatus && payment.status !== "RELEASED") {
-      await transaction.project_payment.update({
-        where: { id: payment.id },
+    if (nextStatus) {
+      const refundableStatuses = [
+        "CREATING",
+        "PENDING",
+        "FAILED",
+        "EXPIRED",
+        "CANCELLED",
+        "HELD",
+        "REFUNDED",
+        "CHARGEBACK",
+      ];
+      const prePaymentFailureStatuses = [
+        "CREATING",
+        "PENDING",
+        "FAILED",
+        "EXPIRED",
+        "CANCELLED",
+      ];
+      const allowedCurrentStatuses = ["REFUNDED", "CHARGEBACK"].includes(nextStatus)
+        ? refundableStatuses
+        : prePaymentFailureStatuses;
+
+      // Midtrans dapat mengirim notifikasi tidak berurutan. Filter status pada
+      // UPDATE mencegah event pending/expire lama menurunkan pembayaran HELD.
+      await transaction.project_payment.updateMany({
+        where: { id: payment.id, status: { in: allowedCurrentStatuses } },
         data: { ...commonData, status: nextStatus },
       });
     }

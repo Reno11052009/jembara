@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Prisma } from "@/generated/prisma/client";
 
 const mocks = vi.hoisted(() => ({
   userFindFirst: vi.fn(),
@@ -99,5 +100,29 @@ describe("login rate-limit security", () => {
       code: "EMAIL_ALREADY_REGISTERED",
     });
     expect(mocks.userCreate).not.toHaveBeenCalled();
+  });
+
+  it("handles a concurrent duplicate registration without exposing a server error", async () => {
+    mocks.userFindFirst.mockResolvedValue(null);
+    mocks.userCreate.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
+        code: "P2002",
+        clientVersion: "test",
+      }),
+    );
+
+    await expect(
+      registerAction({
+        fullName: "Andi Pelajar",
+        email: "andi@example.com",
+        address: "Jalan Merdeka 10",
+        password: "Password123!",
+        confirmPassword: "Password123!",
+      }),
+    ).resolves.toEqual({
+      error: "Email sudah terdaftar. Silakan masuk atau gunakan email lain.",
+      code: "EMAIL_ALREADY_REGISTERED",
+    });
+    expect(mocks.createSession).not.toHaveBeenCalled();
   });
 });

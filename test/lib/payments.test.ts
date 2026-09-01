@@ -86,6 +86,25 @@ describe("applyMidtransStatus", () => {
     });
   });
 
+  it("accepts a successful settlement when the payment method omits fraud_status", async () => {
+    const settlementWithoutFraudStatus = {
+      order_id: settlement.order_id,
+      status_code: settlement.status_code,
+      gross_amount: settlement.gross_amount,
+      transaction_status: settlement.transaction_status,
+      transaction_id: settlement.transaction_id,
+      payment_type: settlement.payment_type,
+    };
+
+    await expect(
+      applyMidtransStatus(settlementWithoutFraudStatus),
+    ).resolves.toMatchObject({ newlyHeld: true });
+    expect(mocks.paymentUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: "HELD" }) }),
+    );
+    expect(mocks.projectUpdateMany).toHaveBeenCalledOnce();
+  });
+
   it("does not duplicate a payment that is already held", async () => {
     mocks.paymentFindUnique.mockResolvedValue({
       ...paymentRecord,
@@ -98,6 +117,33 @@ describe("applyMidtransStatus", () => {
     });
     expect(mocks.paymentUpdateMany).not.toHaveBeenCalled();
     expect(mocks.projectUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it("does not downgrade a held payment when an older expiry notification arrives", async () => {
+    mocks.paymentFindUnique.mockResolvedValue({
+      ...paymentRecord,
+      status: "HELD",
+      project: { ...paymentRecord.project, status: "IN_PROGRESS" },
+    });
+
+    await expect(
+      applyMidtransStatus({
+        ...settlement,
+        status_code: "407",
+        transaction_status: "expire",
+      }),
+    ).resolves.toMatchObject({ newlyHeld: false });
+
+    expect(mocks.paymentUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: "payment-1",
+          status: {
+            in: ["CREATING", "PENDING", "FAILED", "EXPIRED", "CANCELLED"],
+          },
+        },
+      }),
+    );
   });
 
   it("rejects a notification whose amount differs from the database", async () => {

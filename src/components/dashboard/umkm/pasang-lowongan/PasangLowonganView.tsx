@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState, useMemo, useState, useRef, type FormEvent } from "react";
-import { Check, Plus, X } from "lucide-react";
+import { useActionState, useState, useRef, type FormEvent } from "react";
+import { Plus, X } from "lucide-react";
 import { createProjectAction } from "@/app/actions/projects";
 import PageHeader from "@/components/layout/PageHeader";
 import Button from "@/components/ui/Button";
 import SearchableSelect from "@/components/ui/SearchableSelect";
+import MultiSelectDropdown from "@/components/ui/MultiSelectDropdown";
 import DatePicker from "@/components/ui/DatePicker";
 import type {
   ProjectCreationData,
@@ -106,28 +107,7 @@ export default function PasangLowonganView({
     setCustomSkills((current) => current.filter((skill) => skill !== name));
   }
 
-  const groupedSkills = useMemo(() => {
-    return data.skillOptions.reduce<Record<string, typeof data.skillOptions>>(
-      (groups, skill) => {
-        (groups[skill.category] ??= []).push(skill);
-        return groups;
-      },
-      {},
-    );
-  }, [data]);
-
-  function toggleSkill(skillId: string) {
-    setSelectedSkillIds((current) =>
-      current.includes(skillId)
-        ? current.filter((id) => id !== skillId)
-        : current.length < 10
-          ? [...current, skillId]
-          : current,
-    );
-  }
-
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
     setAttemptedSubmit(true);
 
     const form = event.currentTarget;
@@ -135,16 +115,19 @@ export default function PasangLowonganView({
     const titleValue = titleInput.value.trim();
 
     if (!titleValue) {
+      event.preventDefault();
       setTitleError("Judul wajib diisi.");
       return;
     }
 
     if (titleValue.length < 5) {
+      event.preventDefault();
       setTitleError("Judul minimal 5 karakter.");
       return;
     }
 
     if (!/^[A-Za-z]/.test(titleValue)) {
+      event.preventDefault();
       setTitleError("Judul harus mengandung huruf, nggak boleh cuma angka.");
       return;
     }
@@ -152,10 +135,9 @@ export default function PasangLowonganView({
     setTitleError("");
 
     if (selectedSkillIds.length === 0) {
+      event.preventDefault();
       return;
     }
-
-    form.requestSubmit();
   }
 
   const showSkillRequiredError = attemptedSubmit && selectedSkillIds.length === 0;
@@ -266,35 +248,27 @@ export default function PasangLowonganView({
             </legend>
 
             {data.skillOptions.length > 0 ? (
-              <div className="space-y-4 rounded-lg bg-canvas p-4">
-                {Object.entries(groupedSkills).map(([category, skills]) => (
-                  <div key={category}>
-                    <p className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-muted">
-                      {category}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {skills.map((skill) => {
-                        const selected = selectedSkillIds.includes(skill.id);
-                        return (
-                          <button
-                            key={skill.id}
-                            type="button"
-                            aria-pressed={selected}
-                            onClick={() => toggleSkill(skill.id)}
-                            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${
-                              selected
-                                ? "border-brand bg-brand text-white"
-                                : "border-hairline bg-white text-ink hover:border-brand hover:text-brand"
-                            }`}
-                          >
-                            {selected && <Check size={13} />}
-                            {skill.name}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
+              <div>
+                <MultiSelectDropdown
+                  id="requiredSkills"
+                  name="skillIds"
+                  values={selectedSkillIds}
+                  onChange={setSelectedSkillIds}
+                  options={data.skillOptions.map((skill) => ({
+                    code: skill.id,
+                    name: skill.name,
+                    group: skill.category,
+                  }))}
+                  placeholder="Pilih skill wajib"
+                  searchPlaceholder="Cari skill..."
+                  emptyMessage="Skill tidak ditemukan"
+                  maxSelections={10}
+                  invalid={showSkillRequiredError || Boolean(state.fieldErrors?.skillIds?.[0])}
+                  disabled={isPending}
+                />
+                <p className="mt-1.5 text-xs text-ink-muted">
+                  Pilih minimal 1 dan maksimal 10 skill yang benar-benar dibutuhkan.
+                </p>
               </div>
             ) : (
               <p className="rounded-lg border border-dashed border-hairline p-4 text-sm text-ink-muted">
@@ -394,9 +368,6 @@ export default function PasangLowonganView({
               <input key={name} type="hidden" name="customSkillNames" value={name} />
             ))}
 
-            {selectedSkillIds.map((skillId) => (
-              <input key={skillId} type="hidden" name="skillIds" value={skillId} />
-            ))}
             {showSkillRequiredError && (
               <span className="text-sm font-normal text-danger">
                 Pilih minimal 1 skill.
