@@ -111,10 +111,10 @@ export async function consumeRateLimits(
   const inputRows = optionsList.map((options) => {
     const now = options.now ?? Date.now();
     return Prisma.sql`(
-      ${options.key},
-      ${new Date(now)},
-      ${new Date(now + options.windowMs)},
-      ${options.limit + 1}
+      CAST(${options.key} AS varchar(96)),
+      CAST(${new Date(now)} AS timestamp(6)),
+      CAST(${new Date(now + options.windowMs)} AS timestamp(6)),
+      CAST(${options.limit + 1} AS integer)
     )`;
   });
   const cleanupBefore = new Date(
@@ -140,6 +140,7 @@ export async function consumeRateLimits(
     )
     SELECT "key", 1, "nextResetAt", CURRENT_TIMESTAMP
     FROM input
+    WHERE true
     ON CONFLICT ("key") DO UPDATE
     SET
       "count" = CASE

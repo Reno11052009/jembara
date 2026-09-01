@@ -18,6 +18,7 @@ vi.mock("next/headers", () => ({ headers: rateLimitMock.headers }));
 import {
   clearRateLimit,
   consumeRateLimit,
+  consumeRateLimits,
   createRateLimitKey,
   getClientAddress,
 } from "@/lib/rate-limit";
@@ -62,6 +63,29 @@ describe("persistent rate limit", () => {
     await expect(
       consumeRateLimit({ key: "test:bucket", limit: 2, windowMs: 1_000, now: 1_000 }),
     ).resolves.toEqual({ allowed: true, remaining: 1, retryAfterSeconds: 0 });
+  });
+
+  it("casts batch bucket inputs to their PostgreSQL column types", async () => {
+    rateLimitMock.queryRaw.mockResolvedValue([
+      { key: "test:minute", count: 1, resetAt: new Date(60_000) },
+      { key: "test:day", count: 1, resetAt: new Date(86_400_000) },
+    ]);
+
+    await expect(
+      consumeRateLimits([
+        { key: "test:minute", limit: 10, windowMs: 60_000, now: 0 },
+        { key: "test:day", limit: 100, windowMs: 86_400_000, now: 0 },
+      ]),
+    ).resolves.toEqual([
+      { allowed: true, remaining: 9, retryAfterSeconds: 0 },
+      { allowed: true, remaining: 99, retryAfterSeconds: 0 },
+    ]);
+
+    const query = rateLimitMock.queryRaw.mock.calls[0][0] as { text: string };
+    expect(query.text).toMatch(/CAST\(\$\d+ AS varchar\(96\)\)/);
+    expect(query.text.match(/AS timestamp\(6\)/g)).toHaveLength(4);
+    expect(query.text).toMatch(/CAST\(\$\d+ AS integer\)/);
+    expect(query.text).toContain("FROM input\n    WHERE true\n    ON CONFLICT");
   });
 
   it("clears a bucket from persistent storage", async () => {

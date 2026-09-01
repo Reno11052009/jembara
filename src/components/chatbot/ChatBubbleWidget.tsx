@@ -19,7 +19,11 @@ interface Message {
 
 interface ChatBubbleWidgetProps {
   role?: string;
+  userId: string;
 }
+
+const MAX_STORED_MESSAGES = 30;
+const CHAT_HISTORY_STORAGE_PREFIX = "jembara:jelita-history:v1";
 
 const STUDENT_SUGGESTIONS = [
   "Rekomendasikan project yang cocok untuk saya",
@@ -50,15 +54,52 @@ function getSafeInternalLinks(value: unknown): MessageLink[] {
     .slice(0, 5);
 }
 
-export default function ChatBubbleWidget({ role = "STUDENT" }: ChatBubbleWidgetProps) {
+function getSafeStoredMessages(value: unknown): Message[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter(
+      (message): message is Message =>
+        typeof message === "object" &&
+        message !== null &&
+        typeof (message as Message).id === "string" &&
+        (message as Message).id.length <= 40 &&
+        ((message as Message).sender === "user" ||
+          (message as Message).sender === "assistant") &&
+        typeof (message as Message).text === "string" &&
+        (message as Message).text.length > 0 &&
+        (message as Message).text.length <= 6_000 &&
+        typeof (message as Message).timeLabel === "string" &&
+        (message as Message).timeLabel.length <= 20,
+    )
+    .map((message) => {
+      const links = getSafeInternalLinks(message.links);
+      return {
+        id: message.id,
+        sender: message.sender,
+        text: message.text,
+        timeLabel: message.timeLabel,
+        ...(links.length > 0 ? { links } : {}),
+      };
+    })
+    .slice(-MAX_STORED_MESSAGES);
+}
+
+export default function ChatBubbleWidget({
+  role = "STUDENT",
+  userId,
+}: ChatBubbleWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [readyHistoryKey, setReadyHistoryKey] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageIdRef = useRef(0);
 
   const suggestions = role === "UMKM" ? UMKM_SUGGESTIONS : STUDENT_SUGGESTIONS;
+  const historyStorageKey = `${CHAT_HISTORY_STORAGE_PREFIX}:${userId}:${role}`;
+  const historyReady = readyHistoryKey === historyStorageKey;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -70,9 +111,57 @@ export default function ChatBubbleWidget({ role = "STUDENT" }: ChatBubbleWidgetP
     }
   }, [messages, isOpen, isLoading]);
 
+  useEffect(() => {
+    let active = true;
+
+    queueMicrotask(() => {
+      if (!active) return;
+
+      let restoredMessages: Message[] = [];
+      try {
+        const storedHistory = window.sessionStorage.getItem(historyStorageKey);
+        restoredMessages = storedHistory
+          ? getSafeStoredMessages(JSON.parse(storedHistory) as unknown)
+          : [];
+      } catch {
+        // Data rusak atau storage diblokir diperlakukan sebagai riwayat kosong.
+      }
+
+      messageIdRef.current = restoredMessages.reduce((highestId, message) => {
+        const numericId = Number.parseInt(message.id, 10);
+        return Number.isSafeInteger(numericId)
+          ? Math.max(highestId, numericId)
+          : highestId;
+      }, 0);
+      setMessages(restoredMessages);
+      setReadyHistoryKey(historyStorageKey);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [historyStorageKey]);
+
+  useEffect(() => {
+    if (!historyReady) return;
+
+    try {
+      if (messages.length === 0) {
+        window.sessionStorage.removeItem(historyStorageKey);
+      } else {
+        window.sessionStorage.setItem(
+          historyStorageKey,
+          JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)),
+        );
+      }
+    } catch {
+      // Chat tetap berfungsi jika sessionStorage diblokir atau kuotanya penuh.
+    }
+  }, [historyReady, historyStorageKey, messages]);
+
   const handleSend = async (textToSend: string) => {
     const trimmed = textToSend.trim();
-    if (!trimmed || isLoading) return;
+    if (!trimmed || isLoading || !historyReady) return;
 
     messageIdRef.current += 1;
 
@@ -123,7 +212,7 @@ export default function ChatBubbleWidget({ role = "STUDENT" }: ChatBubbleWidgetP
         }),
       };
 
-      setMessages((prev) => [...prev, botMsg].slice(-30));
+      setMessages((prev) => [...prev, botMsg].slice(-MAX_STORED_MESSAGES));
     } catch {
       const errorMsg: Message = {
         id: String((messageIdRef.current += 1)),
@@ -134,7 +223,7 @@ export default function ChatBubbleWidget({ role = "STUDENT" }: ChatBubbleWidgetP
           minute: "2-digit",
         }),
       };
-      setMessages((prev) => [...prev, errorMsg].slice(-30));
+      setMessages((prev) => [...prev, errorMsg].slice(-MAX_STORED_MESSAGES));
     } finally {
       setIsLoading(false);
     }
@@ -213,7 +302,8 @@ export default function ChatBubbleWidget({ role = "STUDENT" }: ChatBubbleWidgetP
                       key={suggestion}
                       type="button"
                       onClick={() => handleSend(suggestion)}
-                      className="rounded-xl border border-hairline bg-canvas/50 px-3.5 py-2.5 text-left font-body text-xs text-ink transition-all hover:border-brand/40 hover:bg-brand-soft hover:text-brand"
+                      disabled={!historyReady}
+                      className="rounded-xl border border-hairline bg-canvas/50 px-3.5 py-2.5 text-left font-body text-xs text-ink transition-all hover:border-brand/40 hover:bg-brand-soft hover:text-brand disabled:cursor-wait disabled:opacity-60"
                     >
                       {suggestion}
                     </button>
@@ -291,12 +381,12 @@ export default function ChatBubbleWidget({ role = "STUDENT" }: ChatBubbleWidgetP
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Tanyakan sesuatu..."
                 maxLength={2000}
-                disabled={isLoading}
+                disabled={isLoading || !historyReady}
                 className="flex-1 bg-transparent font-body text-xs text-ink placeholder:text-ink-muted focus:outline-none disabled:opacity-50"
               />
               <button
                 type="submit"
-                disabled={!input.trim() || isLoading}
+                disabled={!input.trim() || isLoading || !historyReady}
                 aria-label="Kirim pesan"
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-white transition-all hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-40"
               >
