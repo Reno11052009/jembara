@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   userCreate: vi.fn(),
   compare: vi.fn(),
   consumeRateLimit: vi.fn(),
+  consumeRateLimits: vi.fn(),
   clearRateLimit: vi.fn(),
   getClientAddress: vi.fn(),
   createRateLimitKey: vi.fn((scope: string, value: string) => `${scope}:${value}`),
@@ -32,6 +33,7 @@ vi.mock("@/lib/session", () => ({
 }));
 vi.mock("@/lib/rate-limit", () => ({
   consumeRateLimit: mocks.consumeRateLimit,
+  consumeRateLimits: mocks.consumeRateLimits,
   clearRateLimit: mocks.clearRateLimit,
   getClientAddress: mocks.getClientAddress,
   createRateLimitKey: mocks.createRateLimitKey,
@@ -62,6 +64,10 @@ describe("login rate-limit security", () => {
       remaining: 4,
       retryAfterSeconds: 0,
     });
+    mocks.consumeRateLimits.mockResolvedValue([
+      { allowed: true, remaining: 29, retryAfterSeconds: 0 },
+      { allowed: true, remaining: 4, retryAfterSeconds: 0 },
+    ]);
     mocks.userFindFirst.mockResolvedValue(null);
     mocks.compare.mockResolvedValue(false);
   });

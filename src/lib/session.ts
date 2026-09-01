@@ -1,6 +1,7 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
+import { cache } from "react";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies, headers } from "next/headers";
 import { config } from "@/config/unifiedConfig";
@@ -177,7 +178,7 @@ export async function deleteSession() {
   cookieStore.delete("session");
 }
 
-export async function verifySession() {
+async function verifySessionUncached() {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   const session = await decrypt(sessionCookie);
@@ -224,3 +225,8 @@ export async function verifySession() {
     name: storedSession.user.name || "Pengguna",
   };
 }
+
+// Layout dan page/data-access layer sering memverifikasi sesi yang sama dalam
+// satu render. React cache membagikan hasil hanya selama request tersebut,
+// sehingga validasi database tetap dijalankan lagi pada request berikutnya.
+export const verifySession = cache(verifySessionUncached);

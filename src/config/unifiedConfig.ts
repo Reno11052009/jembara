@@ -55,6 +55,14 @@ export const config = {
           limit: 5,
           windowMs: 10 * 60 * 1000,
         },
+        chatbotByUserMinute: {
+          limit: 10,
+          windowMs: 60 * 1000,
+        },
+        chatbotByUserDay: {
+          limit: 100,
+          windowMs: 24 * 60 * 60 * 1000,
+        },
       },
     },
   },

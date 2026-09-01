@@ -97,6 +97,96 @@ export async function consumeRateLimit(
   };
 }
 
+export async function consumeRateLimits(
+  optionsList: readonly RateLimitOptions[],
+): Promise<RateLimitResult[]> {
+  if (optionsList.length === 0) return [];
+  optionsList.forEach(validateOptions);
+
+  const keys = new Set(optionsList.map(({ key }) => key));
+  if (keys.size !== optionsList.length) {
+    throw new Error("Duplicate rate-limit key");
+  }
+
+  const inputRows = optionsList.map((options) => {
+    const now = options.now ?? Date.now();
+    return Prisma.sql`(
+      ${options.key},
+      ${new Date(now)},
+      ${new Date(now + options.windowMs)},
+      ${options.limit + 1}
+    )`;
+  });
+  const cleanupBefore = new Date(
+    Math.min(...optionsList.map((options) => options.now ?? Date.now())) -
+      CLEANUP_GRACE_MS,
+  );
+  const shouldCleanup = optionsList.some(({ key }) => key.endsWith("00"));
+
+  // Semua bucket independen diperbarui atomik dalam satu round-trip database.
+  const buckets = await prisma.$queryRaw<
+    Array<{ key: string; count: number; resetAt: Date }>
+  >(Prisma.sql`
+    WITH input("key", "currentTime", "nextResetAt", "maximumStoredCount") AS (
+      VALUES ${Prisma.join(inputRows)}
+    ), cleanup AS (
+      DELETE FROM "security_rate_limit"
+      WHERE ${shouldCleanup}
+        AND "resetAt" < ${cleanupBefore}
+      RETURNING "key"
+    )
+    INSERT INTO "security_rate_limit" (
+      "key", "count", "resetAt", "updatedAt"
+    )
+    SELECT "key", 1, "nextResetAt", CURRENT_TIMESTAMP
+    FROM input
+    ON CONFLICT ("key") DO UPDATE
+    SET
+      "count" = CASE
+        WHEN "security_rate_limit"."resetAt" <= (
+          SELECT input."currentTime" FROM input
+          WHERE input."key" = EXCLUDED."key"
+        ) THEN 1
+        ELSE LEAST(
+          "security_rate_limit"."count" + 1,
+          (
+            SELECT input."maximumStoredCount" FROM input
+            WHERE input."key" = EXCLUDED."key"
+          )
+        )
+      END,
+      "resetAt" = CASE
+        WHEN "security_rate_limit"."resetAt" <= (
+          SELECT input."currentTime" FROM input
+          WHERE input."key" = EXCLUDED."key"
+        ) THEN (
+          SELECT input."nextResetAt" FROM input
+          WHERE input."key" = EXCLUDED."key"
+        )
+        ELSE "security_rate_limit"."resetAt"
+      END,
+      "updatedAt" = CURRENT_TIMESTAMP
+    RETURNING "key", "count", "resetAt"
+  `);
+
+  const bucketsByKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
+  return optionsList.map((options) => {
+    const bucket = bucketsByKey.get(options.key);
+    if (!bucket) throw new Error("Rate-limit bucket tidak dapat diperbarui");
+    if (bucket.count <= options.limit) return toResult(bucket.count, options.limit);
+
+    const now = options.now ?? Date.now();
+    return {
+      allowed: false,
+      remaining: 0,
+      retryAfterSeconds: Math.max(
+        1,
+        Math.ceil((bucket.resetAt.getTime() - now) / 1000),
+      ),
+    };
+  });
+}
+
 export async function clearRateLimit(key: string) {
   if (!key || key.length > MAX_KEY_LENGTH) return;
   await prisma.security_rate_limit.deleteMany({ where: { key } });

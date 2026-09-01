@@ -29,6 +29,25 @@ function formatCount(value: number) {
   return numberFormatter.format(value);
 }
 
+type StatusCountRow = {
+  status: string;
+  _count: { _all: number };
+};
+
+function countStatuses(
+  rows: readonly StatusCountRow[],
+  statuses?: readonly string[],
+) {
+  const allowedStatuses = statuses ? new Set(statuses) : null;
+  return rows.reduce(
+    (total, row) =>
+      allowedStatuses === null || allowedStatuses.has(row.status)
+        ? total + row._count._all
+        : total,
+    0,
+  );
+}
+
 function formatWeeklyChange(value: number) {
   return value > 0
     ? `+${formatCount(value)} dalam 7 hari`
@@ -215,18 +234,21 @@ async function getStudentDashboard(
 
   const [
     proposalCount,
-    activeProjectCount,
-    completedProjectCount,
+    projectStatusCounts,
     ratingAggregate,
     recommendationCandidates,
     activityProjects,
     notifications,
   ] = await Promise.all([
     prisma.proposal.count({ where: { studentId: student.id } }),
-    prisma.project.count({
-      where: { studentId: student.id, status: { in: ACTIVE_PROJECT_STATUSES } },
+    prisma.project.groupBy({
+      by: ["status"],
+      where: {
+        studentId: student.id,
+        status: { in: [...ACTIVE_PROJECT_STATUSES, "COMPLETED"] },
+      },
+      _count: { _all: true },
     }),
-    prisma.project.count({ where: { studentId: student.id, status: "COMPLETED" } }),
     prisma.review.aggregate({
       where: { studentId: student.id },
       _avg: { rating: true },
@@ -267,6 +289,12 @@ async function getStudentDashboard(
     }),
     getRecentNotifications(user.id),
   ]);
+
+  const activeProjectCount = countStatuses(
+    projectStatusCounts,
+    ACTIVE_PROJECT_STATUSES,
+  );
+  const completedProjectCount = countStatuses(projectStatusCounts, ["COMPLETED"]);
 
   const recommendedProjects = recommendationCandidates
     .map((project) => {
@@ -382,25 +410,19 @@ async function getUmkmDashboard(
   }
 
   const [
-    projectCount,
-    openProjectCount,
+    projectStatusCounts,
     proposalCount,
-    activeProjectCount,
-    completedProjectCount,
     recentProjects,
     recentProposals,
     activityProjects,
     notifications,
   ] = await Promise.all([
-    prisma.project.count({ where: { umkmId: business.id } }),
-    prisma.project.count({
-      where: { umkmId: business.id, status: { in: ["OPEN", "PROPOSAL"] } },
+    prisma.project.groupBy({
+      by: ["status"],
+      where: { umkmId: business.id },
+      _count: { _all: true },
     }),
     prisma.proposal.count({ where: { project: { umkmId: business.id } } }),
-    prisma.project.count({
-      where: { umkmId: business.id, status: { in: ACTIVE_PROJECT_STATUSES } },
-    }),
-    prisma.project.count({ where: { umkmId: business.id, status: "COMPLETED" } }),
     prisma.project.findMany({
       where: { umkmId: business.id },
       orderBy: { updatedAt: "desc" },
@@ -455,6 +477,14 @@ async function getUmkmDashboard(
     }),
     getRecentNotifications(user.id),
   ]);
+
+  const projectCount = countStatuses(projectStatusCounts);
+  const openProjectCount = countStatuses(projectStatusCounts, ["OPEN", "PROPOSAL"]);
+  const activeProjectCount = countStatuses(
+    projectStatusCounts,
+    ACTIVE_PROJECT_STATUSES,
+  );
+  const completedProjectCount = countStatuses(projectStatusCounts, ["COMPLETED"]);
 
   return {
     role: "UMKM",
@@ -548,12 +578,8 @@ async function getAdminDashboard(user: {
     newStudentCount,
     umkmCount,
     newUmkmCount,
-    projectCount,
-    openProjectCount,
-    activeProjectCount,
-    completedProjectCount,
-    proposalCount,
-    pendingProposalCount,
+    projectStatusCounts,
+    proposalStatusCounts,
     usersBeforeGrowthWindow,
     growthUsers,
     recentUsers,
@@ -564,12 +590,14 @@ async function getAdminDashboard(user: {
     prisma.student.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
     prisma.umkm.count(),
     prisma.umkm.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
-    prisma.project.count(),
-    prisma.project.count({ where: { status: { in: ["OPEN", "PROPOSAL"] } } }),
-    prisma.project.count({ where: { status: { in: ACTIVE_PROJECT_STATUSES } } }),
-    prisma.project.count({ where: { status: "COMPLETED" } }),
-    prisma.proposal.count(),
-    prisma.proposal.count({ where: { status: "PENDING" } }),
+    prisma.project.groupBy({
+      by: ["status"],
+      _count: { _all: true },
+    }),
+    prisma.proposal.groupBy({
+      by: ["status"],
+      _count: { _all: true },
+    }),
     prisma.user.count({ where: { createdAt: { lt: growthWindowStart } } }),
     prisma.user.findMany({
       where: { createdAt: { gte: growthWindowStart } },
@@ -605,6 +633,16 @@ async function getAdminDashboard(user: {
     }),
     getRecentNotifications(user.id),
   ]);
+
+  const projectCount = countStatuses(projectStatusCounts);
+  const openProjectCount = countStatuses(projectStatusCounts, ["OPEN", "PROPOSAL"]);
+  const activeProjectCount = countStatuses(
+    projectStatusCounts,
+    ACTIVE_PROJECT_STATUSES,
+  );
+  const completedProjectCount = countStatuses(projectStatusCounts, ["COMPLETED"]);
+  const proposalCount = countStatuses(proposalStatusCounts);
+  const pendingProposalCount = countStatuses(proposalStatusCounts, ["PENDING"]);
 
   const monthlyRegistrations = new Map<string, number>();
   for (const registeredUser of growthUsers) {

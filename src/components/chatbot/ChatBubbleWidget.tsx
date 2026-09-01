@@ -1,13 +1,20 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useRef, useEffect, type FormEvent } from "react";
-import { Bot, X, Send } from "lucide-react";
+import { ArrowUpRight, Bot, X, Send } from "lucide-react";
+
+interface MessageLink {
+  label: string;
+  href: string;
+}
 
 interface Message {
   id: string;
   sender: "user" | "assistant";
   text: string;
   timeLabel: string;
+  links?: MessageLink[];
 }
 
 interface ChatBubbleWidgetProps {
@@ -15,16 +22,33 @@ interface ChatBubbleWidgetProps {
 }
 
 const STUDENT_SUGGESTIONS = [
-  "Apa itu Smart Matching?",
+  "Rekomendasikan project yang cocok untuk saya",
   "Bagaimana cara mendaftar proyek?",
   "Apa fungsi Skill Passport?",
 ];
 
 const UMKM_SUGGESTIONS = [
+  "Rekomendasikan talent untuk project saya",
   "Bagaimana cara memasang proyek baru?",
-  "Bagaimana cara memilih talent terbaik?",
   "Apa kriteria Smart Matching?",
 ];
+
+function getSafeInternalLinks(value: unknown): MessageLink[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter(
+      (link): link is MessageLink =>
+        typeof link === "object" &&
+        link !== null &&
+        typeof (link as MessageLink).label === "string" &&
+        typeof (link as MessageLink).href === "string" &&
+        (link as MessageLink).label.trim().length > 0 &&
+        (link as MessageLink).label.length <= 100 &&
+        (link as MessageLink).href.startsWith("/dashboard/"),
+    )
+    .slice(0, 5);
+}
 
 export default function ChatBubbleWidget({ role = "STUDENT" }: ChatBubbleWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,6 +56,7 @@ export default function ChatBubbleWidget({ role = "STUDENT" }: ChatBubbleWidgetP
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageIdRef = useRef(0);
 
   const suggestions = role === "UMKM" ? UMKM_SUGGESTIONS : STUDENT_SUGGESTIONS;
 
@@ -49,8 +74,10 @@ export default function ChatBubbleWidget({ role = "STUDENT" }: ChatBubbleWidgetP
     const trimmed = textToSend.trim();
     if (!trimmed || isLoading) return;
 
+    messageIdRef.current += 1;
+
     const userMsg: Message = {
-      id: String(Date.now()),
+      id: String(messageIdRef.current),
       sender: "user",
       text: trimmed,
       timeLabel: new Date().toLocaleTimeString("id-ID", {
@@ -69,31 +96,37 @@ export default function ChatBubbleWidget({ role = "STUDENT" }: ChatBubbleWidgetP
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: nextMessages.map((m) => ({
+          messages: nextMessages.slice(-9).map((m) => ({
             role: m.sender === "user" ? "user" : "assistant",
             content: m.text,
           })),
         }),
       });
 
-      const data = (await response.json()) as { message?: string; error?: string };
+      const data = (await response.json()) as {
+        message?: string;
+        error?: string;
+        links?: unknown;
+      };
       const botReplyText =
         data.message || data.error || "Maaf, terjadi kendala saat merespon.";
+      const botReplyLinks = getSafeInternalLinks(data.links);
 
       const botMsg: Message = {
-        id: String(Date.now() + 1),
+        id: String((messageIdRef.current += 1)),
         sender: "assistant",
         text: botReplyText,
+        ...(botReplyLinks.length > 0 ? { links: botReplyLinks } : {}),
         timeLabel: new Date().toLocaleTimeString("id-ID", {
           hour: "2-digit",
           minute: "2-digit",
         }),
       };
 
-      setMessages((prev) => [...prev, botMsg]);
+      setMessages((prev) => [...prev, botMsg].slice(-30));
     } catch {
       const errorMsg: Message = {
-        id: String(Date.now() + 1),
+        id: String((messageIdRef.current += 1)),
         sender: "assistant",
         text: "Maaf, gagal menghubungkan ke layanan AI. Pastikan koneksi internet Anda stabil.",
         timeLabel: new Date().toLocaleTimeString("id-ID", {
@@ -101,7 +134,7 @@ export default function ChatBubbleWidget({ role = "STUDENT" }: ChatBubbleWidgetP
           minute: "2-digit",
         }),
       };
-      setMessages((prev) => [...prev, errorMsg]);
+      setMessages((prev) => [...prev, errorMsg].slice(-30));
     } finally {
       setIsLoading(false);
     }
@@ -204,6 +237,22 @@ export default function ChatBubbleWidget({ role = "STUDENT" }: ChatBubbleWidgetP
                       }`}
                     >
                       <p className="whitespace-pre-wrap">{msg.text}</p>
+                      {msg.sender === "assistant" &&
+                        msg.links &&
+                        msg.links.length > 0 && (
+                          <div className="mt-2.5 flex flex-col gap-1.5">
+                            {msg.links.map((link) => (
+                              <Link
+                                key={`${msg.id}-${link.href}`}
+                                href={link.href}
+                                className="inline-flex items-center justify-between gap-2 rounded-lg border border-brand/20 bg-white px-2.5 py-2 font-semibold text-brand transition-colors hover:border-brand/50 hover:bg-brand-soft"
+                              >
+                                <span>{link.label}</span>
+                                <ArrowUpRight size={13} className="shrink-0" />
+                              </Link>
+                            ))}
+                          </div>
+                        )}
                       <span
                         className={`mt-1 block text-[10px] ${
                           msg.sender === "user"
@@ -240,7 +289,8 @@ export default function ChatBubbleWidget({ role = "STUDENT" }: ChatBubbleWidgetP
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask a question..."
+                placeholder="Tanyakan sesuatu..."
+                maxLength={2000}
                 disabled={isLoading}
                 className="flex-1 bg-transparent font-body text-xs text-ink placeholder:text-ink-muted focus:outline-none disabled:opacity-50"
               />
@@ -253,6 +303,9 @@ export default function ChatBubbleWidget({ role = "STUDENT" }: ChatBubbleWidgetP
                 <Send size={14} />
               </button>
             </div>
+            <p className="mt-1.5 px-2 text-center font-body text-[9px] text-ink-muted">
+              Jangan kirim password, nomor telepon, atau data pembayaran.
+            </p>
           </form>
         </div>
       )}

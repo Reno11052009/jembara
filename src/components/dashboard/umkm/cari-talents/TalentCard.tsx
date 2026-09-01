@@ -16,7 +16,10 @@ export default function TalentCard({
     .toUpperCase();
 
   return (
-    <div className="rounded-xl border border-hairline bg-card p-5">
+    <div
+      id={`talent-${talent.id}`}
+      className="scroll-mt-6 rounded-xl border border-hairline bg-card p-5 target:border-brand target:ring-2 target:ring-brand/20"
+    >
       <div className="flex items-start gap-3">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-soft font-display text-sm font-black text-brand">
           {initials}

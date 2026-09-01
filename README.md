@@ -3,8 +3,8 @@
   # Jembara
   ### Jembatani skillmu untuk kesempatan nyata
   
-  [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Visit_Site-success?style=for-the-badge)](https://[URL_DEMO])
-  [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://[URL_REPO])
+  [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Visit_Site-success?style=for-the-badge)](https://jembara.web.id)
+  [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/Reno11052009/jembara)
   [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
   
   **Submission for ITECHNO CUP 2026 - Web Development**
@@ -35,10 +35,9 @@
 
 | Nama | Peran | GitHub |
 |------|-------|--------|
-| **Chello Arta Sukma Hadinata** | Project Lead | [GitHub](https://github.com/SauraAsh) |
+| **Chello Arta Sukma Hadinata** | Project Lead & UI/UX Designer | [GitHub](https://github.com/SauraAsh) |
 | **Dico Zakaria Putra Aydia Subagio** | Frontend Developer | [GitHub](https://github.com/Ozakae) |
 | **Arsya Mayreno Arnaldo** | Backend Developer | [GitHub](https://github.com/Reno11052009) |
-| **Chello Arta Sukma Hadinata** | UI/UX Designer | [GitHub](https://github.com/SauraAsh) |
 
 ---
 
@@ -46,7 +45,7 @@
 
 ### Latar Belakang
 
-Jelaskan konteks permasalahan yang ingin diselesaikan. Gunakan data atau fakta untuk memperkuat argumen. Contoh: "Berdasarkan survei X, 70% pengguna mengalami kesulitan dalam..."
+Pengangguran masih menjadi masalah besar di Indonesia,terutama di kalangan pelajar/mahasiswa dan orang-orang yang baru lulus sekolah. Hal ini disebabkan oleh beberapa faktor, antara lain: Kurangnya kesempatan kerja, Kurangnya skill yang dimiliki, Kurangnya pengalaman kerja, Kurangnya informasi mengenai lowongan kerja, Kurangnya akses untuk mendapatkan pekerjaan, Kurangnya akses untuk mendapatkan pelatihan
 
 ### Solusi yang Ditawarkan
 
@@ -148,7 +147,7 @@ Monitoring   : -
 ```json
 {
   "dependencies": {
-    "next": "16.3.0",
+    "next": "16.3.3",
     "react": "19.2.8",
     "@prisma/client": "^7.9.1",
     "@supabase/supabase-js": "^2.112.3",

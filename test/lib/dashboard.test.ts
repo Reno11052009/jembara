@@ -8,8 +8,10 @@ const mocks = vi.hoisted(() => ({
   studentCount: vi.fn(),
   umkmCount: vi.fn(),
   projectCount: vi.fn(),
+  projectGroupBy: vi.fn(),
   projectFindMany: vi.fn(),
   proposalCount: vi.fn(),
+  proposalGroupBy: vi.fn(),
   proposalFindMany: vi.fn(),
   reviewAggregate: vi.fn(),
   notificationFindMany: vi.fn(),
@@ -30,10 +32,12 @@ vi.mock("@/lib/prisma", () => ({
     umkm: { count: mocks.umkmCount },
     project: {
       count: mocks.projectCount,
+      groupBy: mocks.projectGroupBy,
       findMany: mocks.projectFindMany,
     },
     proposal: {
       count: mocks.proposalCount,
+      groupBy: mocks.proposalGroupBy,
       findMany: mocks.proposalFindMany,
     },
     review: { aggregate: mocks.reviewAggregate },
@@ -75,11 +79,11 @@ describe("getDashboardData", () => {
         website: "jembara.example",
       },
     });
-    mocks.projectCount
-      .mockResolvedValueOnce(2)
-      .mockResolvedValueOnce(1)
-      .mockResolvedValueOnce(1)
-      .mockResolvedValueOnce(1);
+    mocks.projectGroupBy.mockResolvedValue([
+      { status: "OPEN", _count: { _all: 1 } },
+      { status: "IN_PROGRESS", _count: { _all: 1 } },
+      { status: "COMPLETED", _count: { _all: 1 } },
+    ]);
     mocks.proposalCount.mockResolvedValue(3);
     mocks.proposalFindMany.mockResolvedValue([
       {
@@ -151,7 +155,7 @@ describe("getDashboardData", () => {
       },
     });
     expect(dashboard.metrics.map((metric) => metric.value)).toEqual([
-      "2 Proyek",
+      "3 Proyek",
       "3 Proposal",
       "1 Aktif",
       "1 Selesai",
@@ -192,14 +196,17 @@ describe("getDashboardData", () => {
       .mockResolvedValueOnce(3)
       .mockResolvedValueOnce(1);
     mocks.userCount.mockResolvedValueOnce(5);
-    mocks.projectCount
-      .mockResolvedValueOnce(8)
-      .mockResolvedValueOnce(4)
-      .mockResolvedValueOnce(2)
-      .mockResolvedValueOnce(1);
-    mocks.proposalCount
-      .mockResolvedValueOnce(6)
-      .mockResolvedValueOnce(3);
+    mocks.projectGroupBy.mockResolvedValue([
+      { status: "OPEN", _count: { _all: 4 } },
+      { status: "IN_PROGRESS", _count: { _all: 2 } },
+      { status: "COMPLETED", _count: { _all: 1 } },
+      { status: "CANCELLED", _count: { _all: 1 } },
+    ]);
+    mocks.proposalGroupBy.mockResolvedValue([
+      { status: "PENDING", _count: { _all: 3 } },
+      { status: "ACCEPTED", _count: { _all: 2 } },
+      { status: "REJECTED", _count: { _all: 1 } },
+    ]);
     mocks.userFindMany
       .mockResolvedValueOnce([{ createdAt: now }])
       .mockResolvedValueOnce([

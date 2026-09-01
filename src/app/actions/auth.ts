@@ -10,6 +10,7 @@ import { config } from "@/config/unifiedConfig";
 import {
   clearRateLimit,
   consumeRateLimit,
+  consumeRateLimits,
   createRateLimitKey,
   getClientAddress,
 } from "@/lib/rate-limit";
@@ -43,14 +44,10 @@ async function checkLoginRateLimit(email: string) {
   );
   const rateLimitConfig = config.security.auth.rateLimit;
 
-  const ipResult = await consumeRateLimit({
-    key: ipKey,
-    ...rateLimitConfig.loginByIp,
-  });
-  const identityResult = await consumeRateLimit({
-    key: identityKey,
-    ...rateLimitConfig.loginByIpAndIdentity,
-  });
+  const [ipResult, identityResult] = await consumeRateLimits([
+    { key: ipKey, ...rateLimitConfig.loginByIp },
+    { key: identityKey, ...rateLimitConfig.loginByIpAndIdentity },
+  ]);
 
   return {
     allowed: ipResult.allowed && identityResult.allowed,
