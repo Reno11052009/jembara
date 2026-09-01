@@ -41,6 +41,7 @@ export default function ChatBubble({ message }: ChatBubbleProps) {
           }`}
         >
           {message.timeLabel}
+          {message.deliveryStatus === "sending" ? " · Mengirim…" : ""}
           {isMe && <MessageStatusTicks status={message.status} />}
         </span>
       </div>

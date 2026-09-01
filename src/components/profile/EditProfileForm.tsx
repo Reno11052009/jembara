@@ -148,6 +148,8 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
             <div className="flex flex-col items-center sm:items-start sm:flex-row gap-6 mb-2">
               <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                 <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-gray-100 flex-shrink-0">
+                  {/* Preview lokal memakai blob/data URL sebelum gambar disimpan. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src={avatarPreview} 
                     alt="Profile preview" 

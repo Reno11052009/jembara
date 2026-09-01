@@ -1,4 +1,5 @@
 import "server-only";
+import { after } from "next/server";
 import { z } from "zod";
 import prisma from "./prisma";
 import { requireAuthenticatedSession } from "./auth-guard";
@@ -297,18 +298,20 @@ export async function sendCurrentMessage(
     });
   });
 
-  try {
-    await createUserNotification({
-      userId: recipientId,
-      type: "MESSAGE",
-      title: `Pesan baru dari ${session.name}`,
-      message: `${project.title}: ${parsed.data.content.slice(0, 120)}`,
-      href: "/dashboard/messages",
-      preferenceKey: "pesanBaru",
-    });
-  } catch (error) {
-    console.error("Pesan tersimpan, tetapi notifikasi gagal dibuat:", error);
-  }
+  after(async () => {
+    try {
+      await createUserNotification({
+        userId: recipientId,
+        type: "MESSAGE",
+        title: `Pesan baru dari ${session.name}`,
+        message: `${project.title}: ${parsed.data.content.slice(0, 120)}`,
+        href: "/dashboard/messages",
+        preferenceKey: "pesanBaru",
+      });
+    } catch (error) {
+      console.error("Pesan tersimpan, tetapi notifikasi gagal dibuat:", error);
+    }
+  });
 
   return { success: true };
 }

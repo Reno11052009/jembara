@@ -28,9 +28,6 @@ const whiteFieldClass =
 const pageLabelClassName = "flex flex-col gap-2 text-base font-bold text-ink";
 const pageLabelTextClassName = "inline-flex items-center gap-1";
 
-// Judul cuma ditolak kalau isinya angka doang (nggak ada huruf sama sekali).
-const titleMustContainLetterPattern = "^(?=.*[A-Za-z]).*$";
-
 export default function PasangLowonganView({
   data,
 }: {

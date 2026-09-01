@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-import { CheckCircle2, Star } from "lucide-react";
-=======
 "use client";
 
 import { useState, useTransition } from "react";
@@ -11,7 +8,6 @@ import {
   rejectProposalAction,
   type ProposalDecisionResult,
 } from "@/app/actions/proposals";
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
 import type { Applicant } from "@/types/applicant";
 
 const statusStyles: Record<Applicant["status"], string> = {
@@ -21,15 +17,12 @@ const statusStyles: Record<Applicant["status"], string> = {
 };
 
 export default function ApplicantRow({ applicant }: { applicant: Applicant }) {
-<<<<<<< HEAD
-=======
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [pendingDecision, setPendingDecision] = useState<
     "accept" | "reject" | null
   >(null);
   const [actionError, setActionError] = useState<string | null>(null);
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
   const initials = applicant.name
     .split(" ")
     .map((part) => part[0])
@@ -37,8 +30,6 @@ export default function ApplicantRow({ applicant }: { applicant: Applicant }) {
     .slice(0, 2)
     .toUpperCase();
 
-<<<<<<< HEAD
-=======
   function runDecision(
     decision: "accept" | "reject",
     action: (proposalId: unknown) => Promise<ProposalDecisionResult>,
@@ -78,8 +69,6 @@ export default function ApplicantRow({ applicant }: { applicant: Applicant }) {
     );
     if (confirmed) runDecision("reject", rejectProposalAction);
   }
-
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
   return (
     <article className="rounded-xl border border-hairline bg-card p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -154,11 +143,6 @@ export default function ApplicantRow({ applicant }: { applicant: Applicant }) {
           ) : (
             <span className="text-xs text-ink-muted">Portofolio belum tersedia</span>
           )}
-<<<<<<< HEAD
-        </div>
-      </div>
-=======
-
           {applicant.status === "Pending" && (
             <>
               <button
@@ -190,7 +174,6 @@ export default function ApplicantRow({ applicant }: { applicant: Applicant }) {
           {actionError}
         </p>
       )}
->>>>>>> f5cdc7e448e6859d969a242a1ccacee35caadf63
     </article>
   );
 }

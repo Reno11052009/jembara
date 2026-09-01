@@ -3,6 +3,8 @@ import type { OwnerRecentApplicant } from "@/types/umkm-owner-dashboard";
 export default function ApplicantListItem({ applicant }: { applicant: OwnerRecentApplicant }) {
   return (
     <div className="flex items-start gap-3 rounded-xl bg-canvas p-4">
+      {/* Avatar dapat berasal dari URL eksternal dinamis milik pengguna. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={applicant.avatarUrl}
         alt={`Foto profil ${applicant.name}`}

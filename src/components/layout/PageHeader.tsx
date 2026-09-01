@@ -37,6 +37,8 @@ export default function PageHeader({
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-display font-black text-brand transition-opacity hover:opacity-80"
         >
           {avatarUrl ? (
+            // Avatar dapat berupa data URL atau URL eksternal dinamis pengguna.
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={avatarUrl}
               alt={`Foto profil ${userName}`}

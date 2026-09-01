@@ -1,16 +1,14 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 import InputField from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import { LoginFormData, LoginFormErrors, FormStatus } from "@/types/auth";
-import { validateEmail, validatePassword } from "@/lib/validation";
+import { validatePassword } from "@/lib/validation";
 import { loginAction } from "@/app/actions/auth";
 
 export default function LoginForm() {
-  const router = useRouter();
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",

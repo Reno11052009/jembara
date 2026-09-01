@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Conversation, ChatMessage } from "@/types/messages";
+import type { Conversation, ChatMessage } from "@/types/messages";
 import ChatHeader from "@/components/messages/ChatHeader";
 import ChatThread from "@/components/messages/ChatThread";
 import ChatComposer from "@/components/messages/ChatComposer";
@@ -48,11 +48,13 @@ export default function ChatPanel({ conversation, messages }: ChatPanelProps) {
   return (
     <div className="flex h-full flex-1 flex-col bg-card">
       <ChatHeader conversation={conversation} />
-      <ChatThread messages={messages} />
+      <ChatThread messages={displayMessages} />
       <ChatComposer
-        key={conversation.id}
         conversationId={conversation.id}
         canSend={conversation.canSend}
+        onOptimisticSend={addOptimisticMessage}
+        onSendSuccess={confirmOptimisticMessage}
+        onSendError={removeOptimisticMessage}
       />
     </div>
   );
