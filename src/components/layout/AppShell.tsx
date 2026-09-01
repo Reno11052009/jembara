@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import Sidebar from "@/components/layout/Sidebar";
 import DashboardFooter from "@/components/layout/DashboardFooter";
+import ChatBubbleWidget from "@/components/chatbot/ChatBubbleWidget";
 
 interface AppShellProps {
   children: ReactNode;
@@ -15,6 +16,7 @@ export default function AppShell({ children, role }: AppShellProps) {
         <main className="flex-1 px-6 py-8 sm:px-8">{children}</main>
         <DashboardFooter />
       </div>
+      <ChatBubbleWidget role={role} />
     </div>
   );
 }
