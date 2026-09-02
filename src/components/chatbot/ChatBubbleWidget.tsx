@@ -336,9 +336,9 @@ export default function ChatBubbleWidget({
         setDockPos(pos);
         window.setTimeout(() => setDragPhase("idle"), SNAP_TRANSITION_MS);
       });
-    } else if (!hasDraggedRef.current) {
-      setIsOpen((prev) => !prev);
-    }
+    // } else if (!hasDraggedRef.current) {
+    //   setIsOpen((prev) => !prev);
+   }
   };
 
   const handlePointerCancel = () => {
