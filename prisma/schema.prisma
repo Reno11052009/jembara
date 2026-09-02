@@ -25,16 +25,17 @@ model user {
   createdAt    DateTime @default(now()) @db.Timestamp(6)
   updateAt     DateTime @updatedAt @db.Timestamp(6)
 
-  student                student?
-  umkm                   umkm?
-  admin                  admin?
-  sentMessages           message[]                @relation("MessageSender")
-  receivedMessages       message[]                @relation("MessageRecipient")
-  notifications          notification[]
-  notificationPreference notification_preference?
-  sessions               auth_session[]
-  releasedPayments       project_payment[]        @relation("PaymentReleasedTo")
-  balanceTransactions    balance_transaction[]
+  student                  student?
+  umkm                     umkm?
+  admin                    admin?
+  sentMessages             message[]                   @relation("MessageSender")
+  receivedMessages         message[]                   @relation("MessageRecipient")
+  notifications            notification[]
+  notificationPreference   notification_preference?
+  sessions                 auth_session[]
+  releasedPayments         project_payment[]           @relation("PaymentReleasedTo")
+  balanceTransactions      balance_transaction[]
+  messageAttachmentUploads message_attachment_upload[]
 
   @@index([createdAt, id])
 }
@@ -247,14 +248,15 @@ model project {
   createdAt   DateTime  @default(now()) @db.Timestamp(6)
   updatedAt   DateTime  @updatedAt @db.Timestamp(6)
 
-  umkm         umkm                @relation(fields: [umkmId], references: [id], onDelete: Cascade)
-  student      student?            @relation("ProjectStudent", fields: [studentId], references: [id], onDelete: SetNull)
-  skillsNeeded project_skill[]
-  proposals    proposal[]
-  review       review?
-  messages     message[]
-  payment      project_payment?
-  submission   project_submission?
+  umkm              umkm                        @relation(fields: [umkmId], references: [id], onDelete: Cascade)
+  student           student?                    @relation("ProjectStudent", fields: [studentId], references: [id], onDelete: SetNull)
+  skillsNeeded      project_skill[]
+  proposals         proposal[]
+  review            review?
+  messages          message[]
+  payment           project_payment?
+  submission        project_submission?
+  attachmentUploads message_attachment_upload[]
 
   @@index([umkmId, status, createdAt])
   @@index([umkmId, status, updatedAt])
@@ -273,13 +275,47 @@ model message {
   createdAt   DateTime  @default(now()) @db.Timestamp(6)
   updatedAt   DateTime  @updatedAt @db.Timestamp(6)
 
-  project   project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  sender    user    @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
-  recipient user    @relation("MessageRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  project    project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sender     user                @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient  user                @relation("MessageRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  attachment message_attachment?
 
   @@index([projectId, createdAt])
   @@index([recipientId, readAt])
   @@index([senderId, createdAt])
+}
+
+model message_attachment {
+  id          String   @id @default(uuid()) @db.Uuid
+  messageId   String   @unique @db.Uuid
+  storagePath String   @unique @db.VarChar(1024)
+  fileName    String   @db.VarChar(255)
+  contentType String   @db.VarChar(255)
+  sizeBytes   BigInt
+  createdAt   DateTime @default(now()) @db.Timestamp(6)
+
+  message message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+}
+
+model message_attachment_upload {
+  id          String   @id @default(uuid()) @db.Uuid
+  projectId   String   @db.Uuid
+  uploaderId  String   @db.Uuid
+  storagePath String   @unique @db.VarChar(1024)
+  fileName    String   @db.VarChar(255)
+  contentType String   @db.VarChar(255)
+  sizeBytes   BigInt
+  expiresAt   DateTime @db.Timestamp(6)
+  createdAt   DateTime @default(now()) @db.Timestamp(6)
+
+  project  project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploader user    @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  @@index([uploaderId, expiresAt])
+  @@index([projectId, createdAt])
+  @@index([expiresAt])
 }
 
 model proposal {

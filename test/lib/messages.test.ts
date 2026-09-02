@@ -8,6 +8,16 @@ const mocks = vi.hoisted(() => ({
   messageFindMany: vi.fn(),
   messageCreate: vi.fn(),
   messageUpdateMany: vi.fn(),
+  attachmentUploadDeleteMany: vi.fn(),
+  attachmentUploadCount: vi.fn(),
+  attachmentUploadCreate: vi.fn(),
+  attachmentUploadFindFirst: vi.fn(),
+  attachmentUploadDelete: vi.fn(),
+  attachmentFindFirst: vi.fn(),
+  storageFrom: vi.fn(),
+  createSignedUploadUrl: vi.fn(),
+  storageInfo: vi.fn(),
+  createSignedUrl: vi.fn(),
   createUserNotification: vi.fn(),
   consumeRateLimit: vi.fn(),
   transaction: vi.fn(),
@@ -26,6 +36,14 @@ vi.mock("@/lib/notifications", () => ({
 vi.mock("@/lib/rate-limit", () => ({
   consumeRateLimit: mocks.consumeRateLimit,
   createRateLimitKey: vi.fn(() => "message:test"),
+}));
+vi.mock("@/lib/supabase-storage", () => ({
+  getSupabaseStorageAdmin: () => ({
+    storage: { from: mocks.storageFrom },
+  }),
+  getMessageAttachmentBucketName: () => "message-attachments",
+  getSupabaseResumableUploadEndpoint: () =>
+    "https://project.storage.supabase.co/storage/v1/upload/resumable",
 }));
 vi.mock("@/config/unifiedConfig", () => ({
   config: {
@@ -51,13 +69,26 @@ vi.mock("@/lib/prisma", () => ({
       create: mocks.messageCreate,
       updateMany: mocks.messageUpdateMany,
     },
+    message_attachment_upload: {
+      deleteMany: mocks.attachmentUploadDeleteMany,
+      count: mocks.attachmentUploadCount,
+      create: mocks.attachmentUploadCreate,
+      findFirst: mocks.attachmentUploadFindFirst,
+      delete: mocks.attachmentUploadDelete,
+    },
+    message_attachment: {
+      findFirst: mocks.attachmentFindFirst,
+    },
     $transaction: mocks.transaction,
   },
 }));
 
 import {
+  finalizeMessageAttachmentUpload,
+  getMessageAttachmentDownloadUrl,
   getMessagesData,
   markCurrentProjectMessagesAsRead,
+  prepareMessageAttachmentUpload,
   sendCurrentMessage,
 } from "@/lib/messages";
 
@@ -83,10 +114,18 @@ describe("messages", () => {
       remaining: 19,
       retryAfterSeconds: 0,
     });
+    mocks.attachmentUploadDeleteMany.mockResolvedValue({ count: 0 });
+    mocks.attachmentUploadCount.mockResolvedValue(0);
+    mocks.storageFrom.mockReturnValue({
+      createSignedUploadUrl: mocks.createSignedUploadUrl,
+      info: mocks.storageInfo,
+      createSignedUrl: mocks.createSignedUrl,
+    });
     mocks.transaction.mockImplementation(async (callback) =>
       callback({
         message: { create: mocks.messageCreate },
         project: { update: mocks.projectUpdate },
+        message_attachment_upload: { delete: mocks.attachmentUploadDelete },
       }),
     );
   });
@@ -304,5 +343,169 @@ describe("messages", () => {
       },
       data: { readAt: expect.any(Date) },
     });
+  });
+
+  it("prepares a private resumable upload only for a project participant", async () => {
+    mocks.projectFindFirst.mockResolvedValue({
+      title: "Website UMKM",
+      umkm: { userId: umkmUserId },
+      student: { userId: viewerId },
+    });
+    mocks.attachmentUploadCreate.mockResolvedValue({
+      id: "77777777-7777-4777-8777-777777777777",
+    });
+    mocks.createSignedUploadUrl.mockResolvedValue({
+      data: { token: "signed-upload-token" },
+      error: null,
+    });
+
+    const result = await prepareMessageAttachmentUpload(
+      projectId,
+      "brief-final.pdf",
+      "application/pdf",
+      25 * 1024 * 1024,
+    );
+
+    expect(result).toMatchObject({
+      success: true,
+      upload: {
+        uploadId: "77777777-7777-4777-8777-777777777777",
+        token: "signed-upload-token",
+        bucketName: "message-attachments",
+      },
+    });
+    expect(mocks.attachmentUploadCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        projectId,
+        uploaderId: viewerId,
+        fileName: "brief-final.pdf",
+        contentType: "application/pdf",
+        sizeBytes: BigInt(25 * 1024 * 1024),
+        storagePath: expect.stringMatching(
+          new RegExp(`^projects/${projectId}/${viewerId}/.+\\.pdf$`),
+        ),
+      }),
+      select: { id: true },
+    });
+    expect(mocks.createSignedUploadUrl).toHaveBeenCalledWith(
+      expect.stringContaining(`projects/${projectId}/${viewerId}/`),
+      { upsert: false },
+    );
+  });
+
+  it("rejects files larger than 512 MB before accessing the session", async () => {
+    const result = await prepareMessageAttachmentUpload(
+      projectId,
+      "video.mp4",
+      "video/mp4",
+      512 * 1024 * 1024 + 1,
+    );
+
+    expect(result.success).toBe(false);
+    expect(mocks.requireAuthenticatedSession).not.toHaveBeenCalled();
+    expect(mocks.attachmentUploadCreate).not.toHaveBeenCalled();
+  });
+
+  it("verifies storage size before creating an attachment message", async () => {
+    const uploadId = "77777777-7777-4777-8777-777777777777";
+    const attachmentId = "88888888-8888-4888-8888-888888888888";
+    const sizeBytes = 25 * 1024 * 1024;
+    mocks.attachmentUploadFindFirst.mockResolvedValue({
+      id: uploadId,
+      projectId,
+      storagePath: `projects/${projectId}/${viewerId}/file.pdf`,
+      fileName: "brief-final.pdf",
+      contentType: "application/pdf",
+      sizeBytes: BigInt(sizeBytes),
+      project: {
+        title: "Website UMKM",
+        umkm: { userId: umkmUserId },
+        student: { userId: viewerId },
+      },
+    });
+    mocks.storageInfo.mockResolvedValue({
+      data: { size: sizeBytes, contentType: "application/pdf" },
+      error: null,
+    });
+    mocks.messageCreate.mockResolvedValue({
+      id: "99999999-9999-4999-8999-999999999999",
+      createdAt: new Date("2026-09-02T10:00:00.000Z"),
+      attachment: {
+        id: attachmentId,
+        fileName: "brief-final.pdf",
+        contentType: "application/pdf",
+        sizeBytes: BigInt(sizeBytes),
+      },
+    });
+
+    const result = await finalizeMessageAttachmentUpload(uploadId);
+
+    expect(result).toMatchObject({
+      success: true,
+      message: {
+        sender: "me",
+        attachment: {
+          id: attachmentId,
+          sizeBytes,
+          downloadUrl: `/api/messages/attachments/${attachmentId}`,
+        },
+      },
+    });
+    expect(mocks.messageCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          projectId,
+          senderId: viewerId,
+          recipientId: umkmUserId,
+          attachment: {
+            create: expect.objectContaining({
+              storagePath: `projects/${projectId}/${viewerId}/file.pdf`,
+              sizeBytes: BigInt(sizeBytes),
+            }),
+          },
+        }),
+      }),
+    );
+    expect(mocks.attachmentUploadDelete).toHaveBeenCalledWith({
+      where: { id: uploadId },
+    });
+  });
+
+  it("does not create a message when the stored object size differs", async () => {
+    const uploadId = "77777777-7777-4777-8777-777777777777";
+    mocks.attachmentUploadFindFirst.mockResolvedValue({
+      id: uploadId,
+      projectId,
+      storagePath: "projects/file.pdf",
+      fileName: "brief-final.pdf",
+      contentType: "application/pdf",
+      sizeBytes: BigInt(100),
+      project: {
+        title: "Website UMKM",
+        umkm: { userId: umkmUserId },
+        student: { userId: viewerId },
+      },
+    });
+    mocks.storageInfo.mockResolvedValue({
+      data: { size: 99, contentType: "application/pdf" },
+      error: null,
+    });
+
+    await expect(finalizeMessageAttachmentUpload(uploadId)).resolves.toEqual({
+      success: false,
+      error: "Verifikasi ukuran file gagal. Silakan unggah ulang.",
+    });
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it("does not sign a download URL for an unauthorized attachment", async () => {
+    mocks.attachmentFindFirst.mockResolvedValue(null);
+
+    await expect(
+      getMessageAttachmentDownloadUrl(
+        "88888888-8888-4888-8888-888888888888",
+      ),
+    ).resolves.toBeNull();
+    expect(mocks.createSignedUrl).not.toHaveBeenCalled();
   });
 });

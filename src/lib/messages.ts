@@ -1,21 +1,36 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import { after } from "next/server";
 import { z } from "zod";
 import prisma from "./prisma";
 import { requireAuthenticatedSession } from "./auth-guard";
 import { createUserNotification } from "./notifications";
 import { consumeRateLimit, createRateLimitKey } from "./rate-limit";
+import {
+  getMessageAttachmentValidationError,
+  MAX_MESSAGE_ATTACHMENT_BYTES,
+} from "./message-attachment-policy";
+import {
+  getMessageAttachmentBucketName,
+  getSupabaseResumableUploadEndpoint,
+  getSupabaseStorageAdmin,
+} from "./supabase-storage";
 import { config } from "@/config/unifiedConfig";
 import type {
   ChatMessage,
   Conversation,
+  FinalizeAttachmentUploadResult,
   MessageActionResult,
   MessagesData,
+  PrepareAttachmentUploadResult,
 } from "@/types/messages";
 
 const PROJECT_MESSAGE_STATUSES = ["IN_PROGRESS", "REVIEW", "COMPLETED"];
 const SENDABLE_PROJECT_STATUSES = ["IN_PROGRESS", "REVIEW"];
 const MAX_MESSAGES_PER_PROJECT = 100;
+const MAX_PENDING_UPLOADS_PER_USER = 5;
+const ATTACHMENT_UPLOAD_TTL_MS = 2 * 60 * 60 * 1000;
+const ATTACHMENT_DOWNLOAD_TTL_SECONDS = 60;
 
 const projectIdSchema = z.string().uuid("ID proyek tidak valid.");
 const sendMessageSchema = z.object({
@@ -26,6 +41,32 @@ const sendMessageSchema = z.object({
     .min(1, "Pesan tidak boleh kosong.")
     .max(2000, "Pesan maksimal 2000 karakter."),
 });
+const prepareAttachmentSchema = z.object({
+  projectId: projectIdSchema,
+  fileName: z.string().trim().min(1).max(255),
+  contentType: z.string().trim().max(255),
+  sizeBytes: z
+    .number()
+    .int()
+    .min(1)
+    .max(MAX_MESSAGE_ATTACHMENT_BYTES),
+});
+const uploadIdSchema = z.string().uuid("ID upload tidak valid.");
+const attachmentIdSchema = z.string().uuid("ID lampiran tidak valid.");
+
+function normalizeAttachmentFileName(fileName: string) {
+  const withoutPath = fileName.split(/[\\/]/).pop() || "lampiran";
+  return withoutPath.replace(/[\u0000-\u001f\u007f]/g, "").trim();
+}
+
+function getStorageFileExtension(fileName: string) {
+  const extension = fileName.match(/\.([a-zA-Z0-9]{1,10})$/)?.[1];
+  return extension ? `.${extension.toLowerCase()}` : "";
+}
+
+function attachmentDownloadUrl(attachmentId: string) {
+  return `/api/messages/attachments/${attachmentId}`;
+}
 
 function isSameCalendarDay(first: Date, second: Date) {
   return (
@@ -118,6 +159,9 @@ export async function getMessagesData(
           content: true,
           readAt: true,
           createdAt: true,
+          attachment: {
+            select: { fileName: true },
+          },
         },
       },
       _count: {
@@ -141,7 +185,10 @@ export async function getMessagesData(
     const conversation: Conversation = {
       id: project.id,
       contactName,
-      lastMessagePreview: latestMessage?.content ?? "Belum ada pesan.",
+      lastMessagePreview:
+        latestMessage?.attachment?.fileName ??
+        latestMessage?.content ??
+        "Belum ada pesan.",
       timeLabel: formatConversationTime(activityAt, now),
       unread: project._count.messages > 0,
       isOnline: false,
@@ -187,6 +234,14 @@ export async function getMessagesData(
       senderId: true,
       content: true,
       createdAt: true,
+      attachment: {
+        select: {
+          id: true,
+          fileName: true,
+          contentType: true,
+          sizeBytes: true,
+        },
+      },
     },
   });
   const orderedMessages = selectedMessages.reverse();
@@ -202,6 +257,15 @@ export async function getMessagesData(
         !isSameCalendarDay(previousMessage.createdAt, message.createdAt)
           ? formatDateLabel(message.createdAt, now)
           : undefined,
+      attachment: message.attachment
+        ? {
+            id: message.attachment.id,
+            fileName: message.attachment.fileName,
+            contentType: message.attachment.contentType,
+            sizeBytes: Number(message.attachment.sizeBytes),
+            downloadUrl: attachmentDownloadUrl(message.attachment.id),
+          }
+        : undefined,
     };
   });
 
@@ -210,6 +274,25 @@ export async function getMessagesData(
     conversationMessages: { [selectedConversationId]: messages },
     selectedConversationId,
   };
+}
+
+async function getSendableParticipantProject(projectId: string, userId: string) {
+  return prisma.project.findFirst({
+    where: {
+      id: projectId,
+      status: { in: SENDABLE_PROJECT_STATUSES },
+      studentId: { not: null },
+      OR: [
+        { umkm: { is: { userId } } },
+        { student: { is: { userId } } },
+      ],
+    },
+    select: {
+      title: true,
+      umkm: { select: { userId: true } },
+      student: { select: { userId: true } },
+    },
+  });
 }
 
 export async function sendCurrentMessage(
@@ -239,22 +322,10 @@ export async function sendCurrentMessage(
     };
   }
 
-  const project = await prisma.project.findFirst({
-    where: {
-      id: parsed.data.projectId,
-      status: { in: SENDABLE_PROJECT_STATUSES },
-      studentId: { not: null },
-      OR: [
-        { umkm: { is: { userId: session.userId } } },
-        { student: { is: { userId: session.userId } } },
-      ],
-    },
-    select: {
-      title: true,
-      umkm: { select: { userId: true } },
-      student: { select: { userId: true } },
-    },
-  });
+  const project = await getSendableParticipantProject(
+    parsed.data.projectId,
+    session.userId,
+  );
 
   if (!project?.student) {
     return {
@@ -314,6 +385,336 @@ export async function sendCurrentMessage(
   });
 
   return { success: true };
+}
+
+export async function prepareMessageAttachmentUpload(
+  projectId: unknown,
+  rawFileName: unknown,
+  contentType: unknown,
+  sizeBytes: unknown,
+): Promise<PrepareAttachmentUploadResult> {
+  const fileName =
+    typeof rawFileName === "string"
+      ? normalizeAttachmentFileName(rawFileName)
+      : rawFileName;
+  const parsed = prepareAttachmentSchema.safeParse({
+    projectId,
+    fileName,
+    contentType:
+      typeof contentType === "string" && contentType.trim()
+        ? contentType.toLowerCase()
+        : "application/octet-stream",
+    sizeBytes,
+  });
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message || "Informasi file tidak valid.",
+    };
+  }
+
+  const validationError = getMessageAttachmentValidationError({
+    name: parsed.data.fileName,
+    size: parsed.data.sizeBytes,
+  });
+  if (validationError) return { success: false, error: validationError };
+
+  const session = await requireAuthenticatedSession();
+  const project = await getSendableParticipantProject(
+    parsed.data.projectId,
+    session.userId,
+  );
+  if (!project?.student) {
+    return {
+      success: false,
+      error: "Percakapan tidak ditemukan atau proyek sudah tidak aktif.",
+    };
+  }
+
+  await prisma.message_attachment_upload.deleteMany({
+    where: { uploaderId: session.userId, expiresAt: { lte: new Date() } },
+  });
+  const pendingUploadCount = await prisma.message_attachment_upload.count({
+    where: { uploaderId: session.userId, expiresAt: { gt: new Date() } },
+  });
+  if (pendingUploadCount >= MAX_PENDING_UPLOADS_PER_USER) {
+    return {
+      success: false,
+      error: "Terlalu banyak upload yang belum selesai. Coba lagi nanti.",
+    };
+  }
+
+  let storage;
+  let bucketName;
+  let endpoint;
+  try {
+    storage = getSupabaseStorageAdmin();
+    bucketName = getMessageAttachmentBucketName();
+    endpoint = getSupabaseResumableUploadEndpoint();
+  } catch (error) {
+    console.error("Konfigurasi Supabase Storage belum siap:", error);
+    return {
+      success: false,
+      error: "Penyimpanan lampiran belum dikonfigurasi.",
+    };
+  }
+
+  const storagePath = `projects/${parsed.data.projectId}/${session.userId}/${randomUUID()}${getStorageFileExtension(parsed.data.fileName)}`;
+  const upload = await prisma.message_attachment_upload.create({
+    data: {
+      projectId: parsed.data.projectId,
+      uploaderId: session.userId,
+      storagePath,
+      fileName: parsed.data.fileName,
+      contentType: parsed.data.contentType,
+      sizeBytes: BigInt(parsed.data.sizeBytes),
+      expiresAt: new Date(Date.now() + ATTACHMENT_UPLOAD_TTL_MS),
+    },
+    select: { id: true },
+  });
+
+  const signedUpload = await storage.storage
+    .from(bucketName)
+    .createSignedUploadUrl(storagePath, { upsert: false });
+  if (signedUpload.error || !signedUpload.data) {
+    await prisma.message_attachment_upload.delete({ where: { id: upload.id } });
+    console.error("Gagal membuat token upload Supabase:", signedUpload.error);
+    return {
+      success: false,
+      error: "Upload belum dapat dimulai. Silakan coba lagi.",
+    };
+  }
+
+  return {
+    success: true,
+    upload: {
+      endpoint,
+      token: signedUpload.data.token,
+      bucketName,
+      storagePath,
+      uploadId: upload.id,
+    },
+  };
+}
+
+export async function finalizeMessageAttachmentUpload(
+  rawUploadId: unknown,
+): Promise<FinalizeAttachmentUploadResult> {
+  const parsedUploadId = uploadIdSchema.safeParse(rawUploadId);
+  if (!parsedUploadId.success) {
+    return { success: false, error: "Upload tidak valid." };
+  }
+
+  const session = await requireAuthenticatedSession();
+  const pendingUpload = await prisma.message_attachment_upload.findFirst({
+    where: {
+      id: parsedUploadId.data,
+      uploaderId: session.userId,
+      expiresAt: { gt: new Date() },
+      project: {
+        is: {
+          status: { in: SENDABLE_PROJECT_STATUSES },
+          studentId: { not: null },
+          OR: [
+            { umkm: { is: { userId: session.userId } } },
+            { student: { is: { userId: session.userId } } },
+          ],
+        },
+      },
+    },
+    select: {
+      id: true,
+      projectId: true,
+      storagePath: true,
+      fileName: true,
+      contentType: true,
+      sizeBytes: true,
+      project: {
+        select: {
+          title: true,
+          umkm: { select: { userId: true } },
+          student: { select: { userId: true } },
+        },
+      },
+    },
+  });
+  if (!pendingUpload?.project.student) {
+    return {
+      success: false,
+      error: "Upload kedaluwarsa atau percakapan sudah tidak aktif.",
+    };
+  }
+
+  let storage;
+  let bucketName;
+  try {
+    storage = getSupabaseStorageAdmin();
+    bucketName = getMessageAttachmentBucketName();
+  } catch (error) {
+    console.error("Konfigurasi Supabase Storage belum siap:", error);
+    return {
+      success: false,
+      error: "Penyimpanan lampiran belum dikonfigurasi.",
+    };
+  }
+
+  const storedObject = await storage.storage
+    .from(bucketName)
+    .info(pendingUpload.storagePath);
+  if (storedObject.error || !storedObject.data) {
+    return {
+      success: false,
+      error: "File belum selesai diunggah. Silakan lanjutkan upload.",
+    };
+  }
+
+  const expectedSize = Number(pendingUpload.sizeBytes);
+  if (storedObject.data.size !== expectedSize) {
+    console.error("Ukuran lampiran di storage tidak cocok dengan reservasi.", {
+      uploadId: pendingUpload.id,
+      expectedSize,
+      storedSize: storedObject.data.size,
+    });
+    return {
+      success: false,
+      error: "Verifikasi ukuran file gagal. Silakan unggah ulang.",
+    };
+  }
+
+  const recipientId =
+    pendingUpload.project.umkm.userId === session.userId
+      ? pendingUpload.project.student.userId
+      : pendingUpload.project.umkm.userId;
+  const message = await prisma.$transaction(async (transaction) => {
+    const createdMessage = await transaction.message.create({
+      data: {
+        projectId: pendingUpload.projectId,
+        senderId: session.userId,
+        recipientId,
+        content: `Lampiran: ${pendingUpload.fileName}`,
+        attachment: {
+          create: {
+            storagePath: pendingUpload.storagePath,
+            fileName: pendingUpload.fileName,
+            contentType:
+              storedObject.data.contentType || pendingUpload.contentType,
+            sizeBytes: pendingUpload.sizeBytes,
+          },
+        },
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        attachment: {
+          select: {
+            id: true,
+            fileName: true,
+            contentType: true,
+            sizeBytes: true,
+          },
+        },
+      },
+    });
+    await transaction.message_attachment_upload.delete({
+      where: { id: pendingUpload.id },
+    });
+    await transaction.project.update({
+      where: { id: pendingUpload.projectId },
+      data: { updatedAt: new Date() },
+      select: { id: true },
+    });
+    return createdMessage;
+  });
+
+  if (!message.attachment) {
+    return { success: false, error: "Lampiran gagal disimpan." };
+  }
+
+  after(async () => {
+    try {
+      await createUserNotification({
+        userId: recipientId,
+        type: "MESSAGE",
+        title: `Lampiran baru dari ${session.name}`,
+        message: `${pendingUpload.project.title}: ${pendingUpload.fileName}`,
+        href: "/dashboard/messages",
+        preferenceKey: "pesanBaru",
+      });
+    } catch (error) {
+      console.error("Lampiran tersimpan, tetapi notifikasi gagal dibuat:", error);
+    }
+  });
+
+  return {
+    success: true,
+    message: {
+      id: message.id,
+      sender: "me",
+      text: `Lampiran: ${message.attachment.fileName}`,
+      timeLabel: formatClock(message.createdAt),
+      attachment: {
+        id: message.attachment.id,
+        fileName: message.attachment.fileName,
+        contentType: message.attachment.contentType,
+        sizeBytes: Number(message.attachment.sizeBytes),
+        downloadUrl: attachmentDownloadUrl(message.attachment.id),
+      },
+    },
+  };
+}
+
+export async function cancelMessageAttachmentUpload(rawUploadId: unknown) {
+  const parsedUploadId = uploadIdSchema.safeParse(rawUploadId);
+  if (!parsedUploadId.success) return false;
+
+  const session = await requireAuthenticatedSession();
+  const deleted = await prisma.message_attachment_upload.deleteMany({
+    where: { id: parsedUploadId.data, uploaderId: session.userId },
+  });
+  return deleted.count > 0;
+}
+
+export async function getMessageAttachmentDownloadUrl(
+  rawAttachmentId: unknown,
+) {
+  const parsedAttachmentId = attachmentIdSchema.safeParse(rawAttachmentId);
+  if (!parsedAttachmentId.success) return null;
+
+  const session = await requireAuthenticatedSession();
+  const attachment = await prisma.message_attachment.findFirst({
+    where: {
+      id: parsedAttachmentId.data,
+      message: {
+        is: {
+          OR: [
+            { senderId: session.userId },
+            { recipientId: session.userId },
+          ],
+          project: {
+            is: {
+              OR: [
+                { umkm: { is: { userId: session.userId } } },
+                { student: { is: { userId: session.userId } } },
+              ],
+            },
+          },
+        },
+      },
+    },
+    select: { storagePath: true, fileName: true },
+  });
+  if (!attachment) return null;
+
+  const signedDownload = await getSupabaseStorageAdmin()
+    .storage.from(getMessageAttachmentBucketName())
+    .createSignedUrl(attachment.storagePath, ATTACHMENT_DOWNLOAD_TTL_SECONDS, {
+      download: attachment.fileName,
+    });
+  if (signedDownload.error || !signedDownload.data?.signedUrl) {
+    console.error("Gagal membuat URL download lampiran:", signedDownload.error);
+    return null;
+  }
+  return signedDownload.data.signedUrl;
 }
 
 export async function markCurrentProjectMessagesAsRead(projectId: unknown) {

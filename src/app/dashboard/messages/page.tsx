@@ -1,7 +1,21 @@
+import { Suspense } from "react";
 import MessagesView from "@/components/messages/MessagesView";
 import { getMessagesData } from "@/lib/messages";
 
-export default async function MessagesPage({
+function MessagesFallback() {
+  return (
+    <div
+      className="fixed inset-0 flex animate-pulse bg-card lg:left-60"
+      aria-busy="true"
+      aria-label="Memuat pesan"
+    >
+      <div className="w-80 border-r border-hairline bg-canvas" />
+      <div className="flex-1 bg-card" />
+    </div>
+  );
+}
+
+async function MessagesContent({
   searchParams,
 }: {
   searchParams: Promise<{ project?: string | string[] }>;
@@ -23,5 +37,17 @@ export default async function MessagesPage({
         selectedConversationId={selectedConversationId}
       />
     </div>
+  );
+}
+
+export default function MessagesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ project?: string | string[] }>;
+}) {
+  return (
+    <Suspense fallback={<MessagesFallback />}>
+      <MessagesContent searchParams={searchParams} />
+    </Suspense>
   );
 }
