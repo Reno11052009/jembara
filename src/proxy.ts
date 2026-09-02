@@ -5,7 +5,10 @@ function createContentSecurityPolicy() {
   const isDevelopment = process.env.NODE_ENV !== "production";
   return [
     "default-src 'self'",
-    `script-src 'self'${isDevelopment ? " 'unsafe-eval' 'unsafe-inline'" : ""}`,
+    // Cache Components/PPR streams inline React bootstrap and RSC payloads.
+    // A per-request nonce would disable the prerendered app shell, so allow
+    // those inline scripts while SRI protects the external production chunks.
+    `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' blob: data: https:",
     "font-src 'self' data:",

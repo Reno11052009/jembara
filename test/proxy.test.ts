@@ -18,7 +18,7 @@ describe("security proxy", () => {
     expect(firstCsp).toContain("script-src 'self'");
     expect(firstCsp).not.toContain("nonce-");
     expect(firstCsp).not.toContain("strict-dynamic");
-    expect(firstCsp?.match(/script-src[^;]+/)?.[0]).not.toContain("'unsafe-inline'");
+    expect(firstCsp?.match(/script-src[^;]+/)?.[0]).toContain("'unsafe-inline'");
     expect(firstCsp).not.toContain("'unsafe-eval'");
     expect(secondCsp).toBe(firstCsp);
   });
