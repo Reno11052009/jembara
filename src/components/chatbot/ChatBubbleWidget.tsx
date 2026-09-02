@@ -1,20 +1,25 @@
 "use client";
 
 import { useState, useRef, useEffect, type FormEvent } from "react";
-import { X, Send, Sparkles } from "lucide-react";
+import { X, Send, ArrowUpRight, Sparkles } from "lucide-react";
 
 const AI_AVATAR_IMAGE_SRC = "/images/ai-avatar-placeholder.svg";
 
+interface MessageLink {
+  href: string;
+  label: string;
+}
 interface Message {
   id: string;
   sender: "user" | "assistant";
   text: string;
   timeLabel: string;
+  links?: MessageLink[];
 }
-
 interface ChatBubbleWidgetProps {
   role?: string;
   avatarSrc?: string;
+  userId?: string;
 }
 
 const STUDENT_SUGGESTIONS = [
@@ -37,6 +42,8 @@ const DRAG_THRESHOLD_PX = 6;
 const BALL_SIZE = 56;
 const EDGE_MARGIN_PERCENT = 6;
 const SNAP_TRANSITION_MS = 300;
+const MAX_STORED_MESSAGES = 30;
+const CHAT_HISTORY_STORAGE_PREFIX = "jembara:jelita-history:v1";
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
@@ -101,11 +108,13 @@ function edgePosToPixels(edge: DockEdge, pos: number) {
 export default function ChatBubbleWidget({
   role = "STUDENT",
   avatarSrc = AI_AVATAR_IMAGE_SRC,
+  userId = "anonymous",
 }: ChatBubbleWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [readyHistoryKey, setReadyHistoryKey] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [dockEdge, setDockEdge] = useState<DockEdge>("right");
@@ -119,6 +128,8 @@ export default function ChatBubbleWidget({
   const pressTimerRef = useRef<number | null>(null);
 
   const suggestions = role === "UMKM" ? UMKM_SUGGESTIONS : STUDENT_SUGGESTIONS;
+  const historyStorageKey = `${CHAT_HISTORY_STORAGE_PREFIX}:${userId}:${role}`;
+  const historyReady = readyHistoryKey === historyStorageKey;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -130,9 +141,53 @@ export default function ChatBubbleWidget({
     }
   }, [messages, isOpen, isLoading]);
 
+  // Restore riwayat percakapan dari sessionStorage
+  useEffect(() => {
+    let active = true;
+
+    queueMicrotask(() => {
+      if (!active) return;
+
+      let restoredMessages: Message[] = [];
+      try {
+        const storedHistory = window.sessionStorage.getItem(historyStorageKey);
+        restoredMessages = storedHistory
+          ? (JSON.parse(storedHistory) as Message[])
+          : [];
+      } catch {
+        // Data rusak atau storage diblokir dianggap kosong
+      }
+
+      setMessages(restoredMessages);
+      setReadyHistoryKey(historyStorageKey);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [historyStorageKey]);
+
+  // Simpan riwayat ke sessionStorage
+  useEffect(() => {
+    if (!historyReady) return;
+
+    try {
+      if (messages.length === 0) {
+        window.sessionStorage.removeItem(historyStorageKey);
+      } else {
+        window.sessionStorage.setItem(
+          historyStorageKey,
+          JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)),
+        );
+      }
+    } catch {
+      // Chat tetap berfungsi jika sessionStorage diblokir
+    }
+  }, [historyReady, historyStorageKey, messages]);
+
   const handleSend = async (textToSend: string) => {
     const trimmed = textToSend.trim();
-    if (!trimmed || isLoading) return;
+    if (!trimmed || isLoading || !historyReady) return;
 
     const userMsg: Message = {
       id: crypto.randomUUID(),
@@ -199,8 +254,6 @@ export default function ChatBubbleWidget({
 
   /* ==========================================================================
    * ASSISTIVETOUCH DRAG HANDLERS
-   * SATU elemen button dipakai untuk seluruh gesture (idle -> dragging ->
-   * snapping) supaya pointer capture tidak putus di tengah jalan.
    * ========================================================================== */
   const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (isOpen) return;
@@ -312,12 +365,7 @@ export default function ChatBubbleWidget({
 
   return (
     <>
-      {/*
-        ========================================================================
-        SIDE-DOCKED FLOATING AI TRIGGER — SATU elemen persisten untuk idle,
-        dragging (bola), dan snapping (animasi magnet-dock).
-        ========================================================================
-      */}
+      {/* Floating AI Trigger */}
       <div
         className={`fixed z-50 select-none ${containerTransitionClass}`}
         style={containerStyle}
@@ -328,6 +376,11 @@ export default function ChatBubbleWidget({
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerCancel}
+          onClick={() => {
+            if (dragPhase === "idle") {
+              setIsOpen((prev) => !prev);
+            }
+          }}
           aria-label={isOpen ? "Tutup Asisten AI" : "Buka Asisten AI Jembara"}
           title="Tanya Jelita AI"
           style={{
@@ -341,7 +394,6 @@ export default function ChatBubbleWidget({
           }
         >
           {isBallMode ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={avatarSrc}
               alt=""
@@ -351,7 +403,6 @@ export default function ChatBubbleWidget({
           ) : (
             <>
               <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white p-0.5 shadow-md transition-transform duration-300 group-hover:scale-105">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={avatarSrc}
                   alt="Jelita AI Avatar"
@@ -372,21 +423,17 @@ export default function ChatBubbleWidget({
         </button>
       </div>
 
-      {/*
-        ========================================================================
-        MODAL CHATBOX JELITA AI
-        ========================================================================
-      */}
+      {/* Modal Chat */}
       {isOpen && (
         <div
           className={`fixed z-50 flex h-140 max-h-[calc(100vh-4rem)] w-140 max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-3xl border border-hairline bg-white shadow-2xl transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 ${getModalPositionClass(
             dockEdge
           )}`}
         >
+          {/* Header */}
           <div className="flex items-center justify-between border-b border-hairline bg-canvas/80 px-4 py-3.5 backdrop-blur-md">
             <div className="flex items-center gap-3">
               <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-600/10 p-0.5">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={avatarSrc}
                   alt="Jelita AI"
@@ -396,9 +443,7 @@ export default function ChatBubbleWidget({
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-display text-sm font-bold text-ink">
-                    Jelita AI
-                  </h3>
+                  <h3 className="font-display text-sm font-bold text-ink">Jelita AI</h3>
                   <Sparkles size={13} className="text-amber-500 fill-amber-500/20" />
                 </div>
                 <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-600">
@@ -416,11 +461,11 @@ export default function ChatBubbleWidget({
             </button>
           </div>
 
+          {/* Messages */}
           <div className="flex flex-1 flex-col overflow-y-auto p-4">
             {messages.length === 0 ? (
               <div className="my-auto flex flex-col items-center text-center">
                 <div className="relative mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-amber-600/10 p-1 ring-8 ring-amber-600/5">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={avatarSrc}
                     alt="Jelita AI Logo"
@@ -428,7 +473,7 @@ export default function ChatBubbleWidget({
                   />
                 </div>
                 <h4 className="max-w-65 font-display text-base font-bold text-ink">
-                  Halo! Saya Jelita AI
+                  Halo, saya Jelita
                 </h4>
                 <p className="mt-1 max-w-67.5 font-body text-xs text-ink-muted">
                   Asisten cerdas platform Jembara. Ada yang bisa saya bantu terkait proyek atau fitur platform?
@@ -464,6 +509,22 @@ export default function ChatBubbleWidget({
                       }`}
                     >
                       <p className="whitespace-pre-wrap">{msg.text}</p>
+
+                      {msg.sender === "assistant" && msg.links && msg.links.length > 0 && (
+                        <div className="mt-2.5 flex flex-col gap-1.5">
+                          {msg.links.map((link) => (
+                            <a
+                              key={`${msg.id}-${link.href}`}
+                              href={link.href}
+                              className="inline-flex items-center justify-between gap-2 rounded-lg border border-brand/20 bg-white px-2.5 py-2 font-semibold text-brand transition-colors hover:border-brand/50 hover:bg-brand-soft"
+                            >
+                              <span>{link.label}</span>
+                              <ArrowUpRight size={13} className="shrink-0" />
+                            </a>
+                          ))}
+                        </div>
+                      )}
+
                       <span
                         className={`mt-1 block text-[10px] ${
                           msg.sender === "user"
@@ -491,6 +552,7 @@ export default function ChatBubbleWidget({
             )}
           </div>
 
+          {/* Form */}
           <form
             onSubmit={handleSubmit}
             className="border-t border-hairline bg-white p-3"
@@ -506,7 +568,7 @@ export default function ChatBubbleWidget({
               />
               <button
                 type="submit"
-                disabled={!input.trim() || isLoading}
+                disabled={!input.trim() || isLoading || !historyReady}
                 aria-label="Kirim pesan"
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-600 text-white transition-all hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-40"
               >
@@ -518,4 +580,4 @@ export default function ChatBubbleWidget({
       )}
     </>
   );
-}
+} 

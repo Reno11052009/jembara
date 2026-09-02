@@ -16,6 +16,9 @@ vi.mock("@/lib/rate-limit", () => ({
 vi.mock("@/lib/chatbot-recommendations", () => ({
   getSafeChatbotRecommendation: mocks.recommendation,
 }));
+vi.mock("@/lib/chatbot-context", () => ({
+  getChatbotContext: vi.fn().mockResolvedValue(""),
+}));
 vi.mock("@/config/unifiedConfig", () => ({
   config: {
     security: {

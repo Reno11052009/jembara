@@ -66,7 +66,7 @@ describe("ChatBubbleWidget session history", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Buka Asisten AI Jembara" }),
     );
-    const input = screen.getByPlaceholderText("Tanyakan sesuatu...");
+    const input = screen.getByPlaceholderText("Tulis pertanyaan Anda...");
     await waitFor(() => {
       expect((input as HTMLInputElement).disabled).toBe(false);
     });
