@@ -89,14 +89,14 @@ function AccountDropdown({ sessionName, mobile = false }: AccountDropdownProps) 
           <Link
             href="/dashboard"
             onClick={() => setIsOpen(false)}
-            className="rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-black/5"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-black/5 dark:hover:bg-white/10"
           >
             Dashboard
           </Link>
           <form action={logoutAction}>
             <button
               type="submit"
-              className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-ink hover:bg-black/5"
+              className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-ink hover:bg-black/5 dark:hover:bg-white/10"
             >
               Logout
             </button>
@@ -126,7 +126,7 @@ export default function Navbar({ sessionName }: NavbarProps) {
             <a
               key={link.href}
               href={link.href}
-              className="text-sm text-black hover:text-brand transition-colors duration-200 ease-out font-body font-black"
+              className="text-sm text-black dark:text-ink hover:text-brand transition-colors duration-200 ease-out font-body font-black"
             >
               {link.label}
             </a>

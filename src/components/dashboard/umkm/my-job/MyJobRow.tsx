@@ -3,14 +3,14 @@ import { CalendarDays, MapPin } from "lucide-react";
 import type { MyJobListing } from "@/types/my-jobs";
 
 const statusStyles: Record<MyJobListing["status"], string> = {
-  Terbuka: "bg-emerald-50 text-success",
-  Seleksi: "bg-blue-50 text-blue-600",
-  "Menunggu Pembayaran": "bg-amber-50 text-amber-700",
+  Terbuka: "bg-emerald-50 dark:bg-emerald-500/15 text-success",
+  Seleksi: "bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400",
+  "Menunggu Pembayaran": "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400",
   Berjalan: "bg-brand-soft text-brand",
-  "Dalam Review": "bg-violet-50 text-violet-600",
-  Selesai: "bg-slate-100 text-slate-700",
+  "Dalam Review": "bg-violet-50 dark:bg-violet-500/15 text-violet-600 dark:text-violet-400",
+  Selesai: "bg-slate-100 dark:bg-line text-slate-700 dark:text-ink-muted",
   Dibatalkan: "bg-danger-soft text-danger",
-  Lainnya: "bg-neutral-100 text-neutral-600",
+  Lainnya: "bg-neutral-100 dark:bg-surface text-neutral-600 dark:text-ink-muted",
 };
 
 export default function MyJobRow({ listing }: { listing: MyJobListing }) {

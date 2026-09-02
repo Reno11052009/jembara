@@ -2,7 +2,7 @@ import { testimonials } from "@/lib/mock-landing";
 
 export default function Testimonials() {
   return (
-    <section className="animate-reveal px-6 py-20 font-sans">
+    <section className="animate-reveal bg-landing-dark px-6 py-20 font-sans">
       <div className="mx-auto max-w-7xl text-center">
         <p className="animate-reveal animate-reveal-d1 font-display text-lg font-black uppercase tracking-[0.15em] text-brand">
           Cerita Sukses
@@ -21,7 +21,7 @@ export default function Testimonials() {
               key={index}
               className={`animate-reveal animate-reveal-d${Math.min(index + 1, 6)} rounded-xl border border-hairline bg-card p-6`}
             >
-              <p className="text-lg text-black font-body">&ldquo;{testimonial.quote}&rdquo;</p>
+              <p className="text-lg text-black dark:text-ink font-body">&ldquo;{testimonial.quote}&rdquo;</p>
               <div className="mt-4 flex items-center gap-3">
                 <div className="h-12 w-12 shrink-0 rounded-full bg-brand-soft" />
                 <div>

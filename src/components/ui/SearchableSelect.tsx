@@ -25,7 +25,7 @@ type SearchableSelectProps = {
 };
 
 const defaultLabelClassName =
-  "mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-gray-500";
+  "mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-ink-muted";
 
 export default function SearchableSelect({
   id,
@@ -90,7 +90,7 @@ export default function SearchableSelect({
   return (
     <div ref={containerRef} className="relative">
       <label htmlFor={id} className={labelClassName}>
-        {label} {required ? <span className="text-red-500">*</span> : null}
+        {label} {required ? <span className="text-red-500 dark:text-red-400">*</span> : null}
       </label>
 
       <button
@@ -100,20 +100,20 @@ export default function SearchableSelect({
         disabled={isDisabled}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
-        className={`flex w-full items-center justify-between rounded-xl border bg-white px-4 py-2.5 text-left text-sm text-gray-900 outline-none transition disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 ${
+        className={`flex w-full items-center justify-between rounded-xl border bg-white dark:bg-card px-4 py-2.5 text-left text-sm text-gray-900 dark:text-ink outline-none transition disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-surface disabled:text-gray-400 dark:disabled:text-ink-muted ${
           isOpen
             ? "border-brand ring-1 ring-brand"
-            : "border-gray-200 hover:border-brand hover:ring-1 hover:ring-brand"
+            : "border-gray-200 dark:border-hairline hover:border-brand hover:ring-1 hover:ring-brand"
         }`}
       >
-        <span className={selected ? "text-gray-900" : "text-gray-400"}>
+        <span className={selected ? "text-gray-900 dark:text-ink" : "text-gray-400 dark:text-ink-muted"}>
           {loading
             ? `Memuat ${label.toLocaleLowerCase("id-ID")}...`
             : selected?.name ?? placeholder}
         </span>
         <ChevronDown
           size={16}
-          className={`shrink-0 text-gray-400 transition-transform duration-200 ${
+          className={`shrink-0 text-gray-400 dark:text-ink-muted transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
           }`}
         />
@@ -139,24 +139,24 @@ export default function SearchableSelect({
       </select>
 
       {isOpen ? (
-        <div className="absolute left-0 top-full z-20 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+        <div className="absolute left-0 top-full z-20 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 dark:border-hairline bg-white dark:bg-card shadow-xl">
           {showSearch ? (
-            <div className="flex items-center gap-2 border-b border-gray-100 px-3 py-2">
-              <Search size={14} className="shrink-0 text-gray-400" />
+            <div className="flex items-center gap-2 border-b border-gray-100 dark:border-hairline px-3 py-2">
+              <Search size={14} className="shrink-0 text-gray-400 dark:text-ink-muted" />
               <input
                 ref={searchInputRef}
                 type="text"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={searchPlaceholder}
-                className="w-full bg-transparent text-sm text-gray-900 outline-none focus:outline-none focus:ring-0 placeholder:text-gray-400 font-body"
+                className="w-full bg-transparent text-sm text-gray-900 dark:text-ink outline-none focus:outline-none focus:ring-0 placeholder:text-gray-400 dark:placeholder:text-ink-muted font-body"
               />
             </div>
           ) : null}
 
           <div className="max-h-56 overflow-y-auto py-1">
             {filteredOptions.length === 0 ? (
-              <p className="px-4 py-3 text-sm text-gray-400 font-body">
+              <p className="px-4 py-3 text-sm text-gray-400 dark:text-ink-muted font-body">
                 Tidak ditemukan
               </p>
             ) : (
@@ -170,7 +170,7 @@ export default function SearchableSelect({
                     className={`block w-full px-4 py-2.5 text-left text-sm font-body transition hover:bg-brand/10 hover:text-brand ${
                       isSelected
                         ? "bg-brand/10 font-medium text-brand"
-                        : "text-gray-900"
+                        : "text-gray-900 dark:text-ink"
                     }`}
                   >
                     {option.name}

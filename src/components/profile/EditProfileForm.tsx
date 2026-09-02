@@ -114,19 +114,19 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-12 -m-6 sm:-m-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-void text-gray-900 dark:text-ink font-sans pb-12 -m-6 sm:-m-8">
       {/* Navbar */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-10 px-6 py-4">
+      <nav className="bg-white dark:bg-card border-b border-gray-200 dark:border-hairline sticky top-0 z-10 px-6 py-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-orange-500 rounded-md"></div>
               <span className="font-extrabold text-xl tracking-tight">
-                Skill<span className="text-orange-500">Bridge</span>
+                Skill<span className="text-orange-500 dark:text-orange-400">Bridge</span>
               </span>
             </div>
             
-            <Link href="/dashboard/profile" className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900">
+            <Link href="/dashboard/profile" className="flex items-center text-sm font-medium text-gray-700 dark:text-ink-muted hover:text-gray-900 dark:hover:text-ink">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Kembali ke Profil
             </Link>
@@ -136,10 +136,10 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
 
       {/* Main Content */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="border-b border-gray-100 p-6 bg-gray-50/50">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-100 dark:border-hairline overflow-hidden">
+          <div className="border-b border-gray-100 dark:border-hairline p-6 bg-gray-50/50 dark:bg-void/50">
             <h1 className="text-xl font-bold">Edit Profil</h1>
-            <p className="text-sm text-gray-500 mt-1">Perbarui informasi profil Anda agar lebih menarik bagi klien UMKM.</p>
+            <p className="text-sm text-gray-500 dark:text-ink-muted mt-1">Perbarui informasi profil Anda agar lebih menarik bagi klien UMKM.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-6">
@@ -147,7 +147,7 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
             {/* Avatar Upload */}
             <div className="flex flex-col items-center sm:items-start sm:flex-row gap-6 mb-2">
               <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-gray-100 flex-shrink-0">
+                <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-gray-100 dark:bg-surface flex-shrink-0">
                   {/* Preview lokal memakai blob/data URL sebelum gambar disimpan. */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
@@ -168,12 +168,12 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
                 />
               </div>
               <div className="flex flex-col justify-center text-center sm:text-left">
-                <h3 className="text-sm font-semibold text-gray-900">Foto Profil</h3>
-                <p className="text-xs text-gray-500 mt-1 mb-3">Disarankan rasio 1:1. Maksimal 5MB.</p>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-ink">Foto Profil</h3>
+                <p className="text-xs text-gray-500 dark:text-ink-muted mt-1 mb-3">Disarankan rasio 1:1. Maksimal 5MB.</p>
                 <button 
                   type="button" 
                   onClick={() => fileInputRef.current?.click()}
-                  className="text-xs font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-full transition-colors self-center sm:self-start border border-orange-200"
+                  className="text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/15 hover:bg-orange-100 dark:hover:bg-orange-500/20 px-3 py-1.5 rounded-full transition-colors self-center sm:self-start border border-orange-200 dark:border-orange-500/30"
                 >
                   Ubah Foto
                 </button>
@@ -182,24 +182,24 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
             {/* Name & Headline */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col gap-2">
-                <label htmlFor="name" className="text-sm font-semibold text-gray-700">Nama Lengkap</label>
+                <label htmlFor="name" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">Nama Lengkap</label>
                 <input
                   type="text"
                   id="name"
                   name="name"
                   defaultValue={initialData.name}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                  className="w-full rounded-lg border border-gray-300 dark:border-hairline px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
                   required
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label htmlFor="headline" className="text-sm font-semibold text-gray-700">Headline Pekerjaan</label>
+                <label htmlFor="headline" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">Headline Pekerjaan</label>
                 <input
                   type="text"
                   id="headline"
                   name="headline"
                   defaultValue={initialData.headline}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                  className="w-full rounded-lg border border-gray-300 dark:border-hairline px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
                   placeholder="Contoh: UI/UX Designer"
                   required
                 />
@@ -208,25 +208,25 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
 
             {/* Location & Education */}
             <div className="flex flex-col gap-2">
-              <label htmlFor="location" className="text-sm font-semibold text-gray-700">Lokasi / Alamat</label>
+              <label htmlFor="location" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">Lokasi / Alamat</label>
               <input
                 type="text"
                 id="location"
                 name="location"
                 defaultValue={initialData.location}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                className="w-full rounded-lg border border-gray-300 dark:border-hairline px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
                 required
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col gap-2">
-                <label htmlFor="tingkat_pendidikan" className="text-sm font-semibold text-gray-700">Tingkat Pendidikan</label>
+                <label htmlFor="tingkat_pendidikan" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">Tingkat Pendidikan</label>
                 <select
                   id="tingkat_pendidikan"
                   name="tingkat_pendidikan"
                   defaultValue={initialData.tingkat_pendidikan}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 bg-white"
+                  className="w-full rounded-lg border border-gray-300 dark:border-hairline px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 bg-white dark:bg-card"
                   required
                 >
                   <option value="" disabled>Pilih tingkat pendidikan</option>
@@ -240,13 +240,13 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
                 </select>
               </div>
               <div className="flex flex-col gap-2">
-                <label htmlFor="school" className="text-sm font-semibold text-gray-700">Nama Sekolah / Universitas</label>
+                <label htmlFor="school" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">Nama Sekolah / Universitas</label>
                 <input
                   type="text"
                   id="school"
                   name="school"
                   defaultValue={initialData.school}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                  className="w-full rounded-lg border border-gray-300 dark:border-hairline px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
                   placeholder="Contoh: Universitas Brawijaya"
                   required
                 />
@@ -255,36 +255,36 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
 
             {/* About */}
             <div className="flex flex-col gap-2">
-              <label htmlFor="about" className="text-sm font-semibold text-gray-700">Tentang Saya / Deskripsi</label>
+              <label htmlFor="about" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">Tentang Saya / Deskripsi</label>
               <textarea
                 id="about"
                 name="about"
                 rows={4}
                 defaultValue={initialData.about}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 resize-y"
+                className="w-full rounded-lg border border-gray-300 dark:border-hairline px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 resize-y"
                 required
               />
-              <p className="text-xs text-gray-500">Ceritakan sedikit tentang latar belakang, minat, dan spesialisasi Anda.</p>
+              <p className="text-xs text-gray-500 dark:text-ink-muted">Ceritakan sedikit tentang latar belakang, minat, dan spesialisasi Anda.</p>
             </div>
 
             {/* Skills */}
             <div className="flex flex-col gap-2">
-              <label htmlFor="skills" className="text-sm font-semibold text-gray-700">Keahlian & Tools</label>
+              <label htmlFor="skills" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">Keahlian & Tools</label>
               <input
                 type="text"
                 id="skills"
                 name="skills"
                 defaultValue={initialData.skills.join(", ")}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                className="w-full rounded-lg border border-gray-300 dark:border-hairline px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
                 placeholder="Pisahkan dengan koma (contoh: React, Figma, UI Design)"
                 required
               />
             </div>
 
-            <div className="border-t border-gray-100 pt-6 mt-2 flex justify-end gap-3">
+            <div className="border-t border-gray-100 dark:border-hairline pt-6 mt-2 flex justify-end gap-3">
               <Link 
                 href="/dashboard/profile" 
-                className="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-5 py-2.5 text-sm font-bold text-gray-700 dark:text-ink-muted bg-white dark:bg-card border border-gray-300 dark:border-hairline rounded-lg hover:bg-gray-50 dark:hover:bg-void transition-colors"
               >
                 Batal
               </Link>

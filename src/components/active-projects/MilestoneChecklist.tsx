@@ -37,7 +37,7 @@ export default function MilestoneChecklist({ milestones }: MilestoneChecklistPro
                 role="checkbox"
                 aria-checked={isChecked}
                 className={`flex h-4 w-4 shrink-0 items-center justify-center rounded ${
-                  isChecked ? "bg-brand" : "border border-hairline bg-white"
+                  isChecked ? "bg-brand" : "border border-hairline bg-white dark:bg-card"
                 }`}
               >
                 {isChecked && (
@@ -47,7 +47,7 @@ export default function MilestoneChecklist({ milestones }: MilestoneChecklistPro
               <span
                 className={`font-body text-sm ${
                   isChecked
-                    ? "text-[#7A7A7A] underline"
+                    ? "text-[#7A7A7A] dark:text-ink-muted underline"
                     : "text-ink"
                 }`}
               >

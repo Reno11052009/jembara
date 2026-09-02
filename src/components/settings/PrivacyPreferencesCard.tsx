@@ -17,8 +17,8 @@ export default function PrivacyPreferencesCard() {
   };
 
   return (
-    <section className="rounded-xl border border-[#ECECEC] bg-white p-6">
-      <h2 className="font-display text-lg font-bold text-neutral-900 mb-2">
+    <section className="rounded-xl border border-[#ECECEC] dark:border-hairline bg-white dark:bg-card p-6">
+      <h2 className="font-display text-lg font-bold text-neutral-900 dark:text-ink mb-2">
         Preferensi Kehadiran & Data
       </h2>
 
@@ -29,14 +29,14 @@ export default function PrivacyPreferencesCard() {
             className={`flex items-start justify-between gap-6 py-5 first:pt-0 last:pb-0 ${
               index === preferences.length - 1
                 ? ""
-                : "border-b border-[#ECECEC]"
+                : "border-b border-[#ECECEC] dark:border-hairline"
             }`}
           >
             <div>
-              <p className="font-body text-sm font-semibold text-neutral-900 mb-1">
+              <p className="font-body text-sm font-semibold text-neutral-900 dark:text-ink mb-1">
                 {preference.title}
               </p>
-              <p className="font-body text-sm text-neutral-500 max-w-xl">
+              <p className="font-body text-sm text-neutral-500 dark:text-ink-muted max-w-xl">
                 {preference.description}
               </p>
             </div>
@@ -47,11 +47,11 @@ export default function PrivacyPreferencesCard() {
               aria-checked={preference.enabled}
               onClick={() => toggle(preference.id)}
               className={`relative shrink-0 w-12 h-7 rounded-full transition-colors duration-200 ${
-                preference.enabled ? "bg-orange-500" : "bg-neutral-300"
+                preference.enabled ? "bg-orange-500" : "bg-neutral-300 dark:bg-surface"
               }`}
             >
               <span
-                className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all duration-200 ${
+                className={`absolute top-1 w-5 h-5 rounded-full bg-white dark:bg-card shadow transition-all duration-200 ${
                   preference.enabled ? "left-6" : "left-1"
                 }`}
               />

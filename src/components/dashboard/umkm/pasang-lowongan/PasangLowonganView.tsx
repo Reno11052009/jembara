@@ -25,7 +25,7 @@ const workModeOptions: Array<{
 const fieldClass =
   "w-full rounded-lg bg-canvas px-4 py-3 text-sm font-body text-ink placeholder:text-ink-muted outline-none focus:ring-2 focus:ring-brand/30";
 const whiteFieldClass =
-  "w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-body text-ink placeholder:text-ink-muted outline-none transition focus:ring-2 focus:ring-brand/30 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400";
+  "w-full rounded-lg border border-gray-200 dark:border-hairline bg-white dark:bg-card px-4 py-3 text-sm font-body text-ink placeholder:text-ink-muted outline-none transition focus:ring-2 focus:ring-brand/30 disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-surface disabled:text-gray-400 dark:disabled:text-ink-muted";
 const pageLabelClassName = "flex flex-col gap-2 text-base font-bold text-ink";
 const pageLabelTextClassName = "inline-flex items-center gap-1";
 
@@ -168,7 +168,7 @@ export default function PasangLowonganView({
             {/* Judul */}
             <label className={pageLabelClassName}>
               <span className={pageLabelTextClassName}>
-                Judul Project <span className="text-red-500">*</span>
+                Judul Project <span className="text-red-500 dark:text-red-400">*</span>
               </span>
               <input
                 name="title"
@@ -192,7 +192,7 @@ export default function PasangLowonganView({
             {/* Budget */}
             <label className={pageLabelClassName}>
               <span className={pageLabelTextClassName}>
-                Budget Tetap (Rp) <span className="text-red-500">*</span>
+                Budget Tetap (Rp) <span className="text-red-500 dark:text-red-400">*</span>
               </span>
               <input
                 ref={budgetInputRef}
@@ -221,7 +221,7 @@ export default function PasangLowonganView({
           {/* Deskripsi */}
           <label className={pageLabelClassName}>
             <span className={pageLabelTextClassName}>
-              Deskripsi Project <span className="text-red-500">*</span>
+              Deskripsi Project <span className="text-red-500 dark:text-red-400">*</span>
             </span>
             <textarea
               name="description"
@@ -243,7 +243,7 @@ export default function PasangLowonganView({
           <fieldset className="flex flex-col gap-3">
             <legend className="text-base font-bold text-ink">
               <span className={pageLabelTextClassName}>
-                Skill Wajib <span className="text-red-500">*</span>
+                Skill Wajib <span className="text-red-500 dark:text-red-400">*</span>
               </span>
             </legend>
 
@@ -323,7 +323,7 @@ export default function PasangLowonganView({
                         autoFocus
                         maxLength={40}
                         placeholder="Nama skill baru"
-                        className={`rounded-full border bg-white px-3 py-1.5 text-sm text-ink outline-none ${
+                        className={`rounded-full border bg-white dark:bg-card px-3 py-1.5 text-sm text-ink outline-none ${
                           customSkillError ? "border-danger" : "border-hairline focus:border-brand"
                         }`}
                       />
@@ -420,7 +420,7 @@ export default function PasangLowonganView({
             {/* Lokasi */}
             <label className={pageLabelClassName}>
               <span className={pageLabelTextClassName}>
-                Lokasi {workMode !== "REMOTE" && <span className="text-red-500">*</span>}
+                Lokasi {workMode !== "REMOTE" && <span className="text-red-500 dark:text-red-400">*</span>}
               </span>
               <input
                 name="location"

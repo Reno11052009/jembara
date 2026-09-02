@@ -7,8 +7,8 @@ export default function ProfileVisibilityCard() {
   const [selected, setSelected] = useState(defaultProfileVisibility);
 
   return (
-    <section className="rounded-xl border border-[#ECECEC] bg-white p-6">
-      <h2 className="font-display text-lg font-bold text-neutral-900 mb-5">
+    <section className="rounded-xl border border-[#ECECEC] dark:border-[#2A2A2A] bg-white dark:bg-card p-6">
+      <h2 className="font-display text-lg font-bold text-neutral-900 dark:text-ink mb-5">
         Visibilitas Profil
       </h2>
 
@@ -25,7 +25,7 @@ export default function ProfileVisibilityCard() {
             >
               <span
                 className={`mt-0.5 shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
-                  isSelected ? "border-orange-500" : "border-neutral-300"
+                  isSelected ? "border-orange-500" : "border-neutral-300 dark:border-line"
                 }`}
               >
                 {isSelected && (
@@ -36,12 +36,12 @@ export default function ProfileVisibilityCard() {
               <div>
                 <p
                   className={`font-body text-sm font-semibold mb-1 transition-colors ${
-                    isSelected ? "text-orange-600" : "text-neutral-900"
+                    isSelected ? "text-orange-600 dark:text-orange-400" : "text-neutral-900 dark:text-ink"
                   }`}
                 >
                   {option.title}
                 </p>
-                <p className="font-body text-sm text-neutral-500 max-w-2xl">
+                <p className="font-body text-sm text-neutral-500 dark:text-ink-muted max-w-2xl">
                   {option.description}
                 </p>
               </div>

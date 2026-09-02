@@ -28,7 +28,7 @@ export default function ProposalForm({
           maxLength={2000}
           rows={7}
           placeholder="Jelaskan pengalaman yang relevan, pendekatan pengerjaan, dan alasan Anda cocok untuk project ini."
-          className="resize-y rounded-xl border border-hairline bg-white px-4 py-3 font-body text-sm font-normal text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+          className="resize-y rounded-xl border border-hairline bg-white dark:bg-card px-4 py-3 font-body text-sm font-normal text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
         />
         <span className="font-normal text-ink-muted">
           Minimal 50 karakter, maksimal 2.000 karakter.

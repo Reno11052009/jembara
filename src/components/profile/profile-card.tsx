@@ -40,7 +40,7 @@ export default function ProfileCard({
           : "Pengguna";
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center sticky top-24">
+    <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-100 dark:border-hairline p-6 flex flex-col items-center text-center sticky top-24">
       {/* Avatar dapat berupa data URL hasil unggahan profil. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -52,30 +52,30 @@ export default function ProfileCard({
       <span className="mt-2 rounded-full bg-brand-soft px-3 py-1 text-xs font-bold text-brand">
         Role: {roleLabel}
       </span>
-      <p className="mt-2 text-sm text-gray-500 mb-3">{headline}</p>
+      <p className="mt-2 text-sm text-gray-500 dark:text-ink-muted mb-3">{headline}</p>
 
-      <div className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full mb-6 ${available ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-600"}`}>
+      <div className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full mb-6 ${available ? "bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-400" : "bg-gray-100 dark:bg-surface text-gray-600 dark:text-ink-muted"}`}>
         <CircleCheck className="w-3.5 h-3.5" />
         {available ? "Tersedia untuk Proyek" : "Belum Tersedia"}
       </div>
 
-      <div className="w-full flex flex-col gap-3 text-sm text-gray-600 mb-6 text-left">
+      <div className="w-full flex flex-col gap-3 text-sm text-gray-600 dark:text-ink-muted mb-6 text-left">
         <div className="flex items-center gap-3">
-          <MapPin className="w-4 h-4 text-gray-400" />
+          <MapPin className="w-4 h-4 text-gray-400 dark:text-ink-muted" />
           <span>{location}</span>
         </div>
         {education && (
           <div className="flex items-center gap-3">
-            <University className="w-4 h-4 text-gray-400" />
+            <University className="w-4 h-4 text-gray-400 dark:text-ink-muted" />
             <span>{education}</span>
           </div>
         )}
         <div className="flex items-center gap-3">
-          <Star className="w-4 h-4 text-gray-400" fill="currentColor" />
-          <span><span className="font-bold text-gray-900">{rating.toFixed(1)}</span> ({reviewCount} Ulasan)</span>
+          <Star className="w-4 h-4 text-gray-400 dark:text-ink-muted" fill="currentColor" />
+          <span><span className="font-bold text-gray-900 dark:text-ink">{rating.toFixed(1)}</span> ({reviewCount} Ulasan)</span>
         </div>
         <div className="flex items-center gap-3">
-          <BriefcaseBusiness className="w-4 h-4 text-gray-400" />
+          <BriefcaseBusiness className="w-4 h-4 text-gray-400 dark:text-ink-muted" />
           <span>{totalProject} Proyek Selesai</span>
         </div>
       </div>
@@ -98,14 +98,14 @@ export default function ProfileCard({
             {skills.map((skill) => (
             <span
               key={skill}
-              className="px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-700 text-xs font-medium rounded-md"
+              className="px-3 py-1.5 bg-gray-50 dark:bg-void border border-gray-200 dark:border-hairline text-gray-700 dark:text-ink-muted text-xs font-medium rounded-md"
             >
               {skill}
             </span>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500">Belum ada keahlian yang ditambahkan.</p>
+          <p className="text-sm text-gray-500 dark:text-ink-muted">Belum ada keahlian yang ditambahkan.</p>
         )}
       </div>
     </div>

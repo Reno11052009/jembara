@@ -23,7 +23,7 @@ export default function EarningsChartRangeTabs({
             onClick={() => onChange(range)}
             className={`rounded-full px-4 py-2 text-sm font-body font-semibold transition-colors ${
               isActive
-                ? "bg-ink text-white"
+                ? "bg-ink text-white dark:text-canvas"
                 : "border border-hairline bg-card text-ink hover:border-brand hover:text-brand"
             }`}
           >

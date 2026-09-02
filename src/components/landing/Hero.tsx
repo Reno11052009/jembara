@@ -7,7 +7,7 @@ export default function Hero() {
   const isVisible = useMountReveal();
 
   return (
-    <section className="w-full bg-white">
+    <section className="w-full bg-white dark:bg-canvas">
       <div className="mx-auto max-w-4xl px-6 py-24 text-center">
         <span
           className={`inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-4 py-1.5 text-xs font-display font-black uppercase tracking-wide text-brand transition-all duration-700 ease-out ${

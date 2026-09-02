@@ -64,7 +64,7 @@ export default function ProjectCard({
                 <span>{project.skillMatchReason}</span>
                 <span className="ml-1 font-body font-bold text-brand">{project.skillMatchPercent}%</span>
               </div>
-              <div className="mt-1 h-2 w-70 overflow-hidden rounded-full bg-[#EAEAEA]">
+              <div className="mt-1 h-2 w-70 overflow-hidden rounded-full bg-[#EAEAEA] dark:bg-line">
                 <div
                   className="h-full rounded-full bg-brand"
                   style={{ width: `${project.skillMatchPercent}%` }}

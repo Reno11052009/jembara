@@ -8,8 +8,8 @@ export default function AutoWithdrawalCard() {
   const [autoWithdrawalEnabled, setAutoWithdrawalEnabled] = useState(false);
 
   return (
-    <section className="rounded-xl border border-[#ECECEC] bg-white p-6">
-      <h2 className="font-display text-lg font-bold text-neutral-900 mb-5">
+    <section className="rounded-xl border border-[#ECECEC] dark:border-hairline bg-white dark:bg-card p-6">
+      <h2 className="font-display text-lg font-bold text-neutral-900 dark:text-ink mb-5">
         Pengaturan Penarikan Otomatis
       </h2>
 
@@ -22,12 +22,12 @@ export default function AutoWithdrawalCard() {
         />
       </div>
 
-      <div className="flex items-start justify-between gap-6 pt-5 border-t border-[#ECECEC]">
+      <div className="flex items-start justify-between gap-6 pt-5 border-t border-[#ECECEC] dark:border-hairline">
         <div>
-          <p className="font-body text-sm font-semibold text-neutral-900 mb-1">
+          <p className="font-body text-sm font-semibold text-neutral-900 dark:text-ink mb-1">
             Pencairan Otomatis Mingguan
           </p>
-          <p className="font-body text-sm text-neutral-500 max-w-xl">
+          <p className="font-body text-sm text-neutral-500 dark:text-ink-muted max-w-xl">
             Setiap hari Jumat, saldo SkillBridge kamu akan ditarik otomatis ke
             rekening utama jika memenuhi batas minimal.
           </p>
@@ -39,11 +39,11 @@ export default function AutoWithdrawalCard() {
           aria-checked={autoWithdrawalEnabled}
           onClick={() => setAutoWithdrawalEnabled((prev) => !prev)}
           className={`relative shrink-0 w-12 h-7 rounded-full transition-colors duration-200 ${
-            autoWithdrawalEnabled ? "bg-orange-500" : "bg-neutral-300"
+            autoWithdrawalEnabled ? "bg-orange-500" : "bg-neutral-300 dark:bg-surface"
           }`}
         >
           <span
-            className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
+            className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white dark:bg-card shadow transition-transform duration-200 ${
               autoWithdrawalEnabled ? "translate-x-5" : "translate-x-0"
             }`}
           />

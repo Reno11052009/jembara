@@ -29,7 +29,7 @@ export default function RunningActivityCard({
                 
           const progressColor =
             progress === 0
-              ? "bg-[#EAEAEA]"
+              ? "bg-[#EAEAEA] dark:bg-line"
               : isDone
               ? "bg-success"
               : "bg-brand";

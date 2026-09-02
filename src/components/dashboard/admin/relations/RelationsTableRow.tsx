@@ -1,7 +1,7 @@
 import type { AdminRelationRow } from "@/types/admin-relations";
 import { RELATION_ROW_GRID } from "@/components/dashboard/admin/relations/RelationsTableHeader";
 
-const statusStyles: Record<AdminRelationRow["status"], string> = { aktif: "bg-brand-soft text-brand", review: "bg-amber-50 text-amber-700", selesai: "bg-success/10 text-success", dibatalkan: "bg-danger-soft text-danger" };
+const statusStyles: Record<AdminRelationRow["status"], string> = { aktif: "bg-brand-soft text-brand", review: "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400", selesai: "bg-success/10 text-success", dibatalkan: "bg-danger-soft text-danger" };
 const statusLabels: Record<AdminRelationRow["status"], string> = { aktif: "Berlangsung", review: "Dalam review", selesai: "Selesai", dibatalkan: "Dibatalkan" };
 
 export default function RelationsTableRow({ row }: { row: AdminRelationRow }) {

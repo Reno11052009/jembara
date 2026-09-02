@@ -214,12 +214,12 @@ export default function ProfileSettings({
   return (
     <div className="flex flex-col gap-6 pb-10">
       {/* Header Avatar Card */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm flex items-center gap-5">
+      <div className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline p-6 shadow-sm flex items-center gap-5">
         <div 
           className="relative group cursor-pointer w-18 h-18 shrink-0" 
           onClick={() => fileInputRef.current?.click()}
         >
-          <div className="w-full h-full rounded-full overflow-hidden border border-gray-200">
+          <div className="w-full h-full rounded-full overflow-hidden border border-gray-200 dark:border-hairline">
             {/* Blob/data URL preview sengaja memakai img agar dapat ditampilkan sebelum disimpan. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -240,12 +240,12 @@ export default function ProfileSettings({
           />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-gray-900 leading-none mb-2.5">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-ink leading-none mb-2.5">
             {initialData.name.split(" ")[0]}
           </h2>
           <button 
             onClick={() => fileInputRef.current?.click()}
-            className="rounded-full border border-gray-900 px-4 py-1.5 text-xs font-semibold text-gray-900 hover:bg-gray-900 hover:text-white transition"
+            className="rounded-full border border-gray-900 dark:border-ink px-4 py-1.5 text-xs font-semibold text-gray-900 dark:text-ink hover:bg-gray-900 dark:hover:bg-ink hover:text-white dark:hover:text-canvas transition"
           >
             Ganti Foto
           </button>
@@ -254,31 +254,31 @@ export default function ProfileSettings({
 
       <form onSubmit={handleSaveProfile} className="flex flex-col gap-6">
         {/* Informasi Pribadi Card */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 lg:p-7 shadow-sm flex flex-col gap-5">
-          <h3 className="text-lg font-bold text-gray-900 mb-1">Informasi Pribadi</h3>
+        <div className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline p-6 lg:p-7 shadow-sm flex flex-col gap-5">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-ink mb-1">Informasi Pribadi</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
-                Nama Lengkap <span className="text-red-500">*</span>
+              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
+                Nama Lengkap <span className="text-red-500 dark:text-red-400">*</span>
               </label>
               <input
                 type="text"
                 name="name"
                 defaultValue={initialData.name}
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                 required
               />
             </div>
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
-                Email <span className="text-red-500">*</span>
+              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
+                Email <span className="text-red-500 dark:text-red-400">*</span>
               </label>
               <input
                 type="email"
                 defaultValue={initialData.email || ""}
                 placeholder="contoh@email.com"
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                 disabled
               />
             </div>
@@ -286,13 +286,13 @@ export default function ProfileSettings({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Nomor Telepon</label>
+              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">Nomor Telepon</label>
               <input
                 type="text"
                 name="phone"
                 defaultValue={initialData.phone || ""}
                 placeholder="+62 812-3456-7890"
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               />
             </div>
           </div>
@@ -312,16 +312,16 @@ export default function ProfileSettings({
             allowManualFallback
           />
 
-          <div className="border-t border-gray-100 pt-6">
-            <h3 className="mb-5 text-lg font-bold text-gray-900">
+          <div className="border-t border-gray-100 dark:border-hairline pt-6">
+            <h3 className="mb-5 text-lg font-bold text-gray-900 dark:text-ink">
               {isUmkm ? "Informasi Usaha" : "Informasi Pendidikan"}
             </h3>
 
             {isUmkm ? (
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <div>
-                  <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
-                    Nama Usaha <span className="text-red-500">*</span>
+                  <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
+                    Nama Usaha <span className="text-red-500 dark:text-red-400">*</span>
                   </label>
                   <input
                     id="businessName"
@@ -332,7 +332,7 @@ export default function ProfileSettings({
                     maxLength={120}
                     autoComplete="organization"
                     placeholder="Contoh: Kopi Jembara"
-                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                    className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                     required
                   />
                 </div>
@@ -355,7 +355,7 @@ export default function ProfileSettings({
                   ) : null}
                 </div>
                 <div>
-                  <label htmlFor="businessWebsite" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
+                  <label htmlFor="businessWebsite" className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
                     Website Usaha
                   </label>
                   <input
@@ -367,7 +367,7 @@ export default function ProfileSettings({
                     inputMode="url"
                     autoComplete="url"
                     placeholder="tokokamu.id"
-                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                    className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                   />
                 </div>
               </div>
@@ -378,7 +378,7 @@ export default function ProfileSettings({
                     id="tingkat_pendidikan"
                     name="tingkat_pendidikan"
                     label="Jenjang Pendidikan"
-                    labelClassName="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5"
+                    labelClassName="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5"
                     value={educationLevel}
                     onChange={(code) => setEducationLevel(code)}
                     options={[
@@ -397,29 +397,29 @@ export default function ProfileSettings({
                   />
                 </div>
                 <div>
-                  <label htmlFor="school" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Nama Universitas/Sekolah</label>
+                  <label htmlFor="school" className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">Nama Universitas/Sekolah</label>
                   <input
                     id="school"
                     type="text"
                     name="school"
                     defaultValue={initialData.school}
                     placeholder="Contoh: Universitas Brawijaya"
-                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                    className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                   />
                 </div>
                 <div>
-                  <label htmlFor="headline" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Jurusan</label>
+                  <label htmlFor="headline" className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">Jurusan</label>
                   <input
                     id="headline"
                     type="text"
                     name="headline"
                     defaultValue={initialData.headline}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                    className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                   />
                 </div>
                 {showSemester && (
                   <div>
-                    <label htmlFor="semester" className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Semester</label>
+                    <label htmlFor="semester" className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">Semester</label>
                     <input
                       id="semester"
                       type="number"
@@ -429,7 +429,7 @@ export default function ProfileSettings({
                       max={20}
                       step={1}
                       placeholder="Contoh: 6"
-                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                      className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                     />
                   </div>
                 )}
@@ -438,14 +438,14 @@ export default function ProfileSettings({
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">
+            <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
               {isUmkm ? "Deskripsi Usaha" : "Bio"}
             </label>
             <textarea
               name="about"
               rows={2}
               defaultValue={initialData.about}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand resize-y min-h-11.5"
+              className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand resize-y min-h-11.5"
             />
           </div>
 
@@ -461,13 +461,13 @@ export default function ProfileSettings({
         </div>
 
         {/* Skill & Keahlian hanya relevan untuk profil pelajar. */}
-        {!isUmkm && <div className="bg-white rounded-2xl border border-gray-100 p-6 lg:p-7 shadow-sm">
+        {!isUmkm && <div className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline p-6 lg:p-7 shadow-sm">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
-            <h3 className="text-lg font-bold text-gray-900">Skill & Keahlian</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-ink">Skill & Keahlian</h3>
             <button 
               type="button"
               onClick={handleAddSkill}
-              className="rounded-full border border-gray-900 px-4 py-1.5 text-xs font-semibold text-gray-900 hover:bg-gray-900 hover:text-white transition whitespace-nowrap"
+              className="rounded-full border border-gray-900 dark:border-ink px-4 py-1.5 text-xs font-semibold text-gray-900 dark:text-ink hover:bg-gray-900 dark:hover:bg-ink hover:text-white dark:hover:text-canvas transition whitespace-nowrap"
             >
               + Tambah Skill
             </button>
@@ -476,13 +476,13 @@ export default function ProfileSettings({
             {skills.map((skill) => (
               <div 
                 key={skill}
-                className="bg-[#F4F4F5] hover:bg-gray-200/80 rounded-full pl-4 pr-1.5 py-1.5 text-xs font-semibold text-gray-700 flex items-center gap-2 border border-gray-200/50 transition cursor-default"
+                className="bg-[#F4F4F5] dark:bg-surface hover:bg-gray-200/80 dark:hover:bg-line rounded-full pl-4 pr-1.5 py-1.5 text-xs font-semibold text-gray-700 dark:text-ink-muted flex items-center gap-2 border border-gray-200/50 dark:border-hairline transition cursor-default"
               >
                 <span>{skill}</span>
                 <button
                   type="button"
                   onClick={() => removeSkill(skill)}
-                  className="w-4 h-4 rounded-full bg-gray-400 text-white flex items-center justify-center hover:bg-red-500 transition-colors ml-1"
+                  className="w-4 h-4 rounded-full bg-gray-400 dark:bg-line text-white flex items-center justify-center hover:bg-red-500 transition-colors ml-1"
                   title={`Hapus ${skill}`}
                 >
                   <X className="w-3 h-3" />
@@ -490,22 +490,22 @@ export default function ProfileSettings({
               </div>
             ))}
             {skills.length === 0 && (
-              <p className="text-sm text-gray-500 italic">Belum ada skill yang ditambahkan.</p>
+              <p className="text-sm text-gray-500 dark:text-ink-muted italic">Belum ada skill yang ditambahkan.</p>
             )}
           </div>
         </div>}
 
 
         {/* Link Portfolio & Sosial Media Card */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 lg:p-7 shadow-sm flex flex-col gap-5">
-          <h3 className="text-lg font-bold text-gray-900 mb-1">Link Portfolio & Sosial Media</h3>
+        <div className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline p-6 lg:p-7 shadow-sm flex flex-col gap-5">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-ink mb-1">Link Portfolio & Sosial Media</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
             {/* Portfolio */}
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Portfolio URL</label>
-              <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-                <div className="pl-3.5 pr-2 text-gray-400">
+              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">Portfolio URL</label>
+              <div className="relative flex items-center rounded-xl border border-gray-200 dark:border-hairline bg-white dark:bg-card overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
+                <div className="pl-3.5 pr-2 text-gray-400 dark:text-ink-muted">
                   <Globe className="w-4 h-4" />
                 </div>
                 <input
@@ -513,9 +513,9 @@ export default function ProfileSettings({
                   name="portfolioUrl"
                   defaultValue={initialData.portfolioUrl || ""}
                   placeholder="chello.design"
-                  className="w-full py-2.5 pr-10 text-sm text-gray-900 bg-transparent focus:outline-none"
+                  className="w-full py-2.5 pr-10 text-sm text-gray-900 dark:text-ink bg-transparent focus:outline-none"
                 />
-                <div className="absolute right-3.5 text-gray-400 hover:text-gray-600 cursor-pointer transition">
+                <div className="absolute right-3.5 text-gray-400 dark:text-ink-muted hover:text-gray-600 dark:hover:text-ink-muted cursor-pointer transition">
                   <Pencil className="w-4 h-4" />
                 </div>
               </div>
@@ -523,9 +523,9 @@ export default function ProfileSettings({
 
             {/* GitHub */}
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Github</label>
-              <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-                <div className="pl-3.5 pr-2 text-gray-400">
+              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">Github</label>
+              <div className="relative flex items-center rounded-xl border border-gray-200 dark:border-hairline bg-white dark:bg-card overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
+                <div className="pl-3.5 pr-2 text-gray-400 dark:text-ink-muted">
                   <FaGithub className="w-4 h-4" />
                 </div>
                 <input
@@ -533,9 +533,9 @@ export default function ProfileSettings({
                   name="github"
                   defaultValue={initialData.github || ""}
                   placeholder="github.com/chello"
-                  className="w-full py-2.5 pr-10 text-sm text-gray-900 bg-transparent focus:outline-none"
+                  className="w-full py-2.5 pr-10 text-sm text-gray-900 dark:text-ink bg-transparent focus:outline-none"
                 />
-                <div className="absolute right-3.5 text-gray-400 hover:text-gray-600 cursor-pointer transition">
+                <div className="absolute right-3.5 text-gray-400 dark:text-ink-muted hover:text-gray-600 dark:hover:text-ink-muted cursor-pointer transition">
                   <Pencil className="w-4 h-4" />
                 </div>
               </div>
@@ -543,9 +543,9 @@ export default function ProfileSettings({
 
             {/* LinkedIn */}
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Linkedin</label>
-              <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-                <div className="pl-3.5 pr-2 text-gray-400">
+              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">Linkedin</label>
+              <div className="relative flex items-center rounded-xl border border-gray-200 dark:border-hairline bg-white dark:bg-card overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
+                <div className="pl-3.5 pr-2 text-gray-400 dark:text-ink-muted">
                   <FaLinkedin className="w-4 h-4" />
                 </div>
                 <input
@@ -553,9 +553,9 @@ export default function ProfileSettings({
                   name="linkedin"
                   defaultValue={initialData.linkedin || ""}
                   placeholder="linkedin.com/in/chello"
-                  className="w-full py-2.5 pr-10 text-sm text-gray-900 bg-transparent focus:outline-none"
+                  className="w-full py-2.5 pr-10 text-sm text-gray-900 dark:text-ink bg-transparent focus:outline-none"
                 />
-                <div className="absolute right-3.5 text-gray-400 hover:text-gray-600 cursor-pointer transition">
+                <div className="absolute right-3.5 text-gray-400 dark:text-ink-muted hover:text-gray-600 dark:hover:text-ink-muted cursor-pointer transition">
                   <Pencil className="w-4 h-4" />
                 </div>
               </div>
@@ -563,9 +563,9 @@ export default function ProfileSettings({
 
             {/* Behance */}
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1.5">Behance</label>
-              <div className="relative flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-                <div className="pl-3.5 pr-2 text-gray-400">
+              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">Behance</label>
+              <div className="relative flex items-center rounded-xl border border-gray-200 dark:border-hairline bg-white dark:bg-card overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
+                <div className="pl-3.5 pr-2 text-gray-400 dark:text-ink-muted">
                   <FaBehance className="w-4 h-4" />
                 </div>
                 <input
@@ -573,9 +573,9 @@ export default function ProfileSettings({
                   name="behance"
                   defaultValue={initialData.behance || ""}
                   placeholder="behance.net/chello"
-                  className="w-full py-2.5 pr-10 text-sm text-gray-900 bg-transparent focus:outline-none"
+                  className="w-full py-2.5 pr-10 text-sm text-gray-900 dark:text-ink bg-transparent focus:outline-none"
                 />
-                <div className="absolute right-3.5 text-gray-400 hover:text-gray-600 cursor-pointer transition">
+                <div className="absolute right-3.5 text-gray-400 dark:text-ink-muted hover:text-gray-600 dark:hover:text-ink-muted cursor-pointer transition">
                   <Pencil className="w-4 h-4" />
                 </div>
               </div>
@@ -586,7 +586,7 @@ export default function ProfileSettings({
             <button
               type="submit"
               disabled={isLoading}
-              className="bg-white border-2 border-brand text-brand hover:bg-brand-light font-bold text-sm px-8 py-2 rounded-full transition disabled:opacity-70"
+              className="bg-white dark:bg-card border-2 border-brand text-brand hover:bg-brand-light font-bold text-sm px-8 py-2 rounded-full transition disabled:opacity-70"
             >
               {isLoading ? "..." : "Simpan"}
             </button>

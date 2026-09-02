@@ -11,7 +11,7 @@ export default function LatestProjects() {
   return (
     <section
       id="project"
-      className="animate-reveal bg-white px-6 py-20"
+      className="animate-reveal bg-white dark:bg-canvas px-6 py-20"
     >
       <div className="mx-auto max-w-7xl text-center">
         <p className="animate-reveal animate-reveal-d1 font-display text-xs font-black uppercase tracking-[0.15em] text-brand">
@@ -29,7 +29,7 @@ export default function LatestProjects() {
           {latestProjects.map((project, i) => (
             <div
               key={project.id}
-              className={`animate-reveal animate-reveal-d${Math.min(i + 1, 6)} rounded-xl border border-hairline bg-[#F9F9F9] p-6`}
+              className={`animate-reveal animate-reveal-d${Math.min(i + 1, 6)} rounded-xl border border-hairline bg-[#F9F9F9] dark:bg-card p-6`}
             >
               <div className="flex items-start justify-between gap-2">
                 <p className="font-body font-black text-sm text-ink-muted">{project.clientName}</p>

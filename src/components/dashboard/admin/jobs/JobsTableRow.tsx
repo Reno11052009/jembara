@@ -3,7 +3,7 @@ import type { AdminJobRow } from "@/types/admin-jobs";
 import { JOB_ROW_GRID } from "@/components/dashboard/admin/jobs/JobsTableHeader";
 
 const statusLabels: Record<AdminJobRow["status"], string> = { OPEN: "Terbuka", PROPOSAL: "Seleksi", IN_PROGRESS: "Berjalan", REVIEW: "Dalam review", COMPLETED: "Selesai", CANCELLED: "Dibatalkan", UNKNOWN: "Tidak diketahui" };
-const statusStyles: Record<AdminJobRow["status"], string> = { OPEN: "bg-success/10 text-success", PROPOSAL: "bg-brand-soft text-brand", IN_PROGRESS: "bg-blue-50 text-blue-600", REVIEW: "bg-amber-50 text-amber-700", COMPLETED: "bg-success/10 text-success", CANCELLED: "bg-danger-soft text-danger", UNKNOWN: "bg-canvas text-ink-muted" };
+const statusStyles: Record<AdminJobRow["status"], string> = { OPEN: "bg-success/10 text-success", PROPOSAL: "bg-brand-soft text-brand", IN_PROGRESS: "bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400", REVIEW: "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400", COMPLETED: "bg-success/10 text-success", CANCELLED: "bg-danger-soft text-danger", UNKNOWN: "bg-canvas text-ink-muted" };
 
 export default function JobsTableRow({ job }: { job: AdminJobRow }) {
   return (

@@ -6,7 +6,7 @@ const featureLinks = ["Cari Talenta", "Cari Project", "Testimoni", "Hubungi CS"]
 
 export default function Footer() {
   return (
-    <footer className="mx-6 my-10 rounded-2xl border border-hairline bg-white px-10 py-12 text-ink sm:mx-10">
+    <footer className="mx-6 my-10 rounded-2xl border border-hairline bg-white dark:bg-card px-10 py-12 text-ink sm:mx-10">
       <div className="mx-auto flex max-w-8xl flex-col justify-between gap-10 sm:flex-row">
         <div className="max-w-xs">
           <div className="flex items-center gap-2">
@@ -23,7 +23,7 @@ export default function Footer() {
 
         <div className="flex gap-16">
           <div>
-            <p className="text-xs font-display font-black uppercase tracking-widest text-black">
+            <p className="text-xs font-display font-black uppercase tracking-widest text-black dark:text-ink">
               Perusahaan
             </p>
             <ul className="mt-3 flex flex-col gap-2">
@@ -37,7 +37,7 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <p className="text-xs font-display font-black uppercase tracking-widest text-black">
+            <p className="text-xs font-display font-black uppercase tracking-widest text-black dark:text-ink">
               Fitur Utama
             </p>
             <ul className="mt-3 flex flex-col gap-2">

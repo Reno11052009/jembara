@@ -49,8 +49,8 @@ export default function PaymentMethodsCard() {
   };
 
   return (
-    <section className="rounded-xl border border-[#ECECEC] bg-white p-6">
-      <h2 className="font-display text-lg font-bold text-neutral-900 mb-5">
+    <section className="rounded-xl border border-[#ECECEC] dark:border-hairline bg-white dark:bg-card p-6">
+      <h2 className="font-display text-lg font-bold text-neutral-900 dark:text-ink mb-5">
         Metode Pembayaran
       </h2>
 
@@ -58,19 +58,19 @@ export default function PaymentMethodsCard() {
         {methods.map((method) => (
           <div
             key={method.id}
-            className="flex items-center justify-between gap-4 rounded-lg border border-[#ECECEC] px-5 py-4"
+            className="flex items-center justify-between gap-4 rounded-lg border border-[#ECECEC] dark:border-hairline px-5 py-4"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-md bg-neutral-100 flex items-center justify-center shrink-0">
-                <CreditCard size={18} className="text-neutral-700" />
+              <div className="w-9 h-9 rounded-md bg-neutral-100 dark:bg-surface flex items-center justify-center shrink-0">
+                <CreditCard size={18} className="text-neutral-700 dark:text-ink-muted" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="font-body text-sm font-semibold text-neutral-900">
+                  <p className="font-body text-sm font-semibold text-neutral-900 dark:text-ink">
                     {method.name}
                   </p>
                   {method.isPrimary && (
-                    <span className="font-body text-xs font-semibold text-orange-600 bg-orange-50 rounded-full px-2.5 py-0.5">
+                    <span className="font-body text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/15 rounded-full px-2.5 py-0.5">
                       Utama
                     </span>
                   )}
@@ -82,25 +82,25 @@ export default function PaymentMethodsCard() {
                       autoFocus
                       value={editDraft}
                       onChange={(e) => setEditDraft(e.target.value)}
-                      className="font-body text-xs text-neutral-900 border border-orange-300 rounded-md px-2 py-1 outline-none focus:border-orange-500"
+                      className="font-body text-xs text-neutral-900 dark:text-ink border border-orange-300 rounded-md px-2 py-1 outline-none focus:border-orange-500"
                     />
                     <button
                       type="button"
                       onClick={() => saveEdit(method.id)}
-                      className="font-body text-xs font-semibold text-orange-600 hover:underline"
+                      className="font-body text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline"
                     >
                       Simpan
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditingId(null)}
-                      className="font-body text-xs text-neutral-400 hover:underline"
+                      className="font-body text-xs text-neutral-400 dark:text-ink-muted hover:underline"
                     >
                       Batal
                     </button>
                   </div>
                 ) : (
-                  <p className="font-body text-xs text-neutral-500">
+                  <p className="font-body text-xs text-neutral-500 dark:text-ink-muted">
                     {method.detailLine}
                   </p>
                 )}
@@ -111,14 +111,14 @@ export default function PaymentMethodsCard() {
               <button
                 type="button"
                 onClick={() => startEdit(method)}
-                className="w-8 h-8 rounded-md border border-[#ECECEC] flex items-center justify-center text-neutral-600 hover:bg-neutral-50 transition-colors"
+                className="w-8 h-8 rounded-md border border-[#ECECEC] dark:border-hairline flex items-center justify-center text-neutral-600 dark:text-ink-muted hover:bg-neutral-50 dark:hover:bg-void transition-colors"
               >
                 <Pencil size={14} />
               </button>
               <button
                 type="button"
                 onClick={() => removeMethod(method.id)}
-                className="w-8 h-8 rounded-md border border-[#ECECEC] flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors"
+                className="w-8 h-8 rounded-md border border-[#ECECEC] dark:border-hairline flex items-center justify-center text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"
               >
                 <Trash2 size={14} />
               </button>
@@ -127,14 +127,14 @@ export default function PaymentMethodsCard() {
         ))}
 
         {methods.length === 0 && (
-          <p className="font-body text-sm text-neutral-400 text-center py-4">
+          <p className="font-body text-sm text-neutral-400 dark:text-ink-muted text-center py-4">
             Belum ada metode pembayaran.
           </p>
         )}
       </div>
 
       {isAdding ? (
-        <div className="flex flex-col gap-3 rounded-lg border border-[#ECECEC] p-4 mb-2">
+        <div className="flex flex-col gap-3 rounded-lg border border-[#ECECEC] dark:border-hairline p-4 mb-2">
           <Input
             label="Nama Metode"
             placeholder="mis. Bank Mandiri"
@@ -162,7 +162,7 @@ export default function PaymentMethodsCard() {
                 setNewName("");
                 setNewDetail("");
               }}
-              className="font-body text-sm font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors rounded-full px-5 py-2"
+              className="font-body text-sm font-semibold text-neutral-600 dark:text-ink-muted hover:bg-neutral-50 dark:hover:bg-void transition-colors rounded-full px-5 py-2"
             >
               Batal
             </button>
@@ -172,7 +172,7 @@ export default function PaymentMethodsCard() {
         <button
           type="button"
           onClick={() => setIsAdding(true)}
-          className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-neutral-900 border border-neutral-300 rounded-full px-5 py-2.5 hover:bg-neutral-50 transition-colors"
+          className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-neutral-900 dark:text-ink border border-neutral-300 rounded-full px-5 py-2.5 hover:bg-neutral-50 dark:hover:bg-void transition-colors"
         >
           <Plus size={14} />
           Tambah Metode Penarikan

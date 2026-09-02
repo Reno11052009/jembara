@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect, type FormEvent } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, type FormEvent } from "react";
+import { createPortal } from "react-dom";
 import { X, Send, ArrowUpRight, Sparkles } from "lucide-react";
 
 const AI_AVATAR_IMAGE_SRC = "/images/ai-avatar-placeholder.svg";
@@ -43,6 +44,8 @@ const BALL_SIZE = 56;
 const EDGE_MARGIN_PERCENT = 6;
 const SNAP_TRANSITION_MS = 300;
 const MAX_STORED_MESSAGES = 30;
+const MODAL_GAP_PX = 14;
+const MODAL_VIEWPORT_MARGIN_PX = 12;
 const CHAT_HISTORY_STORAGE_PREFIX = "jembara:jelita-history:v1";
 
 function clamp(value: number, min: number, max: number) {
@@ -68,24 +71,6 @@ function getRoundedClass(edge: DockEdge) {
     left: "rounded-r-3xl",
     top: "rounded-b-3xl",
     bottom: "rounded-t-3xl",
-  }[edge];
-}
-
-function getHoverTranslateClass(edge: DockEdge) {
-  return {
-    right: "hover:-translate-x-1.5",
-    left: "hover:translate-x-1.5",
-    top: "hover:translate-y-1.5",
-    bottom: "hover:-translate-y-1.5",
-  }[edge];
-}
-
-function getModalPositionClass(edge: DockEdge) {
-  return {
-    right: "bottom-6 right-16 sm:right-20",
-    left: "bottom-6 left-16 sm:left-20",
-    top: "top-16 right-6 sm:right-10",
-    bottom: "bottom-16 right-6 sm:right-10",
   }[edge];
 }
 
@@ -126,6 +111,15 @@ export default function ChatBubbleWidget({
   const hasDraggedRef = useRef(false);
   const startPosRef = useRef({ x: 0, y: 0 });
   const pressTimerRef = useRef<number | null>(null);
+
+  // const mountedRef = useRef(false);
+  //   useEffect(() => {
+  //     mountedRef.current = true;
+  //   }, []);
+
+  const modalRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [modalStyle, setModalStyle] = useState<React.CSSProperties>({});
 
   const suggestions = role === "UMKM" ? UMKM_SUGGESTIONS : STUDENT_SUGGESTIONS;
   const historyStorageKey = `${CHAT_HISTORY_STORAGE_PREFIX}:${userId}:${role}`;
@@ -348,9 +342,72 @@ export default function ChatBubbleWidget({
     }
   };
 
+  /* ==========================================================================
+   * MODAL POSITIONING — selalu menempel di dekat posisi ball saat ini,
+   * di sisi manapun ball itu di-dock (kiri/kanan/atas/bawah), lalu di-clamp
+   * supaya tidak keluar viewport.
+   * ========================================================================== */
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+
+    const positionModal = () => {
+      const modalEl = modalRef.current;
+      if (!modalEl) return;
+
+      const { width, height } = modalEl.getBoundingClientRect();
+      const anchor = edgePosToPixels(dockEdge, dockPos);
+      if (!anchor) return;
+      const { x: ballX, y: ballY } = anchor;
+      const half = BALL_SIZE / 2;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+
+      let top: number;
+      let left: number;
+
+      if (dockEdge === "left" || dockEdge === "right") {
+        top = clamp(ballY - height / 2, MODAL_VIEWPORT_MARGIN_PX, vh - height - MODAL_VIEWPORT_MARGIN_PX);
+        left =
+          dockEdge === "right"
+            ? ballX - half - MODAL_GAP_PX - width
+            : ballX + half + MODAL_GAP_PX;
+        left = clamp(left, MODAL_VIEWPORT_MARGIN_PX, vw - width - MODAL_VIEWPORT_MARGIN_PX);
+      } else {
+        left = clamp(ballX - width / 2, MODAL_VIEWPORT_MARGIN_PX, vw - width - MODAL_VIEWPORT_MARGIN_PX);
+        top =
+          dockEdge === "bottom"
+            ? ballY - half - MODAL_GAP_PX - height
+            : ballY + half + MODAL_GAP_PX;
+        top = clamp(top, MODAL_VIEWPORT_MARGIN_PX, vh - height - MODAL_VIEWPORT_MARGIN_PX);
+      }
+
+      setModalStyle({ position: "fixed", top, left, right: "auto", bottom: "auto" });
+    };
+
+    positionModal();
+    window.addEventListener("resize", positionModal);
+    return () => window.removeEventListener("resize", positionModal);
+  }, [isOpen, dockEdge, dockPos]);
+
+  /* ==========================================================================
+   * KLIK DI LUAR MODAL → TUTUP OTOMATIS
+   * ========================================================================== */
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleOutsidePointerDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (modalRef.current?.contains(target)) return;
+      if (buttonRef.current?.contains(target)) return;
+      setIsOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handleOutsidePointerDown);
+    return () => document.removeEventListener("pointerdown", handleOutsidePointerDown);
+  }, [isOpen]);
+
   const isBallMode = dragPhase === "dragging" || dragPhase === "snapping";
   const roundedClass = getRoundedClass(dockEdge);
-  const hoverTranslateClass = getHoverTranslateClass(dockEdge);
 
   const containerStyle: React.CSSProperties = isBallMode
     ? { left: ballPos.x - BALL_SIZE / 2, top: ballPos.y - BALL_SIZE / 2 }
@@ -363,7 +420,9 @@ export default function ChatBubbleWidget({
       ? "transition-[left,top] duration-300 ease-out"
       : "";
 
-  return (
+  // if (!mounted) return null;
+
+  return createPortal(
     <>
       {/* Floating AI Trigger */}
       <div
@@ -372,6 +431,7 @@ export default function ChatBubbleWidget({
       >
         <button
           type="button"
+          ref={buttonRef}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
@@ -390,7 +450,7 @@ export default function ChatBubbleWidget({
           className={
             isBallMode
               ? "flex items-center justify-center rounded-full bg-amber-600 shadow-2xl active:scale-95"
-              : `group relative flex items-center justify-center ${roundedClass} bg-amber-600 p-2.5 shadow-2xl transition-all duration-300 ${hoverTranslateClass} hover:bg-amber-500 active:scale-95`
+              : `group relative flex items-center justify-center ${roundedClass} bg-amber-600 p-2.5 shadow-2xl transition-all duration-300 hover:bg-amber-500 active:scale-95`
           }
         >
           {isBallMode ? (
@@ -402,7 +462,7 @@ export default function ChatBubbleWidget({
             />
           ) : (
             <>
-              <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white p-0.5 shadow-md transition-transform duration-300 group-hover:scale-105">
+              <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white dark:bg-card p-0.5 shadow-md transition-transform duration-300 group-hover:scale-105">
                 <img
                   src={avatarSrc}
                   alt="Jelita AI Avatar"
@@ -426,9 +486,9 @@ export default function ChatBubbleWidget({
       {/* Modal Chat */}
       {isOpen && (
         <div
-          className={`fixed z-50 flex h-140 max-h-[calc(100vh-4rem)] w-140 max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-3xl border border-hairline bg-white shadow-2xl transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 ${getModalPositionClass(
-            dockEdge
-          )}`}
+          ref={modalRef}
+          style={modalStyle}
+          className="fixed z-50 flex h-140 max-h-[calc(100vh-4rem)] w-140 max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-3xl border border-hairline bg-white dark:bg-card shadow-2xl transition-[top,left] duration-200 animate-in fade-in"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-hairline bg-canvas/80 px-4 py-3.5 backdrop-blur-md">
@@ -516,7 +576,7 @@ export default function ChatBubbleWidget({
                             <a
                               key={`${msg.id}-${link.href}`}
                               href={link.href}
-                              className="inline-flex items-center justify-between gap-2 rounded-lg border border-brand/20 bg-white px-2.5 py-2 font-semibold text-brand transition-colors hover:border-brand/50 hover:bg-brand-soft"
+                              className="inline-flex items-center justify-between gap-2 rounded-lg border border-brand/20 bg-white dark:bg-card px-2.5 py-2 font-semibold text-brand transition-colors hover:border-brand/50 hover:bg-brand-soft"
                             >
                               <span>{link.label}</span>
                               <ArrowUpRight size={13} className="shrink-0" />
@@ -555,9 +615,9 @@ export default function ChatBubbleWidget({
           {/* Form */}
           <form
             onSubmit={handleSubmit}
-            className="border-t border-hairline bg-white p-3"
+            className="border-t border-hairline bg-white dark:bg-card p-3"
           >
-            <div className="flex items-center gap-2 rounded-full border border-hairline bg-canvas/60 px-3.5 py-1.5 focus-within:border-amber-500/60 focus-within:bg-white focus-within:ring-2 focus-within:ring-amber-500/10">
+            <div className="flex items-center gap-2 rounded-full border border-hairline bg-canvas/60 px-3.5 py-1.5 focus-within:border-amber-500/60 focus-within:bg-white dark:focus-within:bg-card focus-within:ring-2 focus-within:ring-amber-500/10">
               <input
                 type="text"
                 value={input}
@@ -578,6 +638,7 @@ export default function ChatBubbleWidget({
           </form>
         </div>
       )}
-    </>
+    </>,
+    document.body
   );
-} 
+}

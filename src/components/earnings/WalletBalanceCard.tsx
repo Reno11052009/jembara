@@ -2,7 +2,7 @@ import { ShieldCheck, Wallet } from "lucide-react";
 
 export default function WalletBalanceCard({ balanceLabel }: { balanceLabel: string }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-5 rounded-2xl bg-ink p-6 text-white">
+    <div className="flex flex-wrap items-center justify-between gap-5 rounded-2xl bg-gray p-6 text-white">
       <div className="flex items-center gap-4">
         <div className="rounded-xl bg-white/10 p-3 text-brand">
           <Wallet size={26} />

@@ -32,7 +32,7 @@ export default function OwnerDashboardView({
   return (
     <>
       <PageHeader
-        title={`Halo, ${ownerName}! 👋`}
+        title={`Halo, ${ownerName}!`}
         subtitle={`Selamat datang di dashboard bisnis ${data.businessName}. Pantau aktivitas pencarian talenta Anda.`}
         userName={ownerName}
         avatarUrl={ownerAvatarUrl}

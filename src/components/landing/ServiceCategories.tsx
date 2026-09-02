@@ -4,13 +4,13 @@ export default function ServiceCategories() {
   return (
     <section
       id="kategori"
-      className="animate-reveal bg-white py-20"
+      className="animate-reveal bg-white dark:bg-canvas py-20"
     >
       <div className="mx-auto max-w-7xl text-center">
         <p className="animate-reveal animate-reveal-d1 text-xs font-display font-black uppercase tracking-[0.15em] text-brand">
           Kategori Populer
         </p>
-        <h2 className="animate-reveal animate-reveal-d2 mt-2 font-display text-3xl font-black text-black">
+        <h2 className="animate-reveal animate-reveal-d2 mt-2 font-display text-3xl font-black text-black dark:text-ink">
           Layanan Digital Paling Dicari
         </h2>
         <p className="animate-reveal animate-reveal-d3 font-body mx-auto mt-3 max-w-xl text-sm text-ink-muted">
@@ -24,7 +24,7 @@ export default function ServiceCategories() {
             return (
               <div
                 key={category.title}
-                className={`animate-reveal animate-reveal-d${Math.min(i + 1, 6)} flex items-center gap-5 rounded-2xl border border-hairline bg-gray-100 p-6`}
+                className={`animate-reveal animate-reveal-d${Math.min(i + 1, 6)} flex items-center gap-5 rounded-2xl border border-hairline bg-gray-100 dark:bg-card p-6`}
               >
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-brand text-white">
                   <Icon size={20} />

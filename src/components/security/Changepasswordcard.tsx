@@ -47,8 +47,8 @@ export default function ChangePasswordCard() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-xl border border-[#ECECEC] bg-white p-6">
-      <h2 className="mb-5 font-display text-lg font-bold text-neutral-900">
+    <form onSubmit={handleSubmit} className="rounded-xl border border-[#ECECEC] bg-white dark:bg-card p-6">
+      <h2 className="mb-5 font-display text-lg font-bold text-neutral-900 dark:text-ink">
         Ubah Password
       </h2>
 

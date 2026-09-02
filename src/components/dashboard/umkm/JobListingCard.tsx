@@ -15,7 +15,7 @@ export default function JobListingCard({ listing }: { listing: OwnerJobListing }
       <div className="mt-4 flex items-center justify-between">
         <div className="flex items-center gap-3 font-body text-sm text-ink-muted">
           <span>{listing.applicantCount} Pelamar</span>
-          <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-success">
+          <span className="rounded-full bg-emerald-50 dark:bg-emerald-500/15 px-3 py-1 text-sm font-semibold text-success">
             {listing.status}
           </span>
         </div>

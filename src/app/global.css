@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Class-based dark mode (Tailwind v4): toggled via .dark on <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-void: #0A0D16;
   --color-surface: #141924;
@@ -16,10 +19,12 @@
   --color-ink-muted: #6B7280;
   --color-brand: #FF6B35;
   --color-brand-soft: #FFE8DC;
-  --color-sidebar: #0A0D16;
+  --color-sidebar: #1A1A1A;
   --color-danger: #DC2626;
   --color-danger-soft: #FEE2E2;
   --color-success: #10B981;
+  --color-landing-dark: #0F0F12;
+  --color-gray: #141414;
 
   --font-display: var(--font-unbounded), sans-serif;
   --font-body: var(--font-geist-sans), sans-serif;
@@ -31,6 +36,22 @@
 
 :root {
   color-scheme: light;
+}
+
+/* Dark mode palette. */
+.dark {
+  color-scheme: dark;
+
+  --color-gray: #141414;
+  --color-canvas: #0B0B0B;
+  --color-card: #111111;
+  --color-hairline: #232B3D;
+  --color-ink: #F1F3F7;
+  --color-ink-muted: #94A0B4;
+  --color-brand-soft: #3A2417;
+  --color-danger: #F87171;
+  --color-danger-soft: #3A1A1E;
+  --color-landing-dark: #0F0F12;
 }
 
 html,

@@ -26,7 +26,7 @@ const businessCategoryOptions = [
 ];
 
 const inputClassName =
-  "w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-brand focus:ring-3 focus:ring-brand/10";
+  "w-full rounded-xl border border-zinc-200 dark:border-hairline bg-white dark:bg-card px-4 py-3 text-sm text-zinc-900 dark:text-ink outline-none transition placeholder:text-zinc-400 dark:placeholder:text-ink-muted focus:border-brand focus:ring-3 focus:ring-brand/10";
 
 export default function RoleSelectionCards() {
   const [showBusinessForm, setShowBusinessForm] = useState(false);
@@ -55,7 +55,7 @@ export default function RoleSelectionCards() {
   return (
     <div className="grid items-start gap-6 md:grid-cols-2">
       {/* Card Pelajar */}
-      <div className="group relative rounded-2xl border border-zinc-200 bg-white/80 p-8 shadow-sm backdrop-blur-sm">
+      <div className="group relative rounded-2xl border border-zinc-200 dark:border-hairline bg-white/80 dark:bg-card/90 p-8 shadow-sm backdrop-blur-sm">
         <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-brand/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
         <div className="relative">
@@ -63,10 +63,10 @@ export default function RoleSelectionCards() {
             <User size={28} />
           </div>
 
-          <h2 className="mb-2 text-xl font-semibold text-zinc-900">
+          <h2 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-ink">
             Pelajar / Mahasiswa
           </h2>
-          <p className="mb-7 text-sm leading-relaxed text-zinc-500">
+          <p className="mb-7 text-sm leading-relaxed text-zinc-500 dark:text-ink-muted">
             Cari pengalaman, kerjakan project nyata, dan bangun portfolio profesionalmu.
           </p>
 
@@ -75,7 +75,7 @@ export default function RoleSelectionCards() {
             <button
               type="submit"
               disabled={pending}
-              className="inline-flex w-full scale-[1.02] items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-brand hover:shadow-lg hover:shadow-brand/30 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex w-full scale-[1.02] items-center justify-center gap-2 rounded-xl bg-zinc-900 dark:bg-white px-4 py-3 text-sm font-medium text-white dark:text-zinc-900 transition-all duration-300 hover:bg-brand dark:hover:bg-brand hover:text-white dark:hover:text-white hover:shadow-lg hover:shadow-brand/30 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {pending && !showBusinessForm ? (
                 <LoaderCircle size={17} className="animate-spin" />
@@ -87,7 +87,7 @@ export default function RoleSelectionCards() {
       </div>
 
       {/* Card UMKM */}
-      <div className="group relative rounded-2xl border border-zinc-200 bg-white/80 p-8 shadow-sm backdrop-blur-sm">
+      <div className="group relative rounded-2xl border border-zinc-200 dark:border-hairline bg-white/80 dark:bg-card/90 p-8 shadow-sm backdrop-blur-sm">
         <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-brand/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
         <div className="relative">
@@ -95,10 +95,10 @@ export default function RoleSelectionCards() {
             <Store size={28} />
           </div>
 
-          <h2 className="mb-2 text-xl font-semibold text-zinc-900">
+          <h2 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-ink">
             Pemilik UMKM
           </h2>
-          <p className="mb-7 text-sm leading-relaxed text-zinc-500">
+          <p className="mb-7 text-sm leading-relaxed text-zinc-500 dark:text-ink-muted">
             Temukan pelajar bertalenta untuk membantu digitalisasi dan perkembangan usahamu.
           </p>
 
@@ -107,7 +107,7 @@ export default function RoleSelectionCards() {
               type="button"
               onClick={() => setShowBusinessForm(true)}
               aria-expanded={showBusinessForm}
-              className="inline-flex w-full scale-[1.02] items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-brand hover:shadow-lg hover:shadow-brand/30 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex w-full scale-[1.02] items-center justify-center gap-2 rounded-xl bg-zinc-900 dark:bg-white px-4 py-3 text-sm font-medium text-white dark:text-zinc-900 transition-all duration-300 hover:bg-brand dark:hover:bg-brand hover:text-white dark:hover:text-white hover:shadow-lg hover:shadow-brand/30 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Isi Profil Usaha
             </button>
@@ -116,8 +116,8 @@ export default function RoleSelectionCards() {
               <input type="hidden" name="role" value="UMKM" />
 
               <div>
-                <label htmlFor="businessName" className="mb-1.5 block text-sm font-semibold text-zinc-700">
-                  Nama usaha <span className="text-red-500">*</span>
+                <label htmlFor="businessName" className="mb-1.5 block text-sm font-semibold text-zinc-700 dark:text-ink-muted">
+                  Nama usaha <span className="text-red-500 dark:text-danger">*</span>
                 </label>
                 <input
                   id="businessName"
@@ -154,8 +154,8 @@ export default function RoleSelectionCards() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="phone" className="mb-1.5 block text-sm font-semibold text-zinc-700">
-                    Nomor telepon <span className="text-red-500">*</span>
+                  <label htmlFor="phone" className="mb-1.5 block text-sm font-semibold text-zinc-700 dark:text-ink-muted">
+                    Nomor telepon <span className="text-red-500 dark:text-danger">*</span>
                   </label>
                   <input
                     id="phone"
@@ -177,7 +177,7 @@ export default function RoleSelectionCards() {
                 </div>
 
                 <div>
-                  <label htmlFor="website" className="mb-1.5 block text-sm font-semibold text-zinc-700">
+                  <label htmlFor="website" className="mb-1.5 block text-sm font-semibold text-zinc-700 dark:text-ink-muted">
                     Website
                   </label>
                   <input
@@ -196,13 +196,13 @@ export default function RoleSelectionCards() {
                     className={inputClassName}
                   />
                   {websiteError && (
-                    <p className="mt-1 text-xs text-red-500">{websiteError}</p>
+                    <p className="mt-1 text-xs text-red-500 dark:text-danger">{websiteError}</p>
                   )}
                 </div>
               </div>
 
               {state.error ? (
-                <p role="alert" aria-live="polite" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                <p role="alert" aria-live="polite" className="rounded-xl bg-red-50 dark:bg-danger-soft px-4 py-3 text-sm font-medium text-red-700 dark:text-danger">
                   {state.error}
                 </p>
               ) : null}
@@ -212,7 +212,7 @@ export default function RoleSelectionCards() {
                   type="button"
                   onClick={() => setShowBusinessForm(false)}
                   disabled={pending}
-                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-600 transition hover:border-brand hover:bg-orange-50 hover:text-brand disabled:opacity-60"
+                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 dark:border-hairline px-4 py-3 text-sm font-semibold text-zinc-600 dark:text-ink-muted transition hover:border-brand hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-brand disabled:opacity-60"
                 >
                   <ArrowLeft size={17} />
                 </button>
@@ -231,4 +231,4 @@ export default function RoleSelectionCards() {
       </div>
     </div>
   );
-}
+} 

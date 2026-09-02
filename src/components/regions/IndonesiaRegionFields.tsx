@@ -22,9 +22,9 @@ type IndonesiaRegionFieldsProps = {
 };
 
 const fieldClassName =
-  "w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-brand focus:ring-1 focus:ring-brand disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400";
+  "w-full rounded-xl border border-gray-200 dark:border-hairline bg-white dark:bg-card px-4 py-2.5 text-sm text-gray-900 dark:text-ink outline-none transition focus:border-brand focus:ring-1 focus:ring-brand disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-surface disabled:text-gray-400 dark:disabled:text-ink-muted";
 const labelClassName =
-  "mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-gray-500";
+  "mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-ink-muted";
 
 function useRegionOptions(
   level: RegionLevel,
@@ -119,7 +119,7 @@ export default function IndonesiaRegionFields({
         <>
           <div>
             <label htmlFor="provinceName" className={labelClassName}>
-              Provinsi <span className="text-red-500">*</span>
+              Provinsi <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               id="provinceName"
@@ -135,7 +135,7 @@ export default function IndonesiaRegionFields({
           </div>
           <div>
             <label htmlFor="regencyName" className={labelClassName}>
-              Kabupaten/Kota <span className="text-red-500">*</span>
+              Kabupaten/Kota <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               id="regencyName"
@@ -151,7 +151,7 @@ export default function IndonesiaRegionFields({
           </div>
           <div>
             <label htmlFor="districtName" className={labelClassName}>
-              Kecamatan <span className="text-red-500">*</span>
+              Kecamatan <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               id="districtName"
@@ -167,7 +167,7 @@ export default function IndonesiaRegionFields({
           </div>
           <div>
             <label htmlFor="villageName" className={labelClassName}>
-              Kelurahan/Desa <span className="text-red-500">*</span>
+              Kelurahan/Desa <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               id="villageName"
@@ -262,7 +262,7 @@ export default function IndonesiaRegionFields({
               : "Wilayah tidak ada di daftar? Isi secara manual"}
           </button>
           {isManualMode ? (
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-gray-400 dark:text-ink-muted">
               Nama wilayah manual akan disimpan tanpa kode wilayah.id.
             </p>
           ) : null}
@@ -271,7 +271,7 @@ export default function IndonesiaRegionFields({
 
       <div className="md:col-span-2">
         <label htmlFor="addressDetail" className={labelClassName}>
-          Detail Alamat <span className="text-red-500">*</span>
+          Detail Alamat <span className="text-red-500 dark:text-red-400">*</span>
         </label>
         <textarea
           id="addressDetail"
@@ -290,13 +290,13 @@ export default function IndonesiaRegionFields({
       {!isManualMode && regionError ? (
         <p
           role="alert"
-          className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 md:col-span-2"
+          className="rounded-xl bg-red-50 dark:bg-red-500/15 px-4 py-3 text-sm font-medium text-red-700 dark:text-red-400 md:col-span-2"
         >
           {regionError}. Silakan coba lagi.
         </p>
       ) : null}
 
-      <p className="text-xs text-gray-400 md:col-span-2">
+      <p className="text-xs text-gray-400 dark:text-ink-muted md:col-span-2">
         Data wilayah administratif disediakan oleh wilayah.id.
       </p>
     </div>

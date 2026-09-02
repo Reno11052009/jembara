@@ -16,14 +16,14 @@ function NotificationItem({ notification }: { notification: DashboardNotificatio
         <span className="mt-0.5 block truncate text-[11px] text-ink-muted">
           {notification.message}
         </span>
-        <span className="mt-1 block text-[10px] text-gray-400">
+        <span className="mt-1 block text-[10px] text-gray-400 dark:text-ink-muted">
           {notification.createdAtLabel}
         </span>
       </span>
     </>
   );
   const className = `flex items-start gap-3 rounded-lg p-4 ${
-    notification.isRead ? "bg-canvas" : "bg-orange-50/70"
+    notification.isRead ? "bg-canvas" : "bg-orange-50/70 dark:bg-orange-500/10"
   }`;
 
   return notification.href ? (

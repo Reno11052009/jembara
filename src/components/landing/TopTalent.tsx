@@ -5,7 +5,7 @@ export default function TopTalent() {
   return (
     <section
       id="talenta"
-      className="animate-reveal bg-canvas px-6 py-20"
+      className="animate-reveal bg-landing-dark px-6 py-20"
     >
       <div className="mx-auto max-w-7xl text-center">
         <p className="animate-reveal animate-reveal-d1 text-xs font-display font-black uppercase tracking-[0.15em] text-brand">
@@ -52,7 +52,7 @@ export default function TopTalent() {
                 {talent.skills.map((skill) => (
                   <span
                     key={skill}
-                    className="rounded-md bg-canvas px-2.5 py-1 text-xs text-black"
+                    className="rounded-md bg-canvas px-2.5 py-1 text-xs text-black dark:text-ink"
                   >
                     {skill}
                   </span>

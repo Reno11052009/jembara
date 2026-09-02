@@ -75,7 +75,7 @@ export default function DatePicker({
   disabled = false,
   minDate,
   placeholder = "Pilih tanggal",
-  labelClassName = "mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-gray-500",
+  labelClassName = "mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-ink-muted",
   className,
 }: DatePickerProps) {
   const today = useMemo(() => {
@@ -132,7 +132,7 @@ export default function DatePicker({
       {label ? (
         <label htmlFor={id} className={labelClassName}>
           <span>
-            {label} {required ? <span className="text-red-500">*</span> : null}
+            {label} {required ? <span className="text-red-500 dark:text-red-400">*</span> : null}
           </span>
         </label>
       ) : null}

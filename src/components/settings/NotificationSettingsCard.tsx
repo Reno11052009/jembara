@@ -79,8 +79,8 @@ export default function NotificationSettingsCard({
   };
 
   return (
-    <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-      <h2 className="font-display text-lg font-bold text-neutral-900 mb-5">
+    <section className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline shadow-sm p-6">
+      <h2 className="font-display text-lg font-bold text-neutral-900 dark:text-ink mb-5">
         Notifikasi
       </h2>
 
@@ -91,10 +91,10 @@ export default function NotificationSettingsCard({
             className="flex items-start justify-between gap-6 py-4 first:pt-0 last:pb-0"
           >
             <div>
-              <p className="font-body text-sm font-semibold text-neutral-900 mb-1">
+              <p className="font-body text-sm font-semibold text-neutral-900 dark:text-ink mb-1">
                 {item.title}
               </p>
-              <p className="font-body text-sm text-neutral-500 max-w-xl">
+              <p className="font-body text-sm text-neutral-500 dark:text-ink-muted max-w-xl">
                 {item.description}
               </p>
             </div>
@@ -105,11 +105,11 @@ export default function NotificationSettingsCard({
               aria-checked={settings[item.key]}
               onClick={() => toggle(item.key)}
               className={`relative shrink-0 w-12 h-7 rounded-full transition-colors duration-200 ${
-                settings[item.key] ? "bg-orange-500" : "bg-neutral-300"
+                settings[item.key] ? "bg-orange-500" : "bg-neutral-300 dark:bg-surface"
               }`}
             >
               <span
-                className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
+                className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white dark:bg-card shadow transition-transform duration-200 ${
                   settings[item.key] ? "translate-x-5" : "translate-x-0"
                 }`}
               />

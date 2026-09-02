@@ -29,23 +29,23 @@ const NOTIFICATION_REFRESH_INTERVAL_MS = 120_000;
 const notificationPresentation = {
   PROPOSAL: {
     icon: CheckCircle2,
-    color: "bg-green-50 text-green-600",
+    color: "bg-green-50 dark:bg-green-500/15 text-green-600 dark:text-green-400",
   },
   PROJECT: {
     icon: BriefcaseBusiness,
-    color: "bg-orange-50 text-orange-600",
+    color: "bg-orange-50 dark:bg-orange-500/15 text-orange-600 dark:text-orange-400",
   },
   MESSAGE: {
     icon: MessageSquareText,
-    color: "bg-blue-50 text-blue-600",
+    color: "bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400",
   },
   DEADLINE: {
     icon: Clock3,
-    color: "bg-amber-50 text-amber-600",
+    color: "bg-amber-50 dark:bg-amber-500/15 text-amber-600",
   },
   INFO: {
     icon: Info,
-    color: "bg-gray-100 text-gray-600",
+    color: "bg-gray-100 dark:bg-surface text-gray-600 dark:text-ink-muted",
   },
 };
 
@@ -218,9 +218,9 @@ export default function NotificationMenu() {
           id="header-notification-menu"
           role="dialog"
           aria-label="Daftar notifikasi"
-          className="absolute right-0 z-50 mt-3 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl shadow-black/10"
+          className="absolute right-0 z-50 mt-3 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-gray-100 dark:border-hairline bg-white dark:bg-card shadow-2xl shadow-black/10"
         >
-          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+          <div className="flex items-center justify-between border-b border-gray-100 dark:border-hairline px-5 py-4">
             <div>
               <h2 className="font-display text-base font-black text-ink">Notifikasi</h2>
               <p className="mt-0.5 text-xs text-ink-muted">
@@ -259,7 +259,7 @@ export default function NotificationMenu() {
               </div>
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center px-5 py-10 text-center">
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 dark:bg-surface text-gray-400 dark:text-ink-muted">
                   <Bell size={20} />
                 </span>
                 <p className="mt-3 text-sm font-bold text-ink">Belum ada notifikasi</p>
@@ -286,14 +286,14 @@ export default function NotificationMenu() {
                       <span className="mt-1 block text-xs leading-relaxed text-ink-muted">
                         {notification.message}
                       </span>
-                      <span className="mt-1.5 block text-[11px] font-medium text-gray-400">
+                      <span className="mt-1.5 block text-[11px] font-medium text-gray-400 dark:text-ink-muted">
                         {formatRelativeTime(notification.createdAt)}
                       </span>
                     </span>
                   </>
                 );
-                const itemClassName = `flex w-full gap-3 border-b border-gray-50 px-5 py-4 text-left transition-colors last:border-0 hover:bg-gray-50 ${
-                  notification.isRead ? "bg-white" : "bg-orange-50/40"
+                const itemClassName = `flex w-full gap-3 border-b border-gray-50 dark:border-hairline px-5 py-4 text-left transition-colors last:border-0 hover:bg-gray-50 dark:hover:bg-void ${
+                  notification.isRead ? "bg-white dark:bg-card" : "bg-orange-50/40 dark:bg-orange-500/10"
                 }`;
 
                 return notification.href ? (

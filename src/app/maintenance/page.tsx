@@ -3,7 +3,7 @@ import MaintenanceContent from "@/components/maintenance/MaintenanceContent";
 
 export default function MaintenancePage() {
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-white dark:bg-canvas">
       <PublicTopBar />
       <div className="flex flex-1 items-center justify-center">
         <MaintenanceContent

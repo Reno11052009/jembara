@@ -118,12 +118,12 @@ export default function MultiSelectDropdown({
         aria-haspopup="listbox"
         aria-controls={`${id}-options`}
         onClick={() => setIsOpen((current) => !current)}
-        className={`flex w-full items-center justify-between rounded-lg border bg-white px-4 py-3 text-left text-sm outline-none transition disabled:cursor-not-allowed disabled:bg-gray-100 ${
+        className={`flex w-full items-center justify-between rounded-lg border bg-white dark:bg-card px-4 py-3 text-left text-sm outline-none transition disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-surface ${
           invalid
             ? "border-danger ring-1 ring-danger/20"
             : isOpen
               ? "border-brand ring-2 ring-brand/20"
-              : "border-gray-200 hover:border-brand"
+              : "border-gray-200 dark:border-hairline hover:border-brand"
         }`}
       >
         <span className={selectedOptions.length ? "font-semibold text-ink" : "text-ink-muted"}>
@@ -161,16 +161,16 @@ export default function MultiSelectDropdown({
       ))}
 
       {isOpen ? (
-        <div className="absolute left-0 top-full z-30 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
-          <div className="flex items-center gap-2 border-b border-gray-100 px-3 py-2.5">
-            <Search size={15} className="shrink-0 text-gray-400" />
+        <div className="absolute left-0 top-full z-30 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 dark:border-hairline bg-white dark:bg-card shadow-xl">
+          <div className="flex items-center gap-2 border-b border-gray-100 dark:border-hairline px-3 py-2.5">
+            <Search size={15} className="shrink-0 text-gray-400 dark:text-ink-muted" />
             <input
               ref={searchInputRef}
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={searchPlaceholder}
-              className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-gray-400"
+              className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-gray-400 dark:placeholder:text-ink-muted"
             />
           </div>
 
@@ -208,7 +208,7 @@ export default function MultiSelectDropdown({
                         <span
                           aria-hidden="true"
                           className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
-                            selected ? "border-brand bg-brand text-white" : "border-gray-300 bg-white"
+                            selected ? "border-brand bg-brand text-white" : "border-gray-300 dark:border-hairline bg-white dark:bg-card"
                           }`}
                         >
                           {selected ? <Check size={11} strokeWidth={3} /> : null}
@@ -223,7 +223,7 @@ export default function MultiSelectDropdown({
           </div>
 
           {maxSelections !== undefined ? (
-            <p className="border-t border-gray-100 px-4 py-2 text-xs text-ink-muted">
+            <p className="border-t border-gray-100 dark:border-hairline px-4 py-2 text-xs text-ink-muted">
               {values.length} dari maksimal {maxSelections} skill dipilih
             </p>
           ) : null}

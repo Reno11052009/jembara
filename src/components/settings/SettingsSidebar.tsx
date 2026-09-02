@@ -16,7 +16,7 @@ export default function SettingsSidebar() {
   const pathname = usePathname();
 
   return (
-    <nav className="sticky top-24 w-full rounded-xl border border-[#ECECEC] bg-white overflow-hidden">
+    <nav className="sticky top-24 w-full rounded-xl border border-[#ECECEC] bg-white dark:bg-card overflow-hidden">
       {SETTINGS_NAV_ITEMS.map((item) => {
         const isActive = pathname?.endsWith(`/settings/${item.slug}`);
 
@@ -26,8 +26,8 @@ export default function SettingsSidebar() {
             href={`/dashboard/settings/${item.slug}`}
             className={`flex items-center px-5 py-4 font-body text-sm transition-colors border-l-[3px] ${
               isActive
-                ? "border-orange-500 bg-orange-50 text-orange-600 font-semibold"
-                : "border-transparent text-neutral-800 hover:bg-neutral-50"
+                ? "border-orange-500 bg-orange-50 dark:bg-orange-500/15 text-orange-600 dark:text-orange-400 font-semibold"
+                : "border-transparent text-neutral-800 dark:text-ink hover:bg-neutral-50 dark:hover:bg-void"
             }`}
           >
             {item.label}

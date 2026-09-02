@@ -67,7 +67,7 @@ export default function UserGrowthBarChart({ data }: { data: UserGrowthPoint[] }
               >
                 {isActive && (
                   <span
-                    className="absolute mb-2 whitespace-nowrap rounded-md bg-ink px-2.5 py-1 font-body text-xs font-bold text-white"
+                    className="absolute mb-2 whitespace-nowrap rounded-md bg-ink px-2.5 py-1 font-body text-xs font-bold text-white dark:text-canvas"
                     style={{ bottom: `${heightPercent}%` }}
                   >
                     {formatShort(point.value)}

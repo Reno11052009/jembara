@@ -74,7 +74,7 @@ export default async function DashboardPage() {
   return (
     <>
       <PageHeader
-        title={`Halo, ${firstName}! 👋`}
+        title={`Halo, ${firstName}!`}
         subtitle={dashboardSubtitles[dashboard.role]}
         userName={dashboard.userName}
         avatarUrl={dashboard.avatarUrl}
