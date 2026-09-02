@@ -150,7 +150,7 @@ export default function ChatBubbleWidget({
 
       let restoredMessages: Message[] = [];
       try {
-        const storedHistory = window.sessionStorage.getItem(historyStorageKey);
+        const storedHistory = window.localStorage.getItem(historyStorageKey);
         restoredMessages = storedHistory
           ? (JSON.parse(storedHistory) as Message[])
           : [];
@@ -173,15 +173,15 @@ export default function ChatBubbleWidget({
 
     try {
       if (messages.length === 0) {
-        window.sessionStorage.removeItem(historyStorageKey);
+        window.localStorage.removeItem(historyStorageKey);
       } else {
-        window.sessionStorage.setItem(
+        window.localStorage.setItem(
           historyStorageKey,
           JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)),
         );
       }
     } catch {
-      // Chat tetap berfungsi jika sessionStorage diblokir
+      // Chat tetap berfungsi jika localStorage diblokir
     }
   }, [historyReady, historyStorageKey, messages]);
 
@@ -336,9 +336,9 @@ export default function ChatBubbleWidget({
         setDockPos(pos);
         window.setTimeout(() => setDragPhase("idle"), SNAP_TRANSITION_MS);
       });
-    } else if (!hasDraggedRef.current) {
-      setIsOpen((prev) => !prev);
-    }
+    // } else if (!hasDraggedRef.current) {
+    //   setIsOpen((prev) => !prev);
+   }
   };
 
   const handlePointerCancel = () => {
