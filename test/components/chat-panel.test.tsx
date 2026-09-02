@@ -5,10 +5,43 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   sendMessage: vi.fn(),
+  prepareAttachment: vi.fn(),
+  finalizeAttachment: vi.fn(),
+  cancelAttachment: vi.fn(),
 }));
 
 vi.mock("@/app/actions/messages", () => ({
   sendMessageAction: mocks.sendMessage,
+  prepareMessageAttachmentUploadAction: mocks.prepareAttachment,
+  finalizeMessageAttachmentUploadAction: mocks.finalizeAttachment,
+  cancelMessageAttachmentUploadAction: mocks.cancelAttachment,
+}));
+vi.mock("tus-js-client", () => ({
+  Upload: class {
+    options: {
+      onProgress?: (uploaded: number, total: number) => void;
+      onSuccess?: () => void;
+    };
+
+    constructor(
+      _file: File,
+      options: {
+        onProgress?: (uploaded: number, total: number) => void;
+        onSuccess?: () => void;
+      },
+    ) {
+      this.options = options;
+    }
+
+    start() {
+      this.options.onProgress?.(50, 100);
+      this.options.onSuccess?.();
+    }
+
+    abort() {
+      return Promise.resolve();
+    }
+  },
 }));
 
 import ChatPanel from "@/components/messages/ChatPanel";
@@ -95,5 +128,71 @@ describe("ChatPanel optimistic messages", () => {
         "Pesan gagal dikirim.",
       );
     });
+  });
+
+  it("uploads and renders a file attachment", async () => {
+    mocks.prepareAttachment.mockResolvedValue({
+      success: true,
+      upload: {
+        endpoint: "https://storage.example.test/upload/resumable",
+        token: "signed-token",
+        bucketName: "message-attachments",
+        storagePath: "projects/project-1/file.pdf",
+        uploadId: "upload-1",
+      },
+    });
+    mocks.finalizeAttachment.mockResolvedValue({
+      success: true,
+      message: {
+        id: "message-file-1",
+        sender: "me",
+        text: "Lampiran: brief.pdf",
+        timeLabel: "15.00",
+        attachment: {
+          id: "attachment-1",
+          fileName: "brief.pdf",
+          contentType: "application/pdf",
+          sizeBytes: 1024,
+          downloadUrl: "/api/messages/attachments/attachment-1",
+        },
+      },
+    });
+
+    render(
+      <ChatPanel
+        conversation={{
+          id: "project-1",
+          contactName: "Kopi Maju",
+          projectName: "Project Kopi",
+          lastMessagePreview: "Belum ada pesan.",
+          timeLabel: "",
+          unread: false,
+          isOnline: false,
+          canSend: true,
+        }}
+        messages={[]}
+      />,
+    );
+
+    const fileInput = document.querySelector<HTMLInputElement>(
+      'input[type="file"]',
+    );
+    expect(fileInput).not.toBeNull();
+    fireEvent.change(fileInput!, {
+      target: {
+        files: [new File(["brief"], "brief.pdf", { type: "application/pdf" })],
+      },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Unduh brief.pdf")).toBeTruthy();
+    });
+    expect(mocks.prepareAttachment).toHaveBeenCalledWith(
+      "project-1",
+      "brief.pdf",
+      "application/pdf",
+      5,
+    );
+    expect(mocks.finalizeAttachment).toHaveBeenCalledWith("upload-1");
   });
 });

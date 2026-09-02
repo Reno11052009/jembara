@@ -1,4 +1,5 @@
-import { Check, CheckCheck } from "lucide-react";
+import { Check, CheckCheck, Download, FileText } from "lucide-react";
+import { formatMessageAttachmentSize } from "@/lib/message-attachment-policy";
 import { ChatMessage } from "@/types/messages";
 
 interface ChatBubbleProps {
@@ -34,7 +35,34 @@ export default function ChatBubble({ message }: ChatBubbleProps) {
           isMe ? "bg-brand text-white" : "bg-canvas text-ink"
         }`}
       >
-        <p>{message.text}</p>
+        {message.attachment ? (
+          <a
+            href={message.attachment.downloadUrl}
+            aria-label={`Unduh ${message.attachment.fileName}`}
+            className={`flex min-w-56 items-center gap-3 rounded-xl p-3 text-sm transition-colors ${
+              isMe
+                ? "bg-white/15 hover:bg-white/25"
+                : "bg-card hover:bg-hairline"
+            }`}
+          >
+            <FileText size={24} className="shrink-0" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-semibold">
+                {message.attachment.fileName}
+              </span>
+              <span
+                className={`block text-xs ${
+                  isMe ? "text-white/70" : "text-ink-muted"
+                }`}
+              >
+                {formatMessageAttachmentSize(message.attachment.sizeBytes)}
+              </span>
+            </span>
+            <Download size={18} className="shrink-0" />
+          </a>
+        ) : (
+          <p>{message.text}</p>
+        )}
         <span
           className={`mt-5 flex items-center justify-end gap-1 text-right text-sm ${
             isMe ? "text-white/70" : "text-ink"

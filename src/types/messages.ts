@@ -19,6 +19,15 @@ export interface ChatMessage {
   dateDividerLabel?: string;
   status?: "sent" | "delivered" | "read";
   deliveryStatus?: "sending";
+  attachment?: MessageAttachment;
+}
+
+export interface MessageAttachment {
+  id: string;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  downloadUrl: string;
 }
 
 export interface MessagesData {
@@ -31,3 +40,20 @@ export interface MessageActionResult {
   success: boolean;
   error?: string;
 }
+
+export type PrepareAttachmentUploadResult =
+  | {
+      success: true;
+      upload: {
+        endpoint: string;
+        token: string;
+        bucketName: string;
+        storagePath: string;
+        uploadId: string;
+      };
+    }
+  | { success: false; error: string };
+
+export type FinalizeAttachmentUploadResult =
+  | { success: true; message: ChatMessage }
+  | { success: false; error: string };

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import {
   ArrowLeft,
   BriefcaseBusiness,
@@ -7,13 +8,17 @@ import {
   TrendingUp,
 } from "lucide-react";
 import ProposalForm from "@/components/projects/ProposalForm";
+import ShareProjectButton from "@/components/projects/ShareProjectButton";
+import DashboardRouteSkeleton from "@/components/layout/DashboardRouteSkeleton";
 import { getProjectDetailData } from "@/lib/project-detail";
 
-export default async function ProjectDetailPage({
-  params,
-}: {
+interface ProjectDetailPageProps {
   params: Promise<{ projectId: string }>;
-}) {
+}
+
+async function ProjectDetailContent({
+  params,
+}: ProjectDetailPageProps) {
   const { projectId } = await params;
   const project = await getProjectDetailData(projectId);
 
@@ -40,11 +45,17 @@ export default async function ProjectDetailPage({
                 {project.businessName} · {project.businessLocation}
               </p>
             </div>
-            {project.viewerRole === "STUDENT" && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand px-3 py-2 text-sm font-black text-white">
-                <TrendingUp size={16} /> {project.skillMatchPercent}% skill cocok
-              </span>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {project.viewerRole === "STUDENT" && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-brand px-3 py-2 text-sm font-black text-white">
+                  <TrendingUp size={16} /> {project.skillMatchPercent}% skill cocok
+                </span>
+              )}
+              <ShareProjectButton
+                projectId={project.id}
+                projectTitle={project.title}
+              />
+            </div>
           </div>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -132,5 +143,13 @@ export default async function ProjectDetailPage({
         </aside>
       </div>
     </div>
+  );
+}
+
+export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
+  return (
+    <Suspense fallback={<DashboardRouteSkeleton />}>
+      <ProjectDetailContent params={params} />
+    </Suspense>
   );
 }

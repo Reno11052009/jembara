@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BriefcaseBusiness, TrendingUp } from "lucide-react";
 import { Project } from "@/types/project";
+import ShareProjectButton from "@/components/projects/ShareProjectButton";
 
 interface ProjectCardProps {
   project: Project;
@@ -82,6 +83,10 @@ export default function ProjectCard({
         >
           Lihat Project
         </Link>
+        <ShareProjectButton
+          projectId={project.id}
+          projectTitle={project.title}
+        />
       </div>
     </div>
   );
