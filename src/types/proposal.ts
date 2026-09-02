@@ -24,4 +24,6 @@ export interface ProposalsData {
   proposals: Proposal[];
   summary: ProposalSummary;
   tabCounts: Record<ProposalFilter, number>;
+  activeFilter: ProposalFilter;
+  pagination: import("@/types/pagination").PaginationData;
 }

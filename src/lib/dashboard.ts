@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
+import { Prisma } from "@/generated/prisma/client";
 import prisma from "./prisma";
 import { requireAuthenticatedSession } from "./auth-guard";
 import {
@@ -29,23 +30,158 @@ function formatCount(value: number) {
   return numberFormatter.format(value);
 }
 
-type StatusCountRow = {
-  status: string;
-  _count: { _all: number };
+type StudentDashboardStatsRow = {
+  proposalCount: bigint;
+  activeProjectCount: bigint;
+  completedProjectCount: bigint;
+  averageRating: number | null;
 };
 
-function countStatuses(
-  rows: readonly StatusCountRow[],
-  statuses?: readonly string[],
+type UmkmDashboardStatsRow = {
+  projectCount: bigint;
+  openProjectCount: bigint;
+  activeProjectCount: bigint;
+  completedProjectCount: bigint;
+  proposalCount: bigint;
+};
+
+type AdminDashboardStatsRow = {
+  studentCount: bigint;
+  newStudentCount: bigint;
+  umkmCount: bigint;
+  newUmkmCount: bigint;
+  projectCount: bigint;
+  openProjectCount: bigint;
+  activeProjectCount: bigint;
+  completedProjectCount: bigint;
+  proposalCount: bigint;
+  pendingProposalCount: bigint;
+  usersBeforeGrowthWindow: bigint;
+};
+
+type MonthlyRegistrationRow = {
+  monthKey: string;
+  registrationCount: bigint;
+};
+
+async function getStudentDashboardStats(studentId: string) {
+  const [row] = await prisma.$queryRaw<StudentDashboardStatsRow[]>(Prisma.sql`
+    SELECT
+      (SELECT COUNT(*) FROM "proposal" WHERE "studentId" = ${studentId}::uuid) AS "proposalCount",
+      (SELECT COUNT(*) FROM "project" WHERE "studentId" = ${studentId}::uuid AND "status" IN ('IN_PROGRESS', 'REVIEW')) AS "activeProjectCount",
+      (SELECT COUNT(*) FROM "project" WHERE "studentId" = ${studentId}::uuid AND "status" = 'COMPLETED') AS "completedProjectCount",
+      (SELECT AVG("rating") FROM "review" WHERE "studentId" = ${studentId}::uuid) AS "averageRating"
+  `);
+
+  return {
+    proposalCount: Number(row?.proposalCount ?? 0),
+    activeProjectCount: Number(row?.activeProjectCount ?? 0),
+    completedProjectCount: Number(row?.completedProjectCount ?? 0),
+    averageRating: row?.averageRating ?? null,
+  };
+}
+
+async function getUmkmDashboardStats(umkmId: string) {
+  const [row] = await prisma.$queryRaw<UmkmDashboardStatsRow[]>(Prisma.sql`
+    WITH "projectStats" AS (
+      SELECT
+        COUNT(*) AS "projectCount",
+        COUNT(*) FILTER (WHERE "status" IN ('OPEN', 'PROPOSAL')) AS "openProjectCount",
+        COUNT(*) FILTER (WHERE "status" IN ('IN_PROGRESS', 'REVIEW')) AS "activeProjectCount",
+        COUNT(*) FILTER (WHERE "status" = 'COMPLETED') AS "completedProjectCount"
+      FROM "project"
+      WHERE "umkmId" = ${umkmId}::uuid
+    )
+    SELECT
+      "projectStats".*,
+      (
+        SELECT COUNT(*)
+        FROM "proposal"
+        INNER JOIN "project" ON "project"."id" = "proposal"."projectId"
+        WHERE "project"."umkmId" = ${umkmId}::uuid
+      ) AS "proposalCount"
+    FROM "projectStats"
+  `);
+
+  return {
+    projectCount: Number(row?.projectCount ?? 0),
+    openProjectCount: Number(row?.openProjectCount ?? 0),
+    activeProjectCount: Number(row?.activeProjectCount ?? 0),
+    completedProjectCount: Number(row?.completedProjectCount ?? 0),
+    proposalCount: Number(row?.proposalCount ?? 0),
+  };
+}
+
+async function getAdminDashboardStats(
+  sevenDaysAgo: Date,
+  growthWindowStart: Date,
 ) {
-  const allowedStatuses = statuses ? new Set(statuses) : null;
-  return rows.reduce(
-    (total, row) =>
-      allowedStatuses === null || allowedStatuses.has(row.status)
-        ? total + row._count._all
-        : total,
-    0,
-  );
+  const [row] = await prisma.$queryRaw<AdminDashboardStatsRow[]>(Prisma.sql`
+    WITH
+      "studentStats" AS (
+        SELECT
+          COUNT(*) AS "studentCount",
+          COUNT(*) FILTER (WHERE "createdAt" >= ${sevenDaysAgo}) AS "newStudentCount"
+        FROM "student"
+      ),
+      "umkmStats" AS (
+        SELECT
+          COUNT(*) AS "umkmCount",
+          COUNT(*) FILTER (WHERE "createdAt" >= ${sevenDaysAgo}) AS "newUmkmCount"
+        FROM "umkm"
+      ),
+      "projectStats" AS (
+        SELECT
+          COUNT(*) AS "projectCount",
+          COUNT(*) FILTER (WHERE "status" IN ('OPEN', 'PROPOSAL')) AS "openProjectCount",
+          COUNT(*) FILTER (WHERE "status" IN ('IN_PROGRESS', 'REVIEW')) AS "activeProjectCount",
+          COUNT(*) FILTER (WHERE "status" = 'COMPLETED') AS "completedProjectCount"
+        FROM "project"
+      ),
+      "proposalStats" AS (
+        SELECT
+          COUNT(*) AS "proposalCount",
+          COUNT(*) FILTER (WHERE "status" = 'PENDING') AS "pendingProposalCount"
+        FROM "proposal"
+      )
+    SELECT
+      "studentStats".*,
+      "umkmStats".*,
+      "projectStats".*,
+      "proposalStats".*,
+      (SELECT COUNT(*) FROM "user" WHERE "createdAt" < ${growthWindowStart}) AS "usersBeforeGrowthWindow"
+    FROM "studentStats", "umkmStats", "projectStats", "proposalStats"
+  `);
+
+  return {
+    studentCount: Number(row?.studentCount ?? 0),
+    newStudentCount: Number(row?.newStudentCount ?? 0),
+    umkmCount: Number(row?.umkmCount ?? 0),
+    newUmkmCount: Number(row?.newUmkmCount ?? 0),
+    projectCount: Number(row?.projectCount ?? 0),
+    openProjectCount: Number(row?.openProjectCount ?? 0),
+    activeProjectCount: Number(row?.activeProjectCount ?? 0),
+    completedProjectCount: Number(row?.completedProjectCount ?? 0),
+    proposalCount: Number(row?.proposalCount ?? 0),
+    pendingProposalCount: Number(row?.pendingProposalCount ?? 0),
+    usersBeforeGrowthWindow: Number(row?.usersBeforeGrowthWindow ?? 0),
+  };
+}
+
+async function getMonthlyUserRegistrations(growthWindowStart: Date) {
+  return prisma.$queryRaw<MonthlyRegistrationRow[]>(Prisma.sql`
+    SELECT
+      CONCAT(
+        EXTRACT(YEAR FROM "createdAt")::integer,
+        '-',
+        EXTRACT(MONTH FROM "createdAt")::integer - 1
+      ) AS "monthKey",
+      COUNT(*) AS "registrationCount"
+    FROM "user"
+    WHERE "createdAt" >= ${growthWindowStart}
+    GROUP BY 1
+    ORDER BY 1
+  `);
 }
 
 function formatWeeklyChange(value: number) {
@@ -233,26 +369,12 @@ async function getStudentDashboard(
   }
 
   const [
-    proposalCount,
-    projectStatusCounts,
-    ratingAggregate,
+    dashboardStats,
     recommendationCandidates,
     activityProjects,
     notifications,
   ] = await Promise.all([
-    prisma.proposal.count({ where: { studentId: student.id } }),
-    prisma.project.groupBy({
-      by: ["status"],
-      where: {
-        studentId: student.id,
-        status: { in: [...ACTIVE_PROJECT_STATUSES, "COMPLETED"] },
-      },
-      _count: { _all: true },
-    }),
-    prisma.review.aggregate({
-      where: { studentId: student.id },
-      _avg: { rating: true },
-    }),
+    getStudentDashboardStats(student.id),
     studentSkills.length > 0
       ? prisma.project.findMany({
           where: {
@@ -290,12 +412,6 @@ async function getStudentDashboard(
     getRecentNotifications(user.id),
   ]);
 
-  const activeProjectCount = countStatuses(
-    projectStatusCounts,
-    ACTIVE_PROJECT_STATUSES,
-  );
-  const completedProjectCount = countStatuses(projectStatusCounts, ["COMPLETED"]);
-
   const recommendedProjects = recommendationCandidates
     .map((project) => {
       const requiredSkills = project.skillsNeeded.map(({ skill }) => skill.name);
@@ -320,15 +436,15 @@ async function getStudentDashboard(
     avatarUrl: user.avatar || createAvatarUrl(user.name || "Pelajar"),
     profileCompletionPercent,
     metrics: [
-      { id: "proposals", label: "Proposal Terkirim", value: `${proposalCount} Proposal` },
-      { id: "active", label: "Proyek Aktif", value: `${activeProjectCount} Aktif` },
-      { id: "completed", label: "Proyek Selesai", value: `${completedProjectCount} Selesai` },
+      { id: "proposals", label: "Proposal Terkirim", value: `${dashboardStats.proposalCount} Proposal` },
+      { id: "active", label: "Proyek Aktif", value: `${dashboardStats.activeProjectCount} Aktif` },
+      { id: "completed", label: "Proyek Selesai", value: `${dashboardStats.completedProjectCount} Selesai` },
       {
         id: "rating",
         label: "Rating Rata-rata",
-        value: ratingAggregate._avg.rating === null
+        value: dashboardStats.averageRating === null
           ? "—"
-          : `${ratingAggregate._avg.rating.toFixed(1)} ★`,
+          : `${dashboardStats.averageRating.toFixed(1)} ★`,
       },
     ],
     recommendedProjects,
@@ -410,19 +526,13 @@ async function getUmkmDashboard(
   }
 
   const [
-    projectStatusCounts,
-    proposalCount,
+    dashboardStats,
     recentProjects,
     recentProposals,
     activityProjects,
     notifications,
   ] = await Promise.all([
-    prisma.project.groupBy({
-      by: ["status"],
-      where: { umkmId: business.id },
-      _count: { _all: true },
-    }),
-    prisma.proposal.count({ where: { project: { umkmId: business.id } } }),
+    getUmkmDashboardStats(business.id),
     prisma.project.findMany({
       where: { umkmId: business.id },
       orderBy: { updatedAt: "desc" },
@@ -478,13 +588,13 @@ async function getUmkmDashboard(
     getRecentNotifications(user.id),
   ]);
 
-  const projectCount = countStatuses(projectStatusCounts);
-  const openProjectCount = countStatuses(projectStatusCounts, ["OPEN", "PROPOSAL"]);
-  const activeProjectCount = countStatuses(
-    projectStatusCounts,
-    ACTIVE_PROJECT_STATUSES,
-  );
-  const completedProjectCount = countStatuses(projectStatusCounts, ["COMPLETED"]);
+  const {
+    projectCount,
+    openProjectCount,
+    activeProjectCount,
+    completedProjectCount,
+    proposalCount,
+  } = dashboardStats;
 
   return {
     role: "UMKM",
@@ -574,35 +684,14 @@ async function getAdminDashboard(user: {
   const growthWindowStart = growthMonths[0].start;
 
   const [
-    studentCount,
-    newStudentCount,
-    umkmCount,
-    newUmkmCount,
-    projectStatusCounts,
-    proposalStatusCounts,
-    usersBeforeGrowthWindow,
-    growthUsers,
+    dashboardStats,
+    monthlyRegistrationRows,
     recentUsers,
     recentProjects,
     notifications,
   ] = await Promise.all([
-    prisma.student.count(),
-    prisma.student.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
-    prisma.umkm.count(),
-    prisma.umkm.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
-    prisma.project.groupBy({
-      by: ["status"],
-      _count: { _all: true },
-    }),
-    prisma.proposal.groupBy({
-      by: ["status"],
-      _count: { _all: true },
-    }),
-    prisma.user.count({ where: { createdAt: { lt: growthWindowStart } } }),
-    prisma.user.findMany({
-      where: { createdAt: { gte: growthWindowStart } },
-      select: { createdAt: true },
-    }),
+    getAdminDashboardStats(sevenDaysAgo, growthWindowStart),
+    getMonthlyUserRegistrations(growthWindowStart),
     prisma.user.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
@@ -634,20 +723,26 @@ async function getAdminDashboard(user: {
     getRecentNotifications(user.id),
   ]);
 
-  const projectCount = countStatuses(projectStatusCounts);
-  const openProjectCount = countStatuses(projectStatusCounts, ["OPEN", "PROPOSAL"]);
-  const activeProjectCount = countStatuses(
-    projectStatusCounts,
-    ACTIVE_PROJECT_STATUSES,
-  );
-  const completedProjectCount = countStatuses(projectStatusCounts, ["COMPLETED"]);
-  const proposalCount = countStatuses(proposalStatusCounts);
-  const pendingProposalCount = countStatuses(proposalStatusCounts, ["PENDING"]);
+  const {
+    studentCount,
+    newStudentCount,
+    umkmCount,
+    newUmkmCount,
+    projectCount,
+    openProjectCount,
+    activeProjectCount,
+    completedProjectCount,
+    proposalCount,
+    pendingProposalCount,
+    usersBeforeGrowthWindow,
+  } = dashboardStats;
 
   const monthlyRegistrations = new Map<string, number>();
-  for (const registeredUser of growthUsers) {
-    const key = `${registeredUser.createdAt.getUTCFullYear()}-${registeredUser.createdAt.getUTCMonth()}`;
-    monthlyRegistrations.set(key, (monthlyRegistrations.get(key) ?? 0) + 1);
+  for (const registration of monthlyRegistrationRows) {
+    monthlyRegistrations.set(
+      registration.monthKey,
+      Number(registration.registrationCount),
+    );
   }
 
   let cumulativeUserCount = usersBeforeGrowthWindow;

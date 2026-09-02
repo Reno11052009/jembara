@@ -1,5 +1,6 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import prisma from "@/lib/prisma";
 
@@ -14,12 +15,10 @@ function normalizeFilter(value: string) {
   return value.trim().replace(/\s+/g, " ").slice(0, MAX_FILTER_LENGTH);
 }
 
-export const getBusinessCategoryOptions = cache(async (
-  query = "",
-  groupName = "",
+const getPersistedBusinessCategoryOptions = unstable_cache(async (
+  normalizedQuery: string,
+  normalizedGroupName: string,
 ): Promise<BusinessCategoryOption[]> => {
-  const normalizedQuery = normalizeFilter(query);
-  const normalizedGroupName = normalizeFilter(groupName);
   const categories = await prisma.business_category.findMany({
     where: {
       isActive: true,
@@ -62,4 +61,16 @@ export const getBusinessCategoryOptions = cache(async (
     code: name,
     name: groupName ? `${groupName} — ${name}` : name,
   }));
+}, ["business-category-options"], {
+  revalidate: 3600,
+  tags: ["business-category-options"],
 });
+
+export const getBusinessCategoryOptions = cache(async (
+  query = "",
+  groupName = "",
+): Promise<BusinessCategoryOption[]> =>
+  getPersistedBusinessCategoryOptions(
+    normalizeFilter(query),
+    normalizeFilter(groupName),
+  ));

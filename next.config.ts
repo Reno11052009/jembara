@@ -1,9 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  cacheComponents: true,
+  partialPrefetching: true,
   reactCompiler: true,
   poweredByHeader: false,
   experimental: {
+    sri: {
+      algorithm: "sha256",
+    },
     serverActions: {
       bodySizeLimit: "512kb",
     },

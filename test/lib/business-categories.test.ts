@@ -5,6 +5,9 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("server-only", () => ({}));
+vi.mock("next/cache", () => ({
+  unstable_cache: (callback: (...args: never[]) => unknown) => callback,
+}));
 vi.mock("@/lib/prisma", () => ({
   default: {
     business_category: { findMany: mocks.findMany },

@@ -5,7 +5,9 @@ const mocks = vi.hoisted(() => ({
   findMany: vi.fn(),
   updateMany: vi.fn(),
   create: vi.fn(),
+  createMany: vi.fn(),
   preferenceFindUnique: vi.fn(),
+  preferenceFindMany: vi.fn(),
 }));
 
 vi.mock("server-only", () => ({}));
@@ -25,15 +27,18 @@ vi.mock("@/lib/prisma", () => ({
       findMany: mocks.findMany,
       updateMany: mocks.updateMany,
       create: mocks.create,
+      createMany: mocks.createMany,
     },
     notification_preference: {
       findUnique: mocks.preferenceFindUnique,
+      findMany: mocks.preferenceFindMany,
     },
   },
 }));
 
 import {
   createUserNotification,
+  createUserNotifications,
   getCurrentNotifications,
   markCurrentNotificationAsRead,
 } from "@/lib/notifications";
@@ -107,5 +112,53 @@ describe("notifications", () => {
       }),
     ).resolves.toBeNull();
     expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it("bulk creates enabled notifications with two queries instead of one pair per user", async () => {
+    mocks.preferenceFindMany.mockResolvedValue([
+      {
+        userId: "user-1",
+        proposalMasuk: true,
+        pesanBaru: true,
+        pembayaran: true,
+        updateProyek: true,
+        promosiInfo: false,
+      },
+      {
+        userId: "user-2",
+        proposalMasuk: true,
+        pesanBaru: true,
+        pembayaran: true,
+        updateProyek: false,
+        promosiInfo: false,
+      },
+    ]);
+    mocks.createMany.mockResolvedValue({ count: 1 });
+
+    await expect(
+      createUserNotifications([
+        {
+          userId: "user-1",
+          type: "PROJECT",
+          title: "Terpilih",
+          message: "Proposal diterima",
+          preferenceKey: "updateProyek",
+        },
+        {
+          userId: "user-2",
+          type: "PROJECT",
+          title: "Belum terpilih",
+          message: "Kandidat lain dipilih",
+          preferenceKey: "updateProyek",
+        },
+      ]),
+    ).resolves.toEqual({ count: 1 });
+
+    expect(mocks.preferenceFindMany).toHaveBeenCalledTimes(1);
+    expect(mocks.createMany).toHaveBeenCalledTimes(1);
+    expect(mocks.createMany).toHaveBeenCalledWith({
+      data: [expect.objectContaining({ userId: "user-1" })],
+    });
+    expect(mocks.preferenceFindUnique).not.toHaveBeenCalled();
   });
 });

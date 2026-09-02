@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import ApplicantRow from "@/components/dashboard/umkm/pelamar/ApplicantRow";
@@ -9,6 +8,7 @@ import type {
   ApplicantStatus,
   ApplicantsData,
 } from "@/types/applicant";
+import ListPagination from "@/components/ui/ListPagination";
 
 type TabValue = "Semua" | ApplicantStatus;
 
@@ -16,20 +16,13 @@ const tabs: TabValue[] = ["Semua", "Pending", "Diterima", "Ditolak"];
 
 export default function PelamarView({ data }: { data: ApplicantsData }) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabValue>("Semua");
-
-  const filteredApplicants = useMemo(
-    () =>
-      activeTab === "Semua"
-        ? data.applicants
-        : data.applicants.filter((applicant) => applicant.status === activeTab),
-    [activeTab, data.applicants],
-  );
-
-  const tabCount = (tab: TabValue) =>
-    tab === "Semua"
-      ? data.applicants.length
-      : data.applicants.filter((applicant) => applicant.status === tab).length;
+  const activeTab = data.activeFilter;
+  const setActiveTab = (tab: TabValue) => {
+    const params = new URLSearchParams();
+    if (data.selectedProjectId) params.set("project", data.selectedProjectId);
+    if (tab !== "Semua") params.set("status", tab);
+    router.replace(`/dashboard/pelamar?${params.toString()}`);
+  };
 
   return (
     <>
@@ -78,14 +71,14 @@ export default function PelamarView({ data }: { data: ApplicantsData }) {
                 : "border border-hairline bg-card text-ink hover:border-brand hover:text-brand"
             }`}
           >
-            {tab} ({tabCount(tab)})
+            {tab} ({data.tabCounts[tab]})
           </button>
         ))}
       </div>
 
-      {filteredApplicants.length > 0 ? (
+      {data.applicants.length > 0 ? (
         <div className="flex flex-col gap-5">
-          {filteredApplicants.map((applicant) => (
+          {data.applicants.map((applicant) => (
             <ApplicantRow key={applicant.id} applicant={applicant} />
           ))}
         </div>
@@ -101,6 +94,14 @@ export default function PelamarView({ data }: { data: ApplicantsData }) {
           </p>
         </div>
       )}
+      <ListPagination
+        basePath="/dashboard/pelamar"
+        pagination={data.pagination}
+        preservedParams={{
+          project: data.selectedProjectId,
+          status: activeTab === "Semua" ? null : activeTab,
+        }}
+      />
     </>
   );
 }

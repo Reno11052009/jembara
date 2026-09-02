@@ -24,7 +24,7 @@ import {
 } from "@/app/actions/notifications";
 import type { HeaderNotification } from "@/types/notification";
 
-const NOTIFICATION_REFRESH_INTERVAL_MS = 30_000;
+const NOTIFICATION_REFRESH_INTERVAL_MS = 120_000;
 
 const notificationPresentation = {
   PROPOSAL: {
@@ -122,6 +122,7 @@ export default function NotificationMenu() {
     }
 
     const refreshNotifications = () => {
+      if (document.visibilityState !== "visible") return;
       startTransition(async () => {
         await loadNotifications();
       });

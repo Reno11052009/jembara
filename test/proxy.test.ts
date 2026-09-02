@@ -5,7 +5,7 @@ import { proxy } from "@/proxy";
 describe("security proxy", () => {
   afterEach(() => vi.unstubAllEnvs());
 
-  it("uses a per-request script nonce without unsafe-inline", () => {
+  it("uses a static production CSP compatible with cached app shells", () => {
     vi.stubEnv("NODE_ENV", "production");
 
     const firstCsp = proxy(new NextRequest("https://jembara.web.id/")).headers.get(
@@ -15,9 +15,11 @@ describe("security proxy", () => {
       "content-security-policy",
     );
 
-    expect(firstCsp).toMatch(/script-src 'self' 'nonce-[^']+' 'strict-dynamic'/);
+    expect(firstCsp).toContain("script-src 'self'");
+    expect(firstCsp).not.toContain("nonce-");
+    expect(firstCsp).not.toContain("strict-dynamic");
     expect(firstCsp?.match(/script-src[^;]+/)?.[0]).not.toContain("'unsafe-inline'");
     expect(firstCsp).not.toContain("'unsafe-eval'");
-    expect(secondCsp).not.toBe(firstCsp);
+    expect(secondCsp).toBe(firstCsp);
   });
 });

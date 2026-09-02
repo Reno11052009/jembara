@@ -29,6 +29,7 @@ vi.mock("@/config/unifiedConfig", () => ({
 }));
 vi.mock("@/lib/notifications", () => ({
   createUserNotification: mocks.createUserNotification,
+  createUserNotifications: vi.fn(),
 }));
 vi.mock("@/lib/prisma", () => ({
   default: {

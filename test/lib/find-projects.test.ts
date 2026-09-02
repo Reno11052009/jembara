@@ -2,20 +2,29 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAuthenticatedSession: vi.fn(),
+  queryRaw: vi.fn(),
   userFindUnique: vi.fn(),
+  projectCount: vi.fn(),
   projectFindMany: vi.fn(),
   skillFindMany: vi.fn(),
   umkmFindMany: vi.fn(),
 }));
 
 vi.mock("server-only", () => ({}));
+vi.mock("next/cache", () => ({
+  unstable_cache: (callback: (...args: never[]) => unknown) => callback,
+}));
 vi.mock("@/lib/auth-guard", () => ({
   requireAuthenticatedSession: mocks.requireAuthenticatedSession,
 }));
 vi.mock("@/lib/prisma", () => ({
   default: {
+    $queryRaw: mocks.queryRaw,
     user: { findUnique: mocks.userFindUnique },
-    project: { findMany: mocks.projectFindMany },
+    project: {
+      count: mocks.projectCount,
+      findMany: mocks.projectFindMany,
+    },
     skill: { findMany: mocks.skillFindMany },
     umkm: { findMany: mocks.umkmFindMany },
   },
@@ -54,7 +63,10 @@ describe("getFindProjectsData", () => {
     mocks.userFindUnique.mockResolvedValue({
       role: "STUDENT",
       student: {
-        skills: [{ skill: { name: "Figma" } }, { skill: { name: "UI/UX" } }],
+        skills: [
+          { skill: { id: "skill-figma", name: "Figma" } },
+          { skill: { id: "skill-uiux", name: "UI/UX" } },
+        ],
       },
     });
     mocks.skillFindMany.mockResolvedValue([
@@ -65,9 +77,16 @@ describe("getFindProjectsData", () => {
       { user: { location: "Malang" } },
       { user: { location: "Malang" } },
     ]);
+    mocks.projectCount.mockResolvedValue(0);
+    mocks.queryRaw.mockResolvedValue([]);
   });
 
   it("loads open projects and ranks them by the student's skill match", async () => {
+    mocks.projectCount.mockResolvedValue(2);
+    mocks.queryRaw.mockResolvedValue([
+      { id: "project-high" },
+      { id: "project-low" },
+    ]);
     mocks.projectFindMany.mockResolvedValue([
       {
         id: "project-low",
@@ -98,9 +117,13 @@ describe("getFindProjectsData", () => {
 
     expect(mocks.projectFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ status: "OPEN", studentId: null }),
+        where: { id: { in: ["project-high", "project-low"] } },
       }),
     );
+    expect(mocks.projectCount).toHaveBeenCalledWith({
+      where: expect.objectContaining({ status: "OPEN", studentId: null }),
+    });
+    expect(mocks.queryRaw).toHaveBeenCalledTimes(1);
     expect(data.projects.map((project) => project.id)).toEqual([
       "project-high",
       "project-low",
@@ -114,8 +137,6 @@ describe("getFindProjectsData", () => {
   });
 
   it("pushes search, skill, location, and budget filters into SQL", async () => {
-    mocks.projectFindMany.mockResolvedValue([]);
-
     await getFindProjectsData({
       q: "kopi",
       skill: "Figma",
@@ -123,9 +144,8 @@ describe("getFindProjectsData", () => {
       budget: "1m-3m",
     });
 
-    expect(mocks.projectFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
+    expect(mocks.projectCount).toHaveBeenCalledWith({
+      where: expect.objectContaining({
           status: "OPEN",
           studentId: null,
           budget: { gte: 1_000_000, lt: 3_000_000 },
@@ -142,9 +162,41 @@ describe("getFindProjectsData", () => {
               location: { equals: "Malang", mode: "insensitive" },
             },
           },
-        }),
+      }),
+    });
+  });
+
+  it("paginates non-recommended sorting in PostgreSQL", async () => {
+    mocks.projectCount.mockResolvedValue(20);
+    mocks.projectFindMany.mockResolvedValue([]);
+
+    const data = await getFindProjectsData({ sort: "latest", page: "2" });
+
+    expect(mocks.projectFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+        skip: 6,
+        take: 6,
       }),
     );
+    expect(data).toMatchObject({
+      totalProjects: 20,
+      totalPages: 4,
+      currentPage: 2,
+    });
+    expect(mocks.queryRaw).not.toHaveBeenCalled();
+  });
+
+  it("clamps an out-of-range page before querying PostgreSQL", async () => {
+    mocks.projectCount.mockResolvedValue(7);
+    mocks.projectFindMany.mockResolvedValue([]);
+
+    const data = await getFindProjectsData({ sort: "budget", page: "99" });
+
+    expect(mocks.projectFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({ skip: 6, take: 6 }),
+    );
+    expect(data.currentPage).toBe(2);
   });
 
   it("allows a student account whose student profile is not created yet", async () => {

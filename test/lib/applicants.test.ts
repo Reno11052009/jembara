@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   userFindUnique: vi.fn(),
   projectFindMany: vi.fn(),
   proposalFindMany: vi.fn(),
+  proposalGroupBy: vi.fn(),
 }));
 
 vi.mock("server-only", () => ({}));
@@ -17,7 +18,7 @@ vi.mock("@/lib/prisma", () => ({
   default: {
     user: { findUnique: mocks.userFindUnique },
     project: { findMany: mocks.projectFindMany },
-    proposal: { findMany: mocks.proposalFindMany },
+    proposal: { findMany: mocks.proposalFindMany, groupBy: mocks.proposalGroupBy },
   },
 }));
 
@@ -68,6 +69,7 @@ describe("getApplicantsData", () => {
         },
       },
     ]);
+    mocks.proposalGroupBy.mockResolvedValue([{ status: "PENDING", _count: { _all: 1 } }]);
     mocks.redirect.mockImplementation((path: string) => {
       throw new Error(`NEXT_REDIRECT:${path}`);
     });

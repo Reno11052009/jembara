@@ -1,4 +1,5 @@
 export type ActiveProjectStatus = "In Progress" | "In Review" | "Completed";
+export type ActiveProjectFilter = "Semua" | ActiveProjectStatus;
 
 export interface ProjectMilestone {
   id: string;
@@ -52,4 +53,6 @@ export interface ActiveProjectsData {
   pageSubtitle: string;
   emptyMessage: string;
   collaborationTip: string;
+  activeFilter: ActiveProjectFilter;
+  pagination: import("@/types/pagination").PaginationData;
 }

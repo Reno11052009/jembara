@@ -10,6 +10,11 @@ import type {
   ProjectCreationData,
   ProjectWorkMode,
 } from "@/types/my-jobs";
+import type { Prisma } from "@/generated/prisma/client";
+import { createPagination, normalizePage } from "./pagination";
+
+const PAGE_SIZE = 8;
+type MyJobsFilter = "Semua" | JobListingStatus;
 
 const createAvatarUrl = (name: string) =>
   `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
@@ -100,11 +105,83 @@ export async function getProjectCreationData(): Promise<ProjectCreationData> {
   };
 }
 
-export async function getMyJobsData(): Promise<MyJobsData> {
+function normalizeJobsFilter(value: unknown): MyJobsFilter {
+  const firstValue = Array.isArray(value) ? value[0] : value;
+  const allowed: MyJobsFilter[] = [
+    "Terbuka", "Seleksi", "Menunggu Pembayaran", "Berjalan",
+    "Dalam Review", "Selesai", "Dibatalkan", "Lainnya",
+  ];
+  return allowed.includes(firstValue as MyJobsFilter)
+    ? (firstValue as MyJobsFilter)
+    : "Semua";
+}
+
+const waitingPaymentFilter: Prisma.projectWhereInput = {
+  status: "PROPOSAL",
+  studentId: { not: null },
+  OR: [
+    { payment: { is: null } },
+    { payment: { is: { status: { notIn: ["HELD", "RELEASED"] } } } },
+  ],
+};
+
+function whereForJobsFilter(filter: MyJobsFilter): Prisma.projectWhereInput {
+  if (filter === "Terbuka") return { status: "OPEN" };
+  if (filter === "Seleksi") return { status: "PROPOSAL", NOT: waitingPaymentFilter };
+  if (filter === "Menunggu Pembayaran") return waitingPaymentFilter;
+  if (filter === "Berjalan") return { status: "IN_PROGRESS" };
+  if (filter === "Dalam Review") return { status: "REVIEW" };
+  if (filter === "Selesai") return { status: "COMPLETED" };
+  if (filter === "Dibatalkan") return { status: "CANCELLED" };
+  if (filter === "Lainnya") {
+    return { status: { notIn: ["OPEN", "PROPOSAL", "IN_PROGRESS", "REVIEW", "COMPLETED", "CANCELLED"] } };
+  }
+  return {};
+}
+
+export async function getMyJobsData(options: {
+  page?: unknown;
+  status?: unknown;
+} = {}): Promise<MyJobsData> {
   const viewer = await getUmkmViewer();
+  const activeFilter = normalizeJobsFilter(options.status);
+  const [statusGroups, waitingPaymentCount] = await Promise.all([
+    prisma.project.groupBy({
+      by: ["status"],
+      where: { umkmId: viewer.umkm.id },
+      _count: { _all: true },
+    }),
+    prisma.project.count({
+      where: { umkmId: viewer.umkm.id, ...waitingPaymentFilter },
+    }),
+  ]);
+  const countFor = (status: string) =>
+    statusGroups.find((group) => group.status === status)?._count._all ?? 0;
+  const knownStatuses = new Set(["OPEN", "PROPOSAL", "IN_PROGRESS", "REVIEW", "COMPLETED", "CANCELLED"]);
+  const tabCounts: MyJobsData["tabCounts"] = {
+    Semua: statusGroups.reduce((total, group) => total + group._count._all, 0),
+    Terbuka: countFor("OPEN"),
+    Seleksi: Math.max(0, countFor("PROPOSAL") - waitingPaymentCount),
+    "Menunggu Pembayaran": waitingPaymentCount,
+    Berjalan: countFor("IN_PROGRESS"),
+    "Dalam Review": countFor("REVIEW"),
+    Selesai: countFor("COMPLETED"),
+    Dibatalkan: countFor("CANCELLED"),
+    Lainnya: statusGroups.reduce(
+      (total, group) => total + (knownStatuses.has(group.status) ? 0 : group._count._all),
+      0,
+    ),
+  };
+  const pagination = createPagination(
+    normalizePage(options.page),
+    tabCounts[activeFilter],
+    PAGE_SIZE,
+  );
   const projects = await prisma.project.findMany({
-    where: { umkmId: viewer.umkm.id },
+    where: { umkmId: viewer.umkm.id, ...whereForJobsFilter(activeFilter) },
     orderBy: { createdAt: "desc" },
+    skip: (pagination.currentPage - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
     select: {
       id: true,
       title: true,
@@ -128,6 +205,9 @@ export async function getMyJobsData(): Promise<MyJobsData> {
     ownerName: viewer.ownerName,
     ownerAvatarUrl: viewer.ownerAvatarUrl,
     businessName: viewer.umkm.nama_usaha,
+    activeFilter,
+    tabCounts,
+    pagination,
     listings: projects.map((project) => ({
       id: project.id,
       title: project.title,

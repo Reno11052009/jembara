@@ -5,7 +5,10 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { Prisma } from "@/generated/prisma/client";
 import { config } from "@/config/unifiedConfig";
-import { createUserNotification } from "@/lib/notifications";
+import {
+  createUserNotification,
+  createUserNotifications,
+} from "@/lib/notifications";
 import prisma from "@/lib/prisma";
 import { consumeRateLimit, createRateLimitKey } from "@/lib/rate-limit";
 import { verifySession } from "@/lib/session";
@@ -296,28 +299,26 @@ export async function acceptProposalAction(
     });
 
     if (outcome.newlyAccepted) {
-      const notifications = [
-        createUserNotification({
-          userId: outcome.acceptedUserId,
-          type: "PROJECT",
-          title: "Proposal diterima",
-          message: `Anda terpilih untuk ${outcome.projectTitle}. Pengerjaan dimulai setelah pembayaran UMKM terverifikasi.`,
-          href: "/dashboard/proposals",
-          preferenceKey: "updateProyek",
-        }),
-        ...outcome.rejectedUserIds.map((userId) =>
-          createUserNotification({
+      try {
+        await createUserNotifications([
+          {
+            userId: outcome.acceptedUserId,
+            type: "PROJECT",
+            title: "Proposal diterima",
+            message: `Anda terpilih untuk ${outcome.projectTitle}. Pengerjaan dimulai setelah pembayaran UMKM terverifikasi.`,
+            href: "/dashboard/proposals",
+            preferenceKey: "updateProyek",
+          },
+          ...outcome.rejectedUserIds.map((userId) => ({
             userId,
             type: "PROJECT",
             title: "Proposal belum terpilih",
             message: `UMKM telah memilih kandidat lain untuk ${outcome.projectTitle}.`,
             href: "/dashboard/proposals",
-            preferenceKey: "updateProyek",
-          }),
-        ),
-      ];
-      const notificationResults = await Promise.allSettled(notifications);
-      if (notificationResults.some((result) => result.status === "rejected")) {
+            preferenceKey: "updateProyek" as const,
+          })),
+        ]);
+      } catch {
         console.error(
           `Kandidat ${outcome.acceptedStudentName} terpilih, tetapi sebagian notifikasi project ${outcome.projectId} gagal dibuat.`,
         );

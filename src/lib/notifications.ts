@@ -104,3 +104,51 @@ export async function createUserNotification(input: {
     select: { id: true },
   });
 }
+
+type UserNotificationInput = Parameters<typeof createUserNotification>[0];
+
+export async function createUserNotifications(inputs: UserNotificationInput[]) {
+  if (inputs.length === 0) return { count: 0 };
+
+  const preferenceUserIds = [
+    ...new Set(
+      inputs
+        .filter((input) => input.preferenceKey)
+        .map((input) => input.userId),
+    ),
+  ];
+  const preferences = preferenceUserIds.length > 0
+    ? await prisma.notification_preference.findMany({
+        where: { userId: { in: preferenceUserIds } },
+        select: {
+          userId: true,
+          proposalMasuk: true,
+          pesanBaru: true,
+          pembayaran: true,
+          updateProyek: true,
+          promosiInfo: true,
+        },
+      })
+    : [];
+  const preferencesByUserId = new Map(
+    preferences.map((preference) => [preference.userId, preference]),
+  );
+  const enabledInputs = inputs.filter((input) => {
+    if (!input.preferenceKey) return true;
+    const preference = preferencesByUserId.get(input.userId);
+    return preference?.[input.preferenceKey]
+      ?? defaultNotificationPreferences[input.preferenceKey];
+  });
+
+  if (enabledInputs.length === 0) return { count: 0 };
+
+  return prisma.notification.createMany({
+    data: enabledInputs.map((input) => ({
+      userId: input.userId,
+      type: input.type,
+      title: input.title,
+      message: input.message,
+      href: input.href ?? null,
+    })),
+  });
+}

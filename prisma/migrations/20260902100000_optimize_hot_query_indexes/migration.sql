@@ -1,0 +1,15 @@
+CREATE INDEX "user_createdAt_id_idx" ON "user"("createdAt", "id");
+CREATE INDEX "student_available_rating_total_project_createdAt_idx" ON "student"("available", "rating", "total_project", "createdAt");
+CREATE INDEX "student_createdAt_id_idx" ON "student"("createdAt", "id");
+CREATE INDEX "umkm_createdAt_id_idx" ON "umkm"("createdAt", "id");
+CREATE INDEX "notification_userId_createdAt_idx" ON "notification"("userId", "createdAt");
+CREATE INDEX "student_skill_skillId_studentId_idx" ON "student_skill"("skillId", "studentId");
+CREATE INDEX "project_skill_skillId_projectId_idx" ON "project_skill"("skillId", "projectId");
+CREATE INDEX "portfolio_studentId_updatedAt_idx" ON "portfolio"("studentId", "updatedAt");
+CREATE INDEX "project_umkmId_status_updatedAt_idx" ON "project"("umkmId", "status", "updatedAt");
+CREATE INDEX "project_status_studentId_createdAt_idx" ON "project"("status", "studentId", "createdAt");
+CREATE INDEX "project_studentId_status_updatedAt_idx" ON "project"("studentId", "status", "updatedAt");
+CREATE INDEX "project_status_deadline_idx" ON "project"("status", "deadline");
+CREATE INDEX "proposal_projectId_createdAt_idx" ON "proposal"("projectId", "createdAt");
+CREATE INDEX "proposal_studentId_status_createdAt_idx" ON "proposal"("studentId", "status", "createdAt");
+CREATE INDEX "review_studentId_idx" ON "review"("studentId");

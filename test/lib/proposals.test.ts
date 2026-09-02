@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   requireAuthenticatedSession: vi.fn(),
   userFindUnique: vi.fn(),
   proposalFindMany: vi.fn(),
+  proposalGroupBy: vi.fn(),
   redirect: vi.fn(),
 }));
 
@@ -14,7 +15,7 @@ vi.mock("@/lib/auth-guard", () => ({
 vi.mock("@/lib/prisma", () => ({
   default: {
     user: { findUnique: mocks.userFindUnique },
-    proposal: { findMany: mocks.proposalFindMany },
+    proposal: { findMany: mocks.proposalFindMany, groupBy: mocks.proposalGroupBy },
   },
 }));
 vi.mock("next/navigation", () => ({
@@ -31,6 +32,7 @@ describe("getStudentProposals", () => {
       role: "STUDENT",
       name: "Andi",
     });
+    mocks.proposalGroupBy.mockResolvedValue([]);
   });
 
   it("loads only proposals owned by the authenticated student", async () => {
@@ -56,6 +58,7 @@ describe("getStudentProposals", () => {
         },
       },
     ]);
+    mocks.proposalGroupBy.mockResolvedValue([{ status: "PENDING", _count: { _all: 1 } }]);
 
     const data = await getStudentProposals();
 

@@ -35,6 +35,8 @@ model user {
   sessions               auth_session[]
   releasedPayments       project_payment[]        @relation("PaymentReleasedTo")
   balanceTransactions    balance_transaction[]
+
+  @@index([createdAt, id])
 }
 
 model auth_session {
@@ -92,6 +94,9 @@ model student {
   projects    project[]            @relation("ProjectStudent")
   reviews     review[]
   submissions project_submission[]
+
+  @@index([available, rating, total_project, createdAt])
+  @@index([createdAt, id])
 }
 
 model umkm {
@@ -115,6 +120,8 @@ model umkm {
   user     user      @relation(fields: [userId], references: [id], onDelete: Cascade)
   projects project[]
   reviews  review[]
+
+  @@index([createdAt, id])
 }
 
 model business_category {
@@ -154,6 +161,7 @@ model notification {
   user user @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead, createdAt])
+  @@index([userId, createdAt])
 }
 
 model notification_preference {
@@ -193,6 +201,7 @@ model student_skill {
   skill   skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, skillId])
+  @@index([skillId, studentId])
 }
 
 model project_skill {
@@ -206,6 +215,7 @@ model project_skill {
   skill   skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, skillId])
+  @@index([skillId, projectId])
 }
 
 model portfolio {
@@ -219,6 +229,8 @@ model portfolio {
   updatedAt   DateTime @updatedAt @db.Timestamp(6)
 
   student student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, updatedAt])
 }
 
 model project {
@@ -245,6 +257,10 @@ model project {
   submission   project_submission?
 
   @@index([umkmId, status, createdAt])
+  @@index([umkmId, status, updatedAt])
+  @@index([status, studentId, createdAt])
+  @@index([studentId, status, updatedAt])
+  @@index([status, deadline])
 }
 
 model message {
@@ -280,6 +296,8 @@ model proposal {
   student student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, studentId])
+  @@index([projectId, createdAt])
+  @@index([studentId, status, createdAt])
 }
 
 model review {
@@ -295,6 +313,8 @@ model review {
   project project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   student student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   umkm    umkm    @relation(fields: [umkmId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
 }
 
 model project_payment {

@@ -29,4 +29,7 @@ export interface ApplicantsData {
   selectedProjectId: string | null;
   selectedProjectTitle: string | null;
   applicants: Applicant[];
+  activeFilter: "Semua" | ApplicantStatus;
+  tabCounts: Record<"Semua" | ApplicantStatus, number>;
+  pagination: import("@/types/pagination").PaginationData;
 }

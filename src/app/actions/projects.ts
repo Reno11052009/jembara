@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { config } from "@/config/unifiedConfig";
@@ -152,5 +152,6 @@ export async function createProjectAction(
   revalidatePath("/dashboard/lowongan-saya");
   revalidatePath("/dashboard/find-projects");
   revalidatePath("/dashboard/cari-talent");
+  revalidateTag("marketplace-filter-options", "max");
   redirect("/dashboard/lowongan-saya");
 }

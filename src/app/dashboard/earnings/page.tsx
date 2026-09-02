@@ -4,9 +4,14 @@ import EarningsChartCard from "@/components/earnings/EarningsChartCard";
 import TransactionHistoryCard from "@/components/earnings/TransactionHistoryCard";
 import { getEarningsData } from "@/lib/earnings";
 import WalletBalanceCard from "@/components/earnings/WalletBalanceCard";
+import ListPagination from "@/components/ui/ListPagination";
 
-export default async function EarningsPage() {
-  const { walletBalanceLabel, stats, chartData, transactions } = await getEarningsData();
+export default async function EarningsPage({ searchParams }: {
+  searchParams: Promise<{ page?: string | string[] }>;
+}) {
+  const query = await searchParams;
+  const { walletBalanceLabel, stats, chartData, transactions, pagination } =
+    await getEarningsData(new Date(), query);
 
   return (
     <>
@@ -21,6 +26,7 @@ export default async function EarningsPage() {
         <EarningsChartCard data={chartData} />
 
         <TransactionHistoryCard transactions={transactions} />
+        <ListPagination basePath="/dashboard/earnings" pagination={pagination} />
       </div>
     </>
   );

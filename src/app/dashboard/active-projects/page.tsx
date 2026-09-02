@@ -4,8 +4,11 @@ import MonthlyActivityCard from "@/components/active-projects/MonthlyActivityCar
 import CollaborationTipsCard from "@/components/active-projects/CollaborationTipsCard";
 import { getActiveProjectsData } from "@/lib/active-projects";
 
-export default async function ActiveProjectsPage() {
-  const data = await getActiveProjectsData();
+export default async function ActiveProjectsPage({ searchParams }: {
+  searchParams: Promise<{ page?: string | string[]; status?: string | string[] }>;
+}) {
+  const query = await searchParams;
+  const data = await getActiveProjectsData(query);
   const summaryTitle =
     data.role === "STUDENT"
       ? "Ringkasan Proyek Saya"
@@ -27,6 +30,8 @@ export default async function ActiveProjectsPage() {
             tabCounts={data.tabCounts}
             viewerRole={data.role}
             emptyMessage={data.emptyMessage}
+            activeFilter={data.activeFilter}
+            pagination={data.pagination}
           />
         </div>
 

@@ -4,6 +4,9 @@ const mocks = vi.hoisted(() => ({
   requireAuthenticatedSession: vi.fn(),
   userFindUnique: vi.fn(),
   projectFindMany: vi.fn(),
+  projectGroupBy: vi.fn(),
+  projectCount: vi.fn(),
+  proposalCount: vi.fn(),
   redirect: vi.fn(),
 }));
 
@@ -14,7 +17,8 @@ vi.mock("@/lib/auth-guard", () => ({
 vi.mock("@/lib/prisma", () => ({
   default: {
     user: { findUnique: mocks.userFindUnique },
-    project: { findMany: mocks.projectFindMany },
+    project: { findMany: mocks.projectFindMany, groupBy: mocks.projectGroupBy, count: mocks.projectCount },
+    proposal: { count: mocks.proposalCount },
   },
 }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
@@ -51,6 +55,9 @@ describe("getActiveProjectsData", () => {
       role: "STUDENT",
       name: "Pengguna",
     });
+    mocks.projectGroupBy.mockResolvedValue([]);
+    mocks.projectCount.mockResolvedValue(0);
+    mocks.proposalCount.mockResolvedValue(0);
   });
 
   it("loads only projects assigned to the authenticated student", async () => {
@@ -60,6 +67,7 @@ describe("getActiveProjectsData", () => {
       umkm: null,
     });
     mocks.projectFindMany.mockResolvedValue([createProjectRecord()]);
+    mocks.projectGroupBy.mockResolvedValue([{ status: "IN_PROGRESS", _count: { _all: 1 }, _sum: { budget: 2_000_000 } }]);
 
     const data = await getActiveProjectsData();
 
@@ -92,6 +100,7 @@ describe("getActiveProjectsData", () => {
     mocks.projectFindMany.mockResolvedValue([
       createProjectRecord({ status: "REVIEW" }),
     ]);
+    mocks.projectGroupBy.mockResolvedValue([{ status: "REVIEW", _count: { _all: 1 }, _sum: { budget: 2_000_000 } }]);
 
     const data = await getActiveProjectsData();
 

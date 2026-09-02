@@ -35,5 +35,6 @@ export interface EarningsData {
   stats: DashboardStat[];
   chartData: EarningsChartPoint[];
   transactions: Transaction[];
+  pagination: import("@/types/pagination").PaginationData;
 }
 import type { DashboardStat } from "@/types/dashboard";

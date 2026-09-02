@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   proposalUpdateMany: vi.fn(),
   projectUpdateMany: vi.fn(),
   createNotification: vi.fn(),
+  createNotifications: vi.fn(),
   revalidatePath: vi.fn(),
 }));
 
@@ -30,6 +31,7 @@ vi.mock("@/config/unifiedConfig", () => ({
 }));
 vi.mock("@/lib/notifications", () => ({
   createUserNotification: mocks.createNotification,
+  createUserNotifications: mocks.createNotifications,
 }));
 vi.mock("@/lib/prisma", () => ({
   default: {
@@ -85,6 +87,7 @@ describe("proposal decisions", () => {
     mocks.proposalUpdateMany.mockResolvedValue({ count: 1 });
     mocks.projectUpdateMany.mockResolvedValue({ count: 1 });
     mocks.createNotification.mockResolvedValue({ id: "notification-1" });
+    mocks.createNotifications.mockResolvedValue({ count: 2 });
     mocks.transaction.mockImplementation(
       async (callback: (transaction: unknown) => Promise<unknown>) =>
         callback({
@@ -126,7 +129,16 @@ describe("proposal decisions", () => {
       },
       data: { status: "REJECTED" },
     });
-    expect(mocks.createNotification).toHaveBeenCalledTimes(2);
+    expect(mocks.createNotifications).toHaveBeenCalledWith([
+      expect.objectContaining({
+        userId: "student-user-1",
+        title: "Proposal diterima",
+      }),
+      expect.objectContaining({
+        userId: "student-user-2",
+        title: "Proposal belum terpilih",
+      }),
+    ]);
     expect(mocks.revalidatePath).toHaveBeenCalledWith(
       "/dashboard/active-projects",
     );

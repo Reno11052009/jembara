@@ -7,8 +7,6 @@ import {
 } from "@/lib/midtrans";
 import { applyMidtransStatus, PaymentFlowError } from "@/lib/payments";
 
-export const runtime = "nodejs";
-
 export async function POST(request: Request) {
   try {
     const payload = midtransStatusSchema.parse(await request.json());

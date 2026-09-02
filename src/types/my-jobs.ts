@@ -45,4 +45,7 @@ export interface MyJobsData {
   ownerAvatarUrl: string;
   businessName: string;
   listings: MyJobListing[];
+  activeFilter: "Semua" | JobListingStatus;
+  tabCounts: Record<"Semua" | JobListingStatus, number>;
+  pagination: import("@/types/pagination").PaginationData;
 }

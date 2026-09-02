@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 import MyJobRow from "@/components/dashboard/umkm/my-job/MyJobRow";
@@ -9,6 +9,7 @@ import type {
   JobListingStatus,
   MyJobsData,
 } from "@/types/my-jobs";
+import ListPagination from "@/components/ui/ListPagination";
 
 type TabValue = "Semua" | JobListingStatus;
 
@@ -24,20 +25,14 @@ const tabs: TabValue[] = [
 ];
 
 export default function MyJobsView({ data }: { data: MyJobsData }) {
-  const [activeTab, setActiveTab] = useState<TabValue>("Semua");
-
-  const filteredListings = useMemo(
-    () =>
-      activeTab === "Semua"
-        ? data.listings
-        : data.listings.filter((listing) => listing.status === activeTab),
-    [activeTab, data.listings],
-  );
-
-  const tabCount = (tab: TabValue) =>
-    tab === "Semua"
-      ? data.listings.length
-      : data.listings.filter((listing) => listing.status === tab).length;
+  const router = useRouter();
+  const activeTab = data.activeFilter;
+  const setActiveTab = (tab: TabValue) => {
+    const params = new URLSearchParams();
+    if (tab !== "Semua") params.set("status", tab);
+    const query = params.toString();
+    router.replace(query ? `/dashboard/lowongan-saya?${query}` : "/dashboard/lowongan-saya");
+  };
 
   return (
     <>
@@ -61,7 +56,7 @@ export default function MyJobsView({ data }: { data: MyJobsData }) {
                   : "border border-hairline bg-card text-ink hover:border-brand hover:text-brand"
               }`}
             >
-              {tab} ({tabCount(tab)})
+              {tab} ({data.tabCounts[tab]})
             </button>
           ))}
         </div>
@@ -75,9 +70,9 @@ export default function MyJobsView({ data }: { data: MyJobsData }) {
         </Link>
       </div>
 
-      {filteredListings.length > 0 ? (
+      {data.listings.length > 0 ? (
         <div className="flex flex-col gap-4">
-          {filteredListings.map((listing) => (
+          {data.listings.map((listing) => (
             <MyJobRow key={listing.id} listing={listing} />
           ))}
         </div>
@@ -91,6 +86,11 @@ export default function MyJobsView({ data }: { data: MyJobsData }) {
           </p>
         </div>
       )}
+      <ListPagination
+        basePath="/dashboard/lowongan-saya"
+        pagination={data.pagination}
+        preservedParams={{ status: activeTab === "Semua" ? null : activeTab }}
+      />
     </>
   );
 }

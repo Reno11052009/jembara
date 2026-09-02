@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import ProcessSteps from "@/components/landing/ProcessSteps";
@@ -11,12 +12,18 @@ import Footer from "@/components/landing/Footer";
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import { verifySession } from "@/lib/session";
 
-export default async function LandingPage() {
+async function AuthenticatedNavbar() {
   const session = await verifySession();
 
+  return <Navbar sessionName={session?.name ?? null} />;
+}
+
+export default function LandingPage() {
   return (
     <SmoothScroll>
-      <Navbar sessionName={session?.name ?? null} />
+      <Suspense fallback={<Navbar sessionName={null} />}>
+        <AuthenticatedNavbar />
+      </Suspense>
       <Hero />
       <ProcessSteps />
       <ServiceCategories />

@@ -1,7 +1,8 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
-import type { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import prisma from "./prisma";
 import { requireAuthenticatedSession } from "./auth-guard";
 import { calculateSkillMatch, formatBudget, formatDeadline } from "./dashboard-utils";
@@ -27,6 +28,33 @@ const BUDGET_FILTERS = new Set<ProjectBudgetFilter>([
   "3m-5m",
   "over-5m",
 ]);
+
+const getMarketplaceFilterOptions = unstable_cache(
+  async () => {
+    const [skillRecords, businessRecords] = await Promise.all([
+      prisma.skill.findMany({
+        where: {
+          projectSkills: {
+            some: { project: { status: "OPEN", studentId: null } },
+          },
+        },
+        orderBy: { name: "asc" },
+        select: { name: true },
+      }),
+      prisma.umkm.findMany({
+        where: {
+          projects: { some: { status: "OPEN", studentId: null } },
+          user: { location: { not: null } },
+        },
+        select: { user: { select: { location: true } } },
+      }),
+    ]);
+
+    return { skillRecords, businessRecords };
+  },
+  ["marketplace-filter-options"],
+  { revalidate: 300, tags: ["marketplace-filter-options"] },
+);
 
 export type FindProjectsSearchParams = Record<
   string,
@@ -202,29 +230,164 @@ function mapProject(
   };
 }
 
-function sortProjects(
-  projects: Array<ReturnType<typeof mapProject>>,
-  sort: FindProjectFilters["sort"],
-) {
-  return projects.sort((first, second) => {
-    if (sort === "latest") {
-      return second.createdAt.getTime() - first.createdAt.getTime();
-    }
-    if (sort === "deadline") {
-      return (
-        (first.deadline?.getTime() ?? Number.MAX_SAFE_INTEGER) -
-        (second.deadline?.getTime() ?? Number.MAX_SAFE_INTEGER)
-      );
-    }
-    if (sort === "budget") {
-      return (second.budget ?? -1) - (first.budget ?? -1);
-    }
+function getProjectOrderBy(
+  sort: Exclude<FindProjectFilters["sort"], "recommended">,
+): Prisma.projectOrderByWithRelationInput[] {
+  if (sort === "deadline") {
+    return [
+      { deadline: { sort: "asc", nulls: "last" } },
+      { createdAt: "desc" },
+      { id: "asc" },
+    ];
+  }
 
-    return (
-      second.skillMatchPercent - first.skillMatchPercent ||
-      second.createdAt.getTime() - first.createdAt.getTime()
+  if (sort === "budget") {
+    return [
+      { budget: { sort: "desc", nulls: "last" } },
+      { createdAt: "desc" },
+      { id: "asc" },
+    ];
+  }
+
+  return [{ createdAt: "desc" }, { id: "asc" }];
+}
+
+type RankedProjectRow = { id: string };
+
+function buildRecommendedSqlWhere(filters: FindProjectFilters) {
+  const conditions: Prisma.Sql[] = [
+    Prisma.sql`p."status" = 'OPEN'`,
+    Prisma.sql`p."studentId" IS NULL`,
+  ];
+
+  if (filters.query) {
+    const containsQuery = `%${filters.query}%`;
+    conditions.push(Prisma.sql`(
+      p."title" ILIKE ${containsQuery}
+      OR p."description" ILIKE ${containsQuery}
+      OR business."nama_usaha" ILIKE ${containsQuery}
+      OR EXISTS (
+        SELECT 1
+        FROM "project_skill" searched_project_skill
+        INNER JOIN "skill" searched_skill
+          ON searched_skill."id" = searched_project_skill."skillId"
+        WHERE searched_project_skill."projectId" = p."id"
+          AND searched_skill."name" ILIKE ${containsQuery}
+      )
+    )`);
+  }
+
+  if (filters.skill) {
+    conditions.push(Prisma.sql`EXISTS (
+      SELECT 1
+      FROM "project_skill" filtered_project_skill
+      INNER JOIN "skill" filtered_skill
+        ON filtered_skill."id" = filtered_project_skill."skillId"
+      WHERE filtered_project_skill."projectId" = p."id"
+        AND LOWER(filtered_skill."name") = LOWER(${filters.skill})
+    )`);
+  }
+
+  if (filters.location) {
+    conditions.push(
+      Prisma.sql`LOWER(owner."location") = LOWER(${filters.location})`,
     );
+  }
+
+  switch (filters.budget) {
+    case "under-1m":
+      conditions.push(Prisma.sql`p."budget" < 1000000`);
+      break;
+    case "1m-3m":
+      conditions.push(
+        Prisma.sql`p."budget" >= 1000000 AND p."budget" < 3000000`,
+      );
+      break;
+    case "3m-5m":
+      conditions.push(
+        Prisma.sql`p."budget" >= 3000000 AND p."budget" <= 5000000`,
+      );
+      break;
+    case "over-5m":
+      conditions.push(Prisma.sql`p."budget" > 5000000`);
+      break;
+  }
+
+  return Prisma.join(conditions, " AND ");
+}
+
+async function getRecommendedProjectIds(
+  filters: FindProjectFilters,
+  studentSkillIds: readonly string[],
+  skip: number,
+) {
+  const matchedSkillCount =
+    studentSkillIds.length > 0
+      ? Prisma.sql`COUNT(project_skill."id") FILTER (
+          WHERE project_skill."skillId" IN (${Prisma.join(studentSkillIds)})
+        )`
+      : Prisma.sql`0`;
+
+  const rows = await prisma.$queryRaw<RankedProjectRow[]>(Prisma.sql`
+    SELECT p."id"
+    FROM "project" p
+    INNER JOIN "umkm" business ON business."id" = p."umkmId"
+    INNER JOIN "user" owner ON owner."id" = business."userId"
+    LEFT JOIN "project_skill" project_skill
+      ON project_skill."projectId" = p."id"
+    WHERE ${buildRecommendedSqlWhere(filters)}
+    GROUP BY p."id"
+    ORDER BY
+      CASE
+        WHEN COUNT(project_skill."id") = 0 THEN 0
+        ELSE ROUND(
+          100 * ${matchedSkillCount}::double precision
+            / COUNT(project_skill."id")::double precision
+        )
+      END DESC,
+      p."createdAt" DESC,
+      p."id" ASC
+    LIMIT ${PAGE_SIZE}
+    OFFSET ${skip}
+  `);
+
+  return rows.map(({ id }) => id);
+}
+
+async function getProjectPage(
+  filters: FindProjectFilters,
+  where: Prisma.projectWhereInput,
+  studentSkillIds: readonly string[],
+  skip: number,
+) {
+  if (filters.sort !== "recommended") {
+    return prisma.project.findMany({
+      where,
+      orderBy: getProjectOrderBy(filters.sort),
+      skip,
+      take: PAGE_SIZE,
+      select: projectSelect,
+    });
+  }
+
+  const projectIds = await getRecommendedProjectIds(
+    filters,
+    studentSkillIds,
+    skip,
+  );
+  if (projectIds.length === 0) return [];
+
+  const projects = await prisma.project.findMany({
+    where: { id: { in: projectIds } },
+    select: projectSelect,
   });
+  const projectOrder = new Map(projectIds.map((id, index) => [id, index]));
+
+  return projects.sort(
+    (first, second) =>
+      (projectOrder.get(first.id) ?? Number.MAX_SAFE_INTEGER) -
+      (projectOrder.get(second.id) ?? Number.MAX_SAFE_INTEGER),
+  );
 }
 
 function toPublicProject(
@@ -267,7 +430,9 @@ const getCachedFindProjectsData = cache(async (
       role: true,
       student: {
         select: {
-          skills: { select: { skill: { select: { name: true } } } },
+          skills: {
+            select: { skill: { select: { id: true, name: true } } },
+          },
         },
       },
     },
@@ -279,38 +444,30 @@ const getCachedFindProjectsData = cache(async (
   const viewerRole = getViewerRole(viewer.role);
 
   const where = buildProjectWhere(filters);
-  const [projectRecords, skillRecords, businessRecords] = await Promise.all([
-    prisma.project.findMany({ where, select: projectSelect }),
-    prisma.skill.findMany({
-      where: {
-        projectSkills: {
-          some: { project: { status: "OPEN", studentId: null } },
-        },
-      },
-      orderBy: { name: "asc" },
-      select: { name: true },
-    }),
-    prisma.umkm.findMany({
-      where: {
-        projects: { some: { status: "OPEN", studentId: null } },
-        user: { location: { not: null } },
-      },
-      select: { user: { select: { location: true } } },
-    }),
+  const [totalProjects, filterOptions] = await Promise.all([
+    prisma.project.count({ where }),
+    getMarketplaceFilterOptions(),
   ]);
+  const { skillRecords, businessRecords } = filterOptions;
 
-  const studentSkills =
+  const studentSkillRecords =
     viewerRole === "STUDENT"
-      ? viewer.student?.skills.map(({ skill }) => skill.name) ?? []
+      ? viewer.student?.skills.map(({ skill }) => skill) ?? []
       : [];
-  const sortedProjects = sortProjects(
-    projectRecords.map((project) => mapProject(project, studentSkills)),
-    filters.sort,
-  );
-  const totalProjects = sortedProjects.length;
+  const studentSkills = studentSkillRecords.map(({ name }) => name);
+  const studentSkillIds = studentSkillRecords.map(({ id }) => id);
   const totalPages = Math.max(1, Math.ceil(totalProjects / PAGE_SIZE));
   const currentPage = Math.min(filters.page, totalPages);
   const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const projectRecords =
+    totalProjects === 0
+      ? []
+      : await getProjectPage(
+          filters,
+          where,
+          studentSkillIds,
+          pageStart,
+        );
   const uniqueLocations = [
     ...new Set(
       businessRecords
@@ -320,8 +477,8 @@ const getCachedFindProjectsData = cache(async (
   ].sort((first, second) => first.localeCompare(second, "id-ID"));
 
   return {
-    projects: sortedProjects
-      .slice(pageStart, pageStart + PAGE_SIZE)
+    projects: projectRecords
+      .map((project) => mapProject(project, studentSkills))
       .map(toPublicProject),
     filters: { ...filters, page: currentPage },
     skillOptions: skillRecords.map(({ name }) => ({ label: name, value: name })),

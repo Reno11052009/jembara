@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => ({
   userFindUnique: vi.fn(),
   skillFindMany: vi.fn(),
   projectFindMany: vi.fn(),
+  projectGroupBy: vi.fn(),
+  projectCount: vi.fn(),
 }));
 
 vi.mock("server-only", () => ({}));
@@ -17,7 +19,7 @@ vi.mock("@/lib/prisma", () => ({
   default: {
     user: { findUnique: mocks.userFindUnique },
     skill: { findMany: mocks.skillFindMany },
-    project: { findMany: mocks.projectFindMany },
+    project: { findMany: mocks.projectFindMany, groupBy: mocks.projectGroupBy, count: mocks.projectCount },
   },
 }));
 
@@ -41,6 +43,8 @@ describe("UMKM project data", () => {
     mocks.redirect.mockImplementation((path: string) => {
       throw new Error(`NEXT_REDIRECT:${path}`);
     });
+    mocks.projectGroupBy.mockResolvedValue([]);
+    mocks.projectCount.mockResolvedValue(0);
   });
 
   it("loads the trusted skill taxonomy for the creation form", async () => {
@@ -77,6 +81,7 @@ describe("UMKM project data", () => {
         _count: { proposals: 3 },
       },
     ]);
+    mocks.projectGroupBy.mockResolvedValue([{ status: "OPEN", _count: { _all: 1 } }]);
 
     const data = await getMyJobsData();
 

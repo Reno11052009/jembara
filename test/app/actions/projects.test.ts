@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   projectCreate: vi.fn(),
   consumeRateLimit: vi.fn(),
   revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
   redirect: vi.fn(),
 }));
 
@@ -33,7 +34,10 @@ vi.mock("@/lib/prisma", () => ({
     project: { create: mocks.projectCreate },
   },
 }));
-vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
+vi.mock("next/cache", () => ({
+  revalidatePath: mocks.revalidatePath,
+  revalidateTag: mocks.revalidateTag,
+}));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 
 import { createProjectAction } from "@/app/actions/projects";

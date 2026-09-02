@@ -14,6 +14,10 @@ import type {
   ProposalSummary,
   ProposalsData,
 } from "@/types/proposal";
+import type { ProposalFilter } from "@/types/proposal";
+import { createPagination, normalizePage } from "./pagination";
+
+const PAGE_SIZE = 8;
 
 function mapProposalStatus(status: string): ProposalStatus {
   if (status === "ACCEPTED") return "Accepted";
@@ -21,20 +25,17 @@ function mapProposalStatus(status: string): ProposalStatus {
   return "Pending";
 }
 
-function createSummary(proposals: readonly Proposal[]): ProposalSummary {
-  return proposals.reduce<ProposalSummary>(
-    (summary, proposal) => {
-      summary.total += 1;
-      if (proposal.status === "Pending") summary.pending += 1;
-      if (proposal.status === "Accepted") summary.accepted += 1;
-      if (proposal.status === "Rejected") summary.rejected += 1;
-      return summary;
-    },
-    { total: 0, pending: 0, accepted: 0, rejected: 0 },
-  );
+function normalizeFilter(value: unknown): ProposalFilter {
+  const firstValue = Array.isArray(value) ? value[0] : value;
+  return firstValue === "Pending" || firstValue === "Accepted" || firstValue === "Rejected"
+    ? firstValue
+    : "Semua";
 }
 
-export async function getStudentProposals(): Promise<ProposalsData> {
+export async function getStudentProposals(options: {
+  page?: unknown;
+  status?: unknown;
+} = {}): Promise<ProposalsData> {
   const session = await requireAuthenticatedSession();
   const viewer = await prisma.user.findUnique({
     where: { id: session.userId },
@@ -57,7 +58,7 @@ export async function getStudentProposals(): Promise<ProposalsData> {
   }
 
   if (!viewer.student) {
-    const summary = createSummary([]);
+    const summary = { total: 0, pending: 0, accepted: 0, rejected: 0 };
     return {
       proposals: [],
       summary,
@@ -67,13 +68,44 @@ export async function getStudentProposals(): Promise<ProposalsData> {
         Accepted: summary.accepted,
         Rejected: summary.rejected,
       },
+      activeFilter: normalizeFilter(options.status),
+      pagination: createPagination(normalizePage(options.page), 0, PAGE_SIZE),
     };
   }
 
   const studentSkills = viewer.student.skills.map(({ skill }) => skill.name);
-  const proposalRecords = await prisma.proposal.findMany({
+  const activeFilter = normalizeFilter(options.status);
+  const statusGroups = await prisma.proposal.groupBy({
+    by: ["status"],
     where: { studentId: viewer.student.id },
+    _count: { _all: true },
+  });
+  const countFor = (status: string) =>
+    statusGroups.find((group) => group.status === status)?._count._all ?? 0;
+  const summary: ProposalSummary = {
+    total: statusGroups.reduce((total, group) => total + group._count._all, 0),
+    pending: countFor("PENDING"),
+    accepted: countFor("ACCEPTED"),
+    rejected: countFor("REJECTED"),
+  };
+  const selectedStatus =
+    activeFilter === "Semua" ? undefined : activeFilter.toUpperCase();
+  const filteredTotal = selectedStatus
+    ? countFor(selectedStatus)
+    : summary.total;
+  const pagination = createPagination(
+    normalizePage(options.page),
+    filteredTotal,
+    PAGE_SIZE,
+  );
+  const proposalRecords = await prisma.proposal.findMany({
+    where: {
+      studentId: viewer.student.id,
+      ...(selectedStatus ? { status: selectedStatus } : {}),
+    },
     orderBy: { createdAt: "desc" },
+    skip: (pagination.currentPage - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
     select: {
       id: true,
       coverLetter: true,
@@ -112,8 +144,6 @@ export async function getStudentProposals(): Promise<ProposalsData> {
       submittedLabel: `Diajukan ${formatRelativeDate(proposal.createdAt).toLocaleLowerCase("id-ID")}`,
     };
   });
-  const summary = createSummary(proposals);
-
   return {
     proposals,
     summary,
@@ -123,5 +153,7 @@ export async function getStudentProposals(): Promise<ProposalsData> {
       Accepted: summary.accepted,
       Rejected: summary.rejected,
     },
+    activeFilter,
+    pagination,
   };
 }

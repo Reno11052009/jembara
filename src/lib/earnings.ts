@@ -2,7 +2,7 @@ import "server-only";
 
 import { BarChart3, Calendar, Clock, Wallet } from "lucide-react";
 import { redirect } from "next/navigation";
-import type { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import prisma from "./prisma";
 import { requireAuthenticatedSession } from "./auth-guard";
 import type {
@@ -11,8 +11,10 @@ import type {
   Transaction,
   TransactionStatus,
 } from "@/types/earnings";
+import { createPagination, normalizePage } from "./pagination";
 
 const EARNINGS_PROJECT_STATUSES = ["IN_PROGRESS", "REVIEW", "COMPLETED"];
+const PAGE_SIZE = 8;
 
 function formatRupiah(value: number) {
   return new Intl.NumberFormat("id-ID", {
@@ -45,24 +47,20 @@ function startOfMonth(value: Date) {
 }
 
 function buildChartData(
-  completedProjects: readonly { budget: number | null; updatedAt: Date }[],
+  monthlyTotals: readonly { period: Date; amount: number }[],
   now: Date,
 ): EarningsChartPoint[] {
   const currentMonth = startOfMonth(now);
   const defaultStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-  const earliestCompletion = completedProjects.reduce<Date | null>(
-    (earliest, project) =>
-      !earliest || project.updatedAt < earliest ? project.updatedAt : earliest,
-    null,
-  );
+  const earliestCompletion = monthlyTotals[0]?.period ?? null;
   const firstMonth = earliestCompletion
     ? new Date(
         Math.min(defaultStart.getTime(), startOfMonth(earliestCompletion).getTime()),
       )
     : defaultStart;
-  const totals = completedProjects.reduce<Map<string, number>>((result, project) => {
-    const key = monthKey(project.updatedAt.getFullYear(), project.updatedAt.getMonth());
-    result.set(key, (result.get(key) ?? 0) + (project.budget ?? 0));
+  const totals = monthlyTotals.reduce<Map<string, number>>((result, item) => {
+    const key = monthKey(item.period.getFullYear(), item.period.getMonth());
+    result.set(key, Number(item.amount));
     return result;
   }, new Map());
   const points: EarningsChartPoint[] = [];
@@ -86,7 +84,7 @@ function buildChartData(
   return points;
 }
 
-function createEmptyData(now: Date): EarningsData {
+function createEmptyData(now: Date, page: unknown): EarningsData {
   return {
     walletBalanceLabel: formatRupiah(0),
     stats: [
@@ -97,10 +95,14 @@ function createEmptyData(now: Date): EarningsData {
     ],
     chartData: buildChartData([], now),
     transactions: [],
+    pagination: createPagination(normalizePage(page), 0, PAGE_SIZE),
   };
 }
 
-export async function getEarningsData(now = new Date()): Promise<EarningsData> {
+export async function getEarningsData(
+  now = new Date(),
+  options: { page?: unknown } = {},
+): Promise<EarningsData> {
   const session = await requireAuthenticatedSession();
   const viewer = await prisma.user.findUnique({
     where: { id: session.userId },
@@ -129,15 +131,66 @@ export async function getEarningsData(now = new Date()): Promise<EarningsData> {
           : redirect("/forbidden");
 
   if (ownershipFilter === null) {
-    return createEmptyData(now);
+    return createEmptyData(now, options.page);
   }
 
+  const projectsWhere: Prisma.projectWhereInput = {
+    ...ownershipFilter,
+    status: { in: EARNINGS_PROJECT_STATUSES },
+    budget: { not: null },
+  };
+  const ownerSql = viewer.role === "STUDENT"
+    ? Prisma.sql`AND "studentId" = ${viewer.student!.id}::uuid`
+    : viewer.role === "UMKM"
+      ? Prisma.sql`AND "umkmId" = ${viewer.umkm!.id}::uuid`
+      : Prisma.empty;
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const [statusGroups, currentMonthAggregate, monthlyTotals] = await Promise.all([
+    prisma.project.groupBy({
+      by: ["status"],
+      where: projectsWhere,
+      _count: { _all: true },
+      _sum: { budget: true },
+    }),
+    prisma.project.aggregate({
+      where: {
+        ...ownershipFilter,
+        status: "COMPLETED",
+        budget: { not: null },
+        updatedAt: { gte: monthStart, lt: nextMonthStart },
+      },
+      _sum: { budget: true },
+    }),
+    prisma.$queryRaw<{ period: Date; amount: number }[]>(Prisma.sql`
+      SELECT date_trunc('month', "updatedAt") AS period,
+             SUM(budget)::float8 AS amount
+      FROM project
+      WHERE status = 'COMPLETED'
+        AND budget IS NOT NULL
+        ${ownerSql}
+      GROUP BY date_trunc('month', "updatedAt")
+      ORDER BY period ASC
+    `),
+  ]);
+  const groupFor = (status: string) =>
+    statusGroups.find((group) => group.status === status);
+  const totalTransactions = statusGroups.reduce(
+    (total, group) => total + group._count._all,
+    0,
+  );
+  const pagination = createPagination(
+    normalizePage(options.page),
+    totalTransactions,
+    PAGE_SIZE,
+  );
   const projects = await prisma.project.findMany({
     where: {
-      ...ownershipFilter,
-      status: { in: EARNINGS_PROJECT_STATUSES },
+      ...projectsWhere,
     },
     orderBy: { updatedAt: "desc" },
+    skip: (pagination.currentPage - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
     select: {
       id: true,
       title: true,
@@ -148,31 +201,13 @@ export async function getEarningsData(now = new Date()): Promise<EarningsData> {
       student: { select: { user: { select: { name: true } } } },
     },
   });
-  const completedProjects = projects.filter(
-    (project) => project.status === "COMPLETED",
-  );
-  const completedProjectsWithBudget = completedProjects.filter(
-    (project) => project.budget !== null,
-  );
-  const totalCompleted = completedProjectsWithBudget.reduce(
-    (total, project) => total + (project.budget ?? 0),
-    0,
-  );
-  const completedThisMonth = completedProjectsWithBudget.reduce(
-    (total, project) =>
-      project.updatedAt.getFullYear() === now.getFullYear() &&
-      project.updatedAt.getMonth() === now.getMonth()
-        ? total + (project.budget ?? 0)
-        : total,
-    0,
-  );
-  const pendingReview = projects.reduce(
-    (total, project) =>
-      project.status === "REVIEW" ? total + (project.budget ?? 0) : total,
-    0,
-  );
-  const averageCompleted = completedProjectsWithBudget.length
-    ? totalCompleted / completedProjectsWithBudget.length
+  const completedGroup = groupFor("COMPLETED");
+  const totalCompleted = completedGroup?._sum.budget ?? 0;
+  const completedThisMonth = currentMonthAggregate._sum.budget ?? 0;
+  const pendingReview = groupFor("REVIEW")?._sum.budget ?? 0;
+  const completedCount = completedGroup?._count._all ?? 0;
+  const averageCompleted = completedCount
+    ? totalCompleted / completedCount
     : 0;
   const transactions = projects
     .filter((project) => project.budget !== null)
@@ -218,7 +253,8 @@ export async function getEarningsData(now = new Date()): Promise<EarningsData> {
         icon: BarChart3,
       },
     ],
-    chartData: buildChartData(completedProjectsWithBudget, now),
+    chartData: buildChartData(monthlyTotals, now),
     transactions,
+    pagination,
   };
 }

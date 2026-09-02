@@ -4,6 +4,9 @@ const mocks = vi.hoisted(() => ({
   requireAuthenticatedSession: vi.fn(),
   userFindUnique: vi.fn(),
   projectFindMany: vi.fn(),
+  projectGroupBy: vi.fn(),
+  projectAggregate: vi.fn(),
+  queryRaw: vi.fn(),
   redirect: vi.fn(),
 }));
 
@@ -14,7 +17,8 @@ vi.mock("@/lib/auth-guard", () => ({
 vi.mock("@/lib/prisma", () => ({
   default: {
     user: { findUnique: mocks.userFindUnique },
-    project: { findMany: mocks.projectFindMany },
+    project: { findMany: mocks.projectFindMany, groupBy: mocks.projectGroupBy, aggregate: mocks.projectAggregate },
+    $queryRaw: mocks.queryRaw,
   },
 }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
@@ -35,6 +39,9 @@ describe("getEarningsData", () => {
       role: "STUDENT",
       student: { id: "student-1" },
     });
+    mocks.projectGroupBy.mockResolvedValue([]);
+    mocks.projectAggregate.mockResolvedValue({ _sum: { budget: null } });
+    mocks.queryRaw.mockResolvedValue([]);
   });
 
   it("loads only the authenticated student's project values", async () => {
@@ -80,6 +87,16 @@ describe("getEarningsData", () => {
         umkm: { nama_usaha: "Kriya Kita" },
       },
     ]);
+    mocks.projectGroupBy.mockResolvedValue([
+      { status: "COMPLETED", _count: { _all: 2 }, _sum: { budget: 3_000_000 } },
+      { status: "REVIEW", _count: { _all: 1 }, _sum: { budget: 500_000 } },
+      { status: "IN_PROGRESS", _count: { _all: 1 }, _sum: { budget: 750_000 } },
+    ]);
+    mocks.projectAggregate.mockResolvedValue({ _sum: { budget: 2_000_000 } });
+    mocks.queryRaw.mockResolvedValue([
+      { period: new Date("2026-07-01T00:00:00.000Z"), amount: 1_000_000 },
+      { period: new Date("2026-08-01T00:00:00.000Z"), amount: 2_000_000 },
+    ]);
 
     const result = await getEarningsData(now);
 
@@ -88,6 +105,7 @@ describe("getEarningsData", () => {
         where: {
           studentId: "student-1",
           status: { in: ["IN_PROGRESS", "REVIEW", "COMPLETED"] },
+          budget: { not: null },
         },
       }),
     );
@@ -130,6 +148,12 @@ describe("getEarningsData", () => {
         updatedAt: new Date("2026-08-10T10:00:00.000Z"),
         umkm: { nama_usaha: "Kopi Maju" },
       },
+    ]);
+    mocks.projectGroupBy.mockResolvedValue([{ status: "COMPLETED", _count: { _all: 2 }, _sum: { budget: 3_000_000 } }]);
+    mocks.projectAggregate.mockResolvedValue({ _sum: { budget: 2_000_000 } });
+    mocks.queryRaw.mockResolvedValue([
+      { period: new Date("2026-07-01T00:00:00.000Z"), amount: 1_000_000 },
+      { period: new Date("2026-08-01T00:00:00.000Z"), amount: 2_000_000 },
     ]);
 
     const result = await getEarningsData(now);
@@ -176,6 +200,7 @@ describe("getEarningsData", () => {
         student: { user: { name: "Andi" } },
       },
     ]);
+    mocks.projectGroupBy.mockResolvedValue([{ status: "IN_PROGRESS", _count: { _all: 1 }, _sum: { budget: 1_500_000 } }]);
 
     const result = await getEarningsData(now);
 
@@ -184,6 +209,7 @@ describe("getEarningsData", () => {
         where: {
           umkmId: "umkm-1",
           status: { in: ["IN_PROGRESS", "REVIEW", "COMPLETED"] },
+          budget: { not: null },
         },
       }),
     );
@@ -205,7 +231,10 @@ describe("getEarningsData", () => {
 
     expect(mocks.projectFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { status: { in: ["IN_PROGRESS", "REVIEW", "COMPLETED"] } },
+        where: {
+          status: { in: ["IN_PROGRESS", "REVIEW", "COMPLETED"] },
+          budget: { not: null },
+        },
       }),
     );
   });

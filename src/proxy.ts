@@ -1,15 +1,11 @@
-import { randomBytes } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-export function proxy(request: NextRequest) {
-  const nonce = randomBytes(16).toString("base64");
+function createContentSecurityPolicy() {
   const isDevelopment = process.env.NODE_ENV !== "production";
-  const contentSecurityPolicy = [
+  return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDevelopment ? " 'unsafe-eval'" : ""}`,
-    // Tailwind/React components masih memakai style attribute. Script inline
-    // tetap wajib memakai nonce dan tidak mendapat unsafe-inline.
+    `script-src 'self'${isDevelopment ? " 'unsafe-eval' 'unsafe-inline'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' blob: data: https:",
     "font-src 'self' data:",
@@ -22,13 +18,12 @@ export function proxy(request: NextRequest) {
     "worker-src 'self' blob:",
     ...(isDevelopment ? [] : ["upgrade-insecure-requests"]),
   ].join("; ");
+}
 
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-nonce", nonce);
-  requestHeaders.set("Content-Security-Policy", contentSecurityPolicy);
-
-  const response = NextResponse.next({ request: { headers: requestHeaders } });
-  response.headers.set("Content-Security-Policy", contentSecurityPolicy);
+export function proxy(request: NextRequest) {
+  void request;
+  const response = NextResponse.next();
+  response.headers.set("Content-Security-Policy", createContentSecurityPolicy());
   return response;
 }
 

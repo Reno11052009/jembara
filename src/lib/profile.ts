@@ -5,6 +5,29 @@ import { verifySession } from "./session";
 const createAvatarUrl = (name: string) =>
   `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
 
+export const getCachedHeaderProfileData = cache(async () => {
+  const session = await verifySession();
+  const fallbackName = session?.name || "Pengguna";
+
+  if (!session?.userId || session.userId === "mock-user-id") {
+    return {
+      userName: fallbackName,
+      avatarUrl: createAvatarUrl(fallbackName),
+    };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { name: true, avatar: true },
+  });
+  const userName = user?.name?.trim() || fallbackName;
+
+  return {
+    userName,
+    avatarUrl: user?.avatar || createAvatarUrl(userName),
+  };
+});
+
 export const getCachedProfileData = cache(async () => {
   const session = await verifySession();
   const sessionName = session?.name || "Pengguna";

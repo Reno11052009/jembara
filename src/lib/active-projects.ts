@@ -11,12 +11,15 @@ import {
 } from "./dashboard-utils";
 import type {
   ActiveProject,
+  ActiveProjectFilter,
   ActiveProjectStatus,
   ActiveProjectsData,
   ActiveProjectsViewerRole,
 } from "@/types/active-project";
+import { createPagination, normalizePage } from "./pagination";
 
 const ACTIVE_PROJECT_STATUSES = ["IN_PROGRESS", "REVIEW", "COMPLETED"];
+const PAGE_SIZE = 6;
 
 const projectSelect = {
   id: true,
@@ -124,15 +127,17 @@ function mapProject(
   };
 }
 
-function sumActiveProjectBudgets(projects: readonly ActiveProjectRecord[]) {
-  return projects.reduce(
-    (total, project) =>
-      project.status === "COMPLETED" ? total : total + (project.budget ?? 0),
-    0,
-  );
+function normalizeFilter(value: unknown): ActiveProjectFilter {
+  const firstValue = Array.isArray(value) ? value[0] : value;
+  return firstValue === "In Progress" || firstValue === "In Review" || firstValue === "Completed"
+    ? firstValue
+    : "Semua";
 }
 
-export async function getActiveProjectsData(): Promise<ActiveProjectsData> {
+export async function getActiveProjectsData(options: {
+  page?: unknown;
+  status?: unknown;
+} = {}): Promise<ActiveProjectsData> {
   const session = await requireAuthenticatedSession();
   const viewer = await prisma.user.findUnique({
     where: { id: session.userId },
@@ -149,6 +154,7 @@ export async function getActiveProjectsData(): Promise<ActiveProjectsData> {
 
   const role = normalizeRole(viewer.role);
   const content = getRoleContent(role);
+  const activeFilter = normalizeFilter(options.status);
   const ownershipFilter: Prisma.projectWhereInput | null =
     role === "STUDENT"
       ? viewer.student
@@ -166,43 +172,82 @@ export async function getActiveProjectsData(): Promise<ActiveProjectsData> {
       projects: [],
       tabCounts: createEmptyCounts(),
       metrics: [],
+      activeFilter,
+      pagination: createPagination(normalizePage(options.page), 0, PAGE_SIZE),
       ...content,
     };
   }
 
+  const baseWhere: Prisma.projectWhereInput = {
+    ...ownershipFilter,
+    status: { in: ACTIVE_PROJECT_STATUSES },
+  };
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const [statusGroups, completedThisMonth, selectedTalentCount, totalProposalCount] =
+    await Promise.all([
+      prisma.project.groupBy({
+        by: ["status"],
+        where: baseWhere,
+        _count: { _all: true },
+        _sum: { budget: true },
+      }),
+      prisma.project.count({
+        where: {
+          ...ownershipFilter,
+          status: "COMPLETED",
+          updatedAt: { gte: monthStart, lt: nextMonthStart },
+        },
+      }),
+      prisma.project.count({
+        where: {
+          ...ownershipFilter,
+          status: { in: ["IN_PROGRESS", "REVIEW"] },
+          studentId: { not: null },
+        },
+      }),
+      prisma.proposal.count({ where: { project: baseWhere } }),
+    ]);
+  const groupFor = (status: string) =>
+    statusGroups.find((group) => group.status === status);
+  const tabCounts: Record<ActiveProjectStatus, number> = {
+    "In Progress": groupFor("IN_PROGRESS")?._count._all ?? 0,
+    "In Review": groupFor("REVIEW")?._count._all ?? 0,
+    Completed: groupFor("COMPLETED")?._count._all ?? 0,
+  };
+  const selectedStatus =
+    activeFilter === "Semua"
+      ? undefined
+      : activeFilter === "In Progress"
+        ? "IN_PROGRESS"
+        : activeFilter === "In Review"
+          ? "REVIEW"
+          : "COMPLETED";
+  const filteredTotal = selectedStatus
+    ? tabCounts[activeFilter as ActiveProjectStatus]
+    : Object.values(tabCounts).reduce((total, count) => total + count, 0);
+  const pagination = createPagination(
+    normalizePage(options.page),
+    filteredTotal,
+    PAGE_SIZE,
+  );
   const projectRecords = await prisma.project.findMany({
     where: {
       ...ownershipFilter,
-      status: { in: ACTIVE_PROJECT_STATUSES },
+      status: selectedStatus ?? { in: ACTIVE_PROJECT_STATUSES },
     },
     orderBy: { updatedAt: "desc" },
+    skip: (pagination.currentPage - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
     select: projectSelect,
   });
   const projects = projectRecords.map((project) => mapProject(project, role));
-  const tabCounts = projects.reduce<Record<ActiveProjectStatus, number>>(
-    (counts, project) => {
-      counts[project.status] += 1;
-      return counts;
-    },
-    createEmptyCounts(),
-  );
-  const completedThisMonth = projectRecords.filter((project) => {
-    const now = new Date();
-    return (
-      project.status === "COMPLETED" &&
-      project.updatedAt.getFullYear() === now.getFullYear() &&
-      project.updatedAt.getMonth() === now.getMonth()
-    );
-  }).length;
   const activeCount = tabCounts["In Progress"] + tabCounts["In Review"];
-  const activeBudgetLabel = formatBudget(sumActiveProjectBudgets(projectRecords));
-  const totalProposalCount = projectRecords.reduce(
-    (total, project) => total + project._count.proposals,
-    0,
+  const activeBudgetLabel = formatBudget(
+    (groupFor("IN_PROGRESS")?._sum.budget ?? 0) +
+      (groupFor("REVIEW")?._sum.budget ?? 0),
   );
-  const selectedTalentCount = projectRecords.filter(
-    (project) => project.status !== "COMPLETED" && project.student,
-  ).length;
 
   const metrics =
     role === "STUDENT"
@@ -252,5 +297,5 @@ export async function getActiveProjectsData(): Promise<ActiveProjectsData> {
             { id: "value", label: "Nilai Proyek Aktif", value: activeBudgetLabel },
           ];
 
-  return { role, projects, tabCounts, metrics, ...content };
+  return { role, projects, tabCounts, metrics, activeFilter, pagination, ...content };
 }

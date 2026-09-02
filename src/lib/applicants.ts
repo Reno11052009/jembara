@@ -10,8 +10,10 @@ import type {
   ApplicantStatus,
   ApplicantsData,
 } from "@/types/applicant";
+import { createPagination, normalizePage } from "./pagination";
 
 const projectIdSchema = z.string().uuid();
+const PAGE_SIZE = 8;
 
 const createAvatarUrl = (name: string) =>
   `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
@@ -41,6 +43,7 @@ function normalizeExternalUrl(value: string | null | undefined) {
 
 export async function getApplicantsData(
   requestedProjectId?: unknown,
+  options: { page?: unknown; status?: unknown } = {},
 ): Promise<ApplicantsData> {
   const session = await requireAuthenticatedSession();
   const owner = await prisma.user.findUnique({
@@ -73,13 +76,56 @@ export async function getApplicantsData(
     ? projects.find((project) => project.id === parsedRequestedProjectId.data) ?? projects[0]
     : projects[0];
 
+  const firstStatus = Array.isArray(options.status)
+    ? options.status[0]
+    : options.status;
+  const activeFilter =
+    firstStatus === "Pending" || firstStatus === "Diterima" || firstStatus === "Ditolak"
+      ? firstStatus
+      : "Semua";
+  const statusGroups = selectedProject
+    ? await prisma.proposal.groupBy({
+        by: ["status"],
+        where: {
+          projectId: selectedProject.id,
+          project: { umkmId: owner.umkm.id },
+        },
+        _count: { _all: true },
+      })
+    : [];
+  const countFor = (status: string) =>
+    statusGroups.find((group) => group.status === status)?._count._all ?? 0;
+  const tabCounts = {
+    Semua: statusGroups.reduce((total, group) => total + group._count._all, 0),
+    Pending: countFor("PENDING"),
+    Diterima: countFor("ACCEPTED"),
+    Ditolak: countFor("REJECTED"),
+  };
+  const selectedStatus =
+    activeFilter === "Semua"
+      ? undefined
+      : activeFilter === "Diterima"
+        ? "ACCEPTED"
+        : activeFilter === "Ditolak"
+          ? "REJECTED"
+          : "PENDING";
+  const filteredTotal = selectedStatus ? countFor(selectedStatus) : tabCounts.Semua;
+  const pagination = createPagination(
+    normalizePage(options.page),
+    filteredTotal,
+    PAGE_SIZE,
+  );
+
   const proposalRecords = selectedProject
     ? await prisma.proposal.findMany({
         where: {
           projectId: selectedProject.id,
           project: { umkmId: owner.umkm.id },
+          ...(selectedStatus ? { status: selectedStatus } : {}),
         },
         orderBy: { createdAt: "desc" },
+        skip: (pagination.currentPage - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
         select: {
           id: true,
           coverLetter: true,
@@ -141,5 +187,8 @@ export async function getApplicantsData(
     selectedProjectId: selectedProject?.id ?? null,
     selectedProjectTitle: selectedProject?.title ?? null,
     applicants,
+    activeFilter,
+    tabCounts,
+    pagination,
   };
 }

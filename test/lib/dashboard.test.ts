@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  queryRaw: vi.fn(),
   requireAuthenticatedSession: vi.fn(),
   userFindUnique: vi.fn(),
   userFindMany: vi.fn(),
@@ -23,6 +24,7 @@ vi.mock("@/lib/auth-guard", () => ({
 }));
 vi.mock("@/lib/prisma", () => ({
   default: {
+    $queryRaw: mocks.queryRaw,
     user: {
       findUnique: mocks.userFindUnique,
       findMany: mocks.userFindMany,
@@ -79,6 +81,15 @@ describe("getDashboardData", () => {
         website: "jembara.example",
       },
     });
+    mocks.queryRaw.mockResolvedValue([
+      {
+        projectCount: 3,
+        openProjectCount: 1,
+        activeProjectCount: 1,
+        completedProjectCount: 1,
+        proposalCount: 3,
+      },
+    ]);
     mocks.projectGroupBy.mockResolvedValue([
       { status: "OPEN", _count: { _all: 1 } },
       { status: "IN_PROGRESS", _count: { _all: 1 } },
@@ -122,9 +133,8 @@ describe("getDashboardData", () => {
     expect(mocks.userFindUnique).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: "user-1" } }),
     );
-    expect(mocks.proposalCount).toHaveBeenCalledWith({
-      where: { project: { umkmId: "umkm-1" } },
-    });
+    expect(mocks.queryRaw).toHaveBeenCalledTimes(1);
+    expect(mocks.proposalCount).not.toHaveBeenCalled();
     expect(dashboard).toMatchObject({
       role: "UMKM",
       userName: "Pemilik",
@@ -189,6 +199,25 @@ describe("getDashboardData", () => {
       student: null,
       umkm: null,
     });
+    mocks.queryRaw
+      .mockResolvedValueOnce([
+        {
+          studentCount: 10,
+          newStudentCount: 2,
+          umkmCount: 3,
+          newUmkmCount: 1,
+          projectCount: 8,
+          openProjectCount: 4,
+          activeProjectCount: 2,
+          completedProjectCount: 1,
+          proposalCount: 6,
+          pendingProposalCount: 3,
+          usersBeforeGrowthWindow: 5,
+        },
+      ])
+      .mockResolvedValueOnce([
+        { monthKey: "2026-8", registrationCount: 1 },
+      ]);
     mocks.studentCount
       .mockResolvedValueOnce(10)
       .mockResolvedValueOnce(2);
@@ -256,7 +285,12 @@ describe("getDashboardData", () => {
     });
     expect(dashboard.adminOverview?.userGrowthData).toHaveLength(6);
     expect(dashboard.adminOverview?.platformActivities).toHaveLength(2);
-    expect(mocks.userFindMany).toHaveBeenCalledTimes(2);
+    expect(mocks.userFindMany).toHaveBeenCalledTimes(1);
     expect(mocks.projectFindMany).toHaveBeenCalledTimes(1);
+    expect(mocks.queryRaw).toHaveBeenCalledTimes(2);
+    expect(mocks.studentCount).not.toHaveBeenCalled();
+    expect(mocks.umkmCount).not.toHaveBeenCalled();
+    expect(mocks.projectGroupBy).not.toHaveBeenCalled();
+    expect(mocks.proposalGroupBy).not.toHaveBeenCalled();
   });
 });
