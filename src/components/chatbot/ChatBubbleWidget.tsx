@@ -101,6 +101,56 @@ function edgePosToPixels(edge: DockEdge, pos: number) {
   }
 }
 
+// Ukuran modal chat: w-140/h-140 = 560px (140 * 4px), dibatasi oleh
+// max-w-[calc(100vw-2.5rem)] / max-h-[calc(100vh-4rem)]. Dihitung di sini
+// (bukan lewat getBoundingClientRect) supaya posisi bisa langsung dipakai
+// SEBELUM modal sempat dirender sama sekali — jadi render pertama sudah
+// langsung di posisi yang benar, tidak ada "posisi lama" yang sempat kepaint.
+const MODAL_BASE_SIZE_PX = 560;
+function estimateModalSize() {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  return {
+    width: Math.min(MODAL_BASE_SIZE_PX, vw - 40),
+    height: Math.min(MODAL_BASE_SIZE_PX, vh - 64),
+  };
+}
+
+function computeModalStyle(
+  dockEdge: DockEdge,
+  dockPos: number,
+  width: number,
+  height: number
+): React.CSSProperties {
+  const anchor = edgePosToPixels(dockEdge, dockPos);
+  if (!anchor) return {};
+  const { x: ballX, y: ballY } = anchor;
+  const half = BALL_SIZE / 2;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  let top: number;
+  let left: number;
+
+  if (dockEdge === "left" || dockEdge === "right") {
+    top = clamp(ballY - height / 2, MODAL_VIEWPORT_MARGIN_PX, vh - height - MODAL_VIEWPORT_MARGIN_PX);
+    left =
+      dockEdge === "right"
+        ? ballX - half - MODAL_GAP_PX - width
+        : ballX + half + MODAL_GAP_PX;
+    left = clamp(left, MODAL_VIEWPORT_MARGIN_PX, vw - width - MODAL_VIEWPORT_MARGIN_PX);
+  } else {
+    left = clamp(ballX - width / 2, MODAL_VIEWPORT_MARGIN_PX, vw - width - MODAL_VIEWPORT_MARGIN_PX);
+    top =
+      dockEdge === "bottom"
+        ? ballY - half - MODAL_GAP_PX - height
+        : ballY + half + MODAL_GAP_PX;
+    top = clamp(top, MODAL_VIEWPORT_MARGIN_PX, vh - height - MODAL_VIEWPORT_MARGIN_PX);
+  }
+
+  return { position: "fixed", top, left, right: "auto", bottom: "auto" };
+}
+
 export default function ChatBubbleWidget({
   role = "STUDENT",
   avatarSrc = AI_AVATAR_IMAGE_SRC,
@@ -128,10 +178,6 @@ export default function ChatBubbleWidget({
   const startPosRef = useRef({ x: 0, y: 0 });
   const pressTimerRef = useRef<number | null>(null);
 
-  // const mountedRef = useRef(false);
-  //   useEffect(() => {
-  //     mountedRef.current = true;
-  //   }, []);
 
   const modalRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -369,35 +415,8 @@ export default function ChatBubbleWidget({
     const positionModal = () => {
       const modalEl = modalRef.current;
       if (!modalEl) return;
-
       const { width, height } = modalEl.getBoundingClientRect();
-      const anchor = edgePosToPixels(dockEdge, dockPos);
-      if (!anchor) return;
-      const { x: ballX, y: ballY } = anchor;
-      const half = BALL_SIZE / 2;
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-
-      let top: number;
-      let left: number;
-
-      if (dockEdge === "left" || dockEdge === "right") {
-        top = clamp(ballY - height / 2, MODAL_VIEWPORT_MARGIN_PX, vh - height - MODAL_VIEWPORT_MARGIN_PX);
-        left =
-          dockEdge === "right"
-            ? ballX - half - MODAL_GAP_PX - width
-            : ballX + half + MODAL_GAP_PX;
-        left = clamp(left, MODAL_VIEWPORT_MARGIN_PX, vw - width - MODAL_VIEWPORT_MARGIN_PX);
-      } else {
-        left = clamp(ballX - width / 2, MODAL_VIEWPORT_MARGIN_PX, vw - width - MODAL_VIEWPORT_MARGIN_PX);
-        top =
-          dockEdge === "bottom"
-            ? ballY - half - MODAL_GAP_PX - height
-            : ballY + half + MODAL_GAP_PX;
-        top = clamp(top, MODAL_VIEWPORT_MARGIN_PX, vh - height - MODAL_VIEWPORT_MARGIN_PX);
-      }
-
-      setModalStyle({ position: "fixed", top, left, right: "auto", bottom: "auto" });
+      setModalStyle(computeModalStyle(dockEdge, dockPos, width, height));
     };
 
     positionModal();
@@ -455,9 +474,13 @@ export default function ChatBubbleWidget({
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerCancel}
           onClick={() => {
-            if (dragPhase === "idle") {
-              setIsOpen((prev) => !prev);
+            if (dragPhase !== "idle") return;
+            const opening = !isOpen;
+            if (opening) {
+              const { width, height } = estimateModalSize();
+              setModalStyle(computeModalStyle(dockEdge, dockPos, width, height));
             }
+            setIsOpen(opening);
           }}
           aria-label={isOpen ? "Tutup Asisten AI" : "Buka Asisten AI Jembara"}
           title="Tanya Jelita AI"
@@ -506,7 +529,7 @@ export default function ChatBubbleWidget({
         <div
           ref={modalRef}
           style={modalStyle}
-          className="fixed z-50 flex h-140 max-h-[calc(100vh-4rem)] w-140 max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-3xl border border-hairline bg-white dark:bg-card shadow-2xl transition-[top,left] duration-200 animate-in fade-in"
+          className="fixed z-50 flex h-140 max-h-[calc(100vh-4rem)] w-140 max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-3xl border border-hairline bg-white dark:bg-card shadow-2xl animate-in fade-in"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-hairline bg-canvas/80 px-4 py-3.5 backdrop-blur-md">
