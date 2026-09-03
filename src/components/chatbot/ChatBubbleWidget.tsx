@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect, useLayoutEffect, type FormEvent } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+  useSyncExternalStore,
+  type FormEvent,
+} from "react";
 import { createPortal } from "react-dom";
 import { X, Send, ArrowUpRight, Sparkles } from "lucide-react";
 
@@ -47,6 +54,10 @@ const MAX_STORED_MESSAGES = 30;
 const MODAL_GAP_PX = 14;
 const MODAL_VIEWPORT_MARGIN_PX = 12;
 const CHAT_HISTORY_STORAGE_PREFIX = "jembara:jelita-history:v1";
+
+const subscribeToBrowserEnvironment = () => () => {};
+const getBrowserSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
@@ -95,6 +106,11 @@ export default function ChatBubbleWidget({
   avatarSrc = AI_AVATAR_IMAGE_SRC,
   userId = "anonymous",
 }: ChatBubbleWidgetProps) {
+  const hasHydrated = useSyncExternalStore(
+    subscribeToBrowserEnvironment,
+    getBrowserSnapshot,
+    getServerSnapshot,
+  );
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -135,7 +151,7 @@ export default function ChatBubbleWidget({
     }
   }, [messages, isOpen, isLoading]);
 
-  // Restore riwayat percakapan dari sessionStorage
+  // Restore riwayat percakapan dari penyimpanan browser.
   useEffect(() => {
     let active = true;
 
@@ -161,7 +177,7 @@ export default function ChatBubbleWidget({
     };
   }, [historyStorageKey]);
 
-  // Simpan riwayat ke sessionStorage
+  // Simpan riwayat lintas sesi browser.
   useEffect(() => {
     if (!historyReady) return;
 
@@ -420,7 +436,9 @@ export default function ChatBubbleWidget({
       ? "transition-[left,top] duration-300 ease-out"
       : "";
 
-  // if (!mounted) return null;
+  // Snapshot server juga dipakai pada render hydration pertama agar HTML awal
+  // tetap identik. React akan merender ulang dengan snapshot browser sesudahnya.
+  if (!hasHydrated) return null;
 
   return createPortal(
     <>
@@ -639,6 +657,6 @@ export default function ChatBubbleWidget({
         </div>
       )}
     </>,
-    document.body
+    document.body,
   );
 }

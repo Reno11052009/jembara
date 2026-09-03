@@ -1,12 +1,15 @@
 // @vitest-environment jsdom
 
 import {
+  act,
   cleanup,
   fireEvent,
   render,
   screen,
   waitFor,
 } from "@testing-library/react";
+import { hydrateRoot, type Root } from "react-dom/client";
+import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import ChatBubbleWidget from "@/components/chatbot/ChatBubbleWidget";
@@ -14,20 +17,20 @@ import ChatBubbleWidget from "@/components/chatbot/ChatBubbleWidget";
 const STUDENT_STORAGE_KEY =
   "jembara:jelita-history:v1:user-student:STUDENT";
 
-describe("ChatBubbleWidget session history", () => {
+describe("ChatBubbleWidget browser history", () => {
   beforeEach(() => {
-    window.sessionStorage.clear();
+    window.localStorage.clear();
     Element.prototype.scrollIntoView = vi.fn();
   });
 
   afterEach(() => {
     cleanup();
     vi.unstubAllGlobals();
-    window.sessionStorage.clear();
+    window.localStorage.clear();
   });
 
   it("restores validated messages and recommendation links for the same user", async () => {
-    window.sessionStorage.setItem(
+    window.localStorage.setItem(
       STUDENT_STORAGE_KEY,
       JSON.stringify([
         {
@@ -56,7 +59,7 @@ describe("ChatBubbleWidget session history", () => {
     ).toBe("/dashboard/find-projects/project-1");
   });
 
-  it("stores new chat messages in sessionStorage without a database request", async () => {
+  it("stores new chat messages in localStorage without a database request", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       json: vi.fn().mockResolvedValue({ message: "Jawaban dari Jelita" }),
     });
@@ -76,7 +79,7 @@ describe("ChatBubbleWidget session history", () => {
     expect(await screen.findByText("Jawaban dari Jelita")).toBeTruthy();
     await waitFor(() => {
       const storedMessages = JSON.parse(
-        window.sessionStorage.getItem(STUDENT_STORAGE_KEY) ?? "[]",
+        window.localStorage.getItem(STUDENT_STORAGE_KEY) ?? "[]",
       ) as Array<{ sender: string; text: string }>;
       expect(storedMessages).toMatchObject([
         { sender: "user", text: "Apa itu Jembara?" },
@@ -87,7 +90,7 @@ describe("ChatBubbleWidget session history", () => {
   });
 
   it("does not restore another user's chat history", async () => {
-    window.sessionStorage.setItem(
+    window.localStorage.setItem(
       STUDENT_STORAGE_KEY,
       JSON.stringify([
         {
@@ -108,5 +111,33 @@ describe("ChatBubbleWidget session history", () => {
       expect(screen.queryByText("Riwayat akun sebelumnya")).toBeNull();
       expect(screen.getByText(/Halo, saya Jelita/)).toBeTruthy();
     });
+  });
+
+  it("hydrates without changing the server-rendered tree", async () => {
+    const recoverableErrors: unknown[] = [];
+    const container = document.createElement("div");
+    container.innerHTML = renderToString(
+      <ChatBubbleWidget role="STUDENT" userId="hydrated-user" />,
+    );
+    document.body.appendChild(container);
+
+    let root: Root | undefined;
+    await act(async () => {
+      root = hydrateRoot(
+        container,
+        <ChatBubbleWidget role="STUDENT" userId="hydrated-user" />,
+        {
+          onRecoverableError: (error) => recoverableErrors.push(error),
+        },
+      );
+    });
+
+    expect(recoverableErrors).toEqual([]);
+    expect(
+      screen.getByRole("button", { name: "Buka Asisten AI Jembara" }),
+    ).toBeTruthy();
+
+    await act(async () => root?.unmount());
+    container.remove();
   });
 });

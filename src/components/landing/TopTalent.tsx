@@ -5,7 +5,7 @@ export default function TopTalent() {
   return (
     <section
       id="talenta"
-      className="animate-reveal bg-landing-dark px-6 py-20"
+      className="animate-reveal dark:bg-landing-dark px-6 py-20"
     >
       <div className="mx-auto max-w-7xl text-center">
         <p className="animate-reveal animate-reveal-d1 text-xs font-display font-black uppercase tracking-[0.15em] text-brand">

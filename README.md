@@ -65,17 +65,16 @@ Dengan website Jembara ini kita dapat mengurangi jumlah pengangguran di Indonesi
 
 | Fitur | Deskripsi | Keunggulan |
 |----------|--------------|---------------|
-| **[Nama Fitur 1]** | [Deskripsi singkat fitur] | [Mengapa fitur ini penting/unik] |
-| **[Nama Fitur 2]** | [Deskripsi singkat fitur] | [Mengapa fitur ini penting/unik] |
-| **[Nama Fitur 3]** | [Deskripsi singkat fitur] | [Mengapa fitur ini penting/unik] |
-| **[Nama Fitur 4]** | [Deskripsi singkat fitur] | [Mengapa fitur ini penting/unik] |
+| **Smart Matching** | Menghitung kecocokan skill Student dengan kebutuhan setiap project dan mengurutkan rekomendasi project maupun kandidat. | Membantu Student menemukan peluang yang relevan dan UMKM menyeleksi talent secara lebih terarah. |
+| **Marketplace Project UMKM** | UMKM dapat mempublikasikan project lengkap dengan budget, deadline, skill wajib, mode kerja, dan lokasi; Student dapat mencari, memfilter, serta mengajukan proposal. | Mempertemukan kebutuhan digitalisasi UMKM dengan keterampilan praktis pelajar dalam satu platform. |
+| **Kolaborasi End-to-End** | Mendukung pemilihan kandidat, pembayaran melalui Midtrans, pesan dan lampiran, pengiriman hasil, review pekerjaan, hingga penyelesaian project. | Seluruh perjalanan project tercatat dan dikelola dalam alur kerja yang jelas dari `OPEN` sampai `COMPLETED`. |
+| **Portfolio & Skill Passport** | Menampilkan karya, skill, status verifikasi, project selesai, rating, dan testimoni Student berdasarkan data platform. | Membantu Student membangun rekam jejak serta reputasi profesional dari pengalaman project nyata. |
 
 ### Fitur Tambahan
 
-- **[Fitur A]** - [Penjelasan singkat]
-- **[Fitur B]** - [Penjelasan singkat]
-- **[Fitur C]** - [Penjelasan singkat]
-- **[Fitur D]** - [Penjelasan singkat]
+- **Jelita AI Assistant** - Membantu Student dan UMKM memahami fitur platform serta memberikan rekomendasi project atau talent berdasarkan data Jembara.
+- **Pesan & Lampiran Project** - Memfasilitasi komunikasi antara UMKM dan Student terpilih, termasuk pengiriman lampiran melalui penyimpanan privat.
+- **Dashboard Berbasis Peran** - Menyediakan ringkasan dan menu yang disesuaikan untuk Student, UMKM, dan Admin berdasarkan data platform.
 
 ---
 
@@ -152,7 +151,9 @@ Monitoring   : -
     "@prisma/client": "^7.9.1",
     "@supabase/supabase-js": "^2.112.3",
     "lucide-react": "^1.31.0",
-    "lenis": "^1.3.26"
+    "lenis": "^1.3.26",
+    "pg": "^8.23.0",
+    "pgsql": "^1.0.0"
   }
 }
 ```
@@ -169,9 +170,7 @@ Monitoring   : -
 
 ### Database Schema
 
-```
-[Tambahkan diagram ERD atau schema database]
-```
+![Jembara ERD](docs/jembara_erd.svg)
 
 ### Folder Structure
 

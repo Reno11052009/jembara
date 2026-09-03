@@ -2,7 +2,7 @@ import { testimonials } from "@/lib/mock-landing";
 
 export default function Testimonials() {
   return (
-    <section className="animate-reveal bg-landing-dark px-6 py-20 font-sans">
+    <section className="animate-reveal dark:bg-landing-dark px-6 py-20 font-sans">
       <div className="mx-auto max-w-7xl text-center">
         <p className="animate-reveal animate-reveal-d1 font-display text-lg font-black uppercase tracking-[0.15em] text-brand">
           Cerita Sukses
