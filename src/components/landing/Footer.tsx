@@ -58,10 +58,10 @@ export default function Footer() {
           © 2026 Jembatan Karya Indonesia. Hak Cipta Dilindungi Undang-Undang.
         </p>
         <div className="flex gap-4 text-ink-muted">
-          <FaInstagram size={16} />
-          <FaTwitter size={16} />
-          <FaLinkedin size={16} />
-          <FaFigma size={16} />
+          <FaInstagram size={16} className="cursor-pointer transition hover:text-brand" />
+          <FaTwitter size={16} className="cursor-pointer transition hover:text-brand" />
+          <FaLinkedin size={16} className="cursor-pointer transition hover:text-brand" />
+          <FaFigma size={16} className="cursor-pointer transition hover:text-brand" />
         </div>
       </div>
     </footer>

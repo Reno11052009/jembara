@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
-import { ChevronDown, Menu, User, X } from "lucide-react";
+import { ChevronDown, Menu, User, X, Landmark } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
 
 const navLinks = [
@@ -115,7 +115,9 @@ export default function Navbar({ sessionName }: NavbarProps) {
     <header className="sticky top-0 z-40 border-b border-hairline bg-card">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2">
-          <span className="h-6 w-6 rounded-md bg-brand" />
+          <span className="flex h-10 w-10 items-center justify-center rounded-md bg-brand">
+            <Landmark size={23} className="text-white" />
+          </span>
           <span className="font-display text-lg font-black text-ink">
             Jembatan <span className="text-brand">Karya</span>
           </span>

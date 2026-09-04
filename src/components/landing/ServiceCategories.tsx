@@ -1,30 +1,54 @@
+"use client";
+
 import { serviceCategories } from "@/lib/mock-landing";
+import { useReveal } from "@/hooks/useReveal";
+import { Reveal } from "@/components/ui/Reveal";
 
 export default function ServiceCategories() {
+  const { ref, isVisible } = useReveal<HTMLElement>();
+
   return (
     <section
+      ref={ref}
       id="kategori"
-      className="animate-reveal bg-white dark:bg-canvas py-20"
+      className="bg-white dark:bg-canvas py-20"
     >
       <div className="mx-auto max-w-7xl text-center">
-        <p className="animate-reveal animate-reveal-d1 text-xs font-display font-black uppercase tracking-[0.15em] text-brand">
+        <Reveal
+          as="p"
+          active={isVisible}
+          delay={1}
+          className="text-xs font-display font-black uppercase tracking-[0.15em] text-brand"
+        >
           Kategori Populer
-        </p>
-        <h2 className="animate-reveal animate-reveal-d2 mt-2 font-display text-3xl font-black text-black dark:text-ink">
+        </Reveal>
+        <Reveal
+          as="h2"
+          active={isVisible}
+          delay={2}
+          className="mt-2 font-display text-3xl font-black text-black dark:text-ink"
+        >
           Layanan Digital Paling Dicari
-        </h2>
-        <p className="animate-reveal animate-reveal-d3 font-body mx-auto mt-3 max-w-xl text-sm text-ink-muted">
+        </Reveal>
+        <Reveal
+          as="p"
+          active={isVisible}
+          delay={3}
+          className="font-body mx-auto mt-3 max-w-xl text-sm text-ink-muted"
+        >
           Temukan talenta terbaik berdasarkan keahlian spesifik yang
           dibutuhkan bisnis Anda.
-        </p>
+        </Reveal>
 
         <div className="mt-12 grid grid-cols-3 gap-5 text-left">
           {serviceCategories.map((category, i) => {
             const Icon = category.icon;
             return (
-              <div
+              <Reveal
                 key={category.title}
-                className={`animate-reveal animate-reveal-d${Math.min(i + 1, 6)} flex items-center gap-5 rounded-2xl border border-hairline bg-gray-100 dark:bg-card p-6`}
+                active={isVisible}
+                delay={Math.min(i + 1, 6) as 1 | 2 | 3 | 4 | 5 | 6}
+                className="flex items-center gap-5 rounded-2xl border border-hairline bg-gray-100 dark:bg-card p-6"
               >
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-brand text-white">
                   <Icon size={20} />
@@ -37,7 +61,7 @@ export default function ServiceCategories() {
                     {category.activeProjectsLabel}
                   </p>
                 </div>
-              </div>
+              </Reveal>
             );
           })}
         </div>

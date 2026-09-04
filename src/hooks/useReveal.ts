@@ -2,27 +2,36 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export function useReveal<T extends HTMLElement = HTMLDivElement>(threshold = 0.15) {
+function prefersReducedMotion() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+export function useReveal<T extends HTMLElement = HTMLDivElement>(
+  threshold = 0.15,
+  rootMargin = "0px 0px -10% 0px"
+) {
   const ref = useRef<T>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(prefersReducedMotion);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    if (isVisible) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          observer.unobserve(el); // trigger sekali aja, nggak reset pas discroll lagi ke atas
+          observer.unobserve(el);
         }
       },
-      { threshold }
+      { threshold, rootMargin }
     );
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [threshold]);
+  }, [threshold, rootMargin, isVisible]);
 
   return { ref, isVisible };
 }

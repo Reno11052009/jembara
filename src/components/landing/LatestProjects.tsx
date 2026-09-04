@@ -1,97 +1,106 @@
-import "server-only";
+"use client";
 
 import { Calendar } from "lucide-react";
-import { cacheLife } from "next/cache";
-import { formatBudget, formatDeadline } from "@/lib/dashboard-utils";
-import prisma from "@/lib/prisma";
+import { latestProjects } from "@/lib/mock-landing";
+import { ProjectBadge } from "@/types/landing";
+import { useReveal } from "@/hooks/useReveal";
+import { Reveal } from "@/components/ui/Reveal";
 
-export default async function LatestProjects() {
-  "use cache";
-  cacheLife("minutes");
+const badgeStyles: Record<ProjectBadge, string> = {
+  Premium: "bg-brand-soft text-brand",
+  Urgent: "bg-danger-soft text-danger",
+};
 
-  const latestProjects = await prisma.project.findMany({
-    where: { status: "OPEN", studentId: null },
-    orderBy: [{ createdAt: "desc" }, { id: "asc" }],
-    take: 3,
-    select: {
-      id: true,
-      title: true,
-      budget: true,
-      deadline: true,
-      umkm: { select: { nama_usaha: true } },
-      skillsNeeded: {
-        select: { skill: { select: { name: true } } },
-      },
-    },
-  });
+export default function LatestProjects() {
+  const { ref, isVisible } = useReveal<HTMLElement>();
 
   return (
     <section
+      ref={ref}
       id="project"
-      className="animate-reveal bg-white dark:bg-canvas px-6 py-20"
+      className="bg-white dark:bg-canvas px-6 py-20"
     >
       <div className="mx-auto max-w-7xl text-center">
-        <p className="animate-reveal animate-reveal-d1 font-display text-xs font-black uppercase tracking-[0.15em] text-brand">
+        <Reveal
+          as="p"
+          active={isVisible}
+          delay={1}
+          className="font-display text-xs font-black uppercase tracking-[0.15em] text-brand"
+        >
           Daftar Project
-        </p>
-        <h2 className="animate-reveal animate-reveal-d2 mt-2 font-display text-3xl font-black text-ink">
+        </Reveal>
+        <Reveal
+          as="h2"
+          active={isVisible}
+          delay={2}
+          className="mt-2 font-display text-3xl font-black text-ink"
+        >
           Project Terbaru dari UMKM
-        </h2>
-        <p className="animate-reveal animate-reveal-d3 font-body mx-auto mt-3 max-w-xl text-sm text-ink-muted">
+        </Reveal>
+        <Reveal
+          as="p"
+          active={isVisible}
+          delay={3}
+          className="font-body mx-auto mt-3 max-w-xl text-sm text-ink-muted"
+        >
           Lihat peluang kerja sama terbaru dan mulailah membangun portofolio
           hebat Anda hari ini.
-        </p>
+        </Reveal>
 
         <div className="mt-12 grid grid-cols-1 gap-5 text-left sm:grid-cols-2 lg:grid-cols-3">
-          {latestProjects.map((project, index) => {
-            const tags = project.skillsNeeded
-              .map(({ skill }) => skill.name)
-              .sort((first, second) => first.localeCompare(second, "id-ID"))
-              .slice(0, 3);
-
-            return (
-              <div
-                key={project.id}
-                className={`animate-reveal animate-reveal-d${Math.min(index + 1, 6)} rounded-xl border border-hairline bg-[#F9F9F9] dark:bg-card p-6`}
-              >
+          {latestProjects.map((project, i) => (
+            <Reveal
+              key={project.id}
+              active={isVisible}
+              delay={Math.min(i + 1, 6) as 1 | 2 | 3 | 4 | 5 | 6}
+              className="flex h-full flex-col rounded-xl border border-hairline bg-[#F9F9F9] dark:bg-card p-6"
+            >
+              {/* 1. Nama Klien & Badge */}
+              <div className="flex items-start justify-between gap-2">
                 <p className="font-body text-sm font-black text-ink-muted">
-                  {project.umkm.nama_usaha}
+                  {project.clientName}
                 </p>
-
-                <h3 className="mt-2 font-display text-base font-black text-ink">
-                  {project.title}
-                </h3>
-
-                <p className="font-body mt-4 text-xs text-ink-muted">
-                  Estimasi Budget
-                </p>
-                <p className="font-display text-sm font-black text-brand">
-                  {formatBudget(project.budget)}
-                </p>
-
-                <div className="font-body mt-3 flex items-center gap-1.5 text-xs text-ink">
-                  <Calendar size={12} />
-                  {formatDeadline(project.deadline)}
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="font-roboto rounded-md bg-canvas px-2.5 py-1 text-xs text-ink"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+                {project.badge && (
+                  <span
+                    className={`shrink-0 rounded-full px-2.5 py-1 font-display text-xs font-black ${badgeStyles[project.badge]}`}
+                  >
+                    {project.badge}
+                  </span>
+                )}
               </div>
-            );
-          })}
-          {latestProjects.length === 0 && (
-            <p className="col-span-full rounded-xl border border-hairline bg-[#F9F9F9] p-10 text-center font-body text-sm text-ink-muted dark:bg-card">
-              Belum ada project terbuka saat ini.
-            </p>
-          )}
+
+              {/* 2. Judul Project — tinggi konsisten 2 baris */}
+              <h3 className="mt-2 line-clamp-2 min-h-12 font-display text-base font-black text-ink">
+                {project.title}
+              </h3>
+
+              {/* 3. Estimasi Budget */}
+              <div className="mt-4">
+                <p className="font-body text-xs text-ink-muted">Estimasi Budget</p>
+                <p className="font-display text-sm font-black text-brand">
+                  {project.budgetLabel}
+                </p>
+              </div>
+
+              {/* 4. Durasi */}
+              <div className="mt-3 flex items-center gap-1.5 font-body text-xs text-ink">
+                <Calendar size={12} />
+                {project.durationLabel}
+              </div>
+
+              {/* 5. Tags / Skills — selalu di dasar card */}
+              <div className="mt-auto flex flex-wrap gap-2 pt-4">
+                {project.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-md bg-canvas px-2.5 py-1 font-body text-xs text-ink"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>

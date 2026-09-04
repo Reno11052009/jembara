@@ -1,22 +1,30 @@
 import Link from "next/link";
+import { Reveal } from "@/components/ui/Reveal";
 
 export default function CtaSection() {
   return (
-    <section className="animate-reveal bg-black px-6 py-20 text-center">
+    <section className="bg-black px-6 py-20 text-center">
       <div className="mx-auto max-w-2xl">
-        <h2 className="animate-reveal animate-reveal-d1 font-display text-4xl font-black text-white">
+        <Reveal as="h2" className="font-display text-4xl font-black text-white">
           Siap Memulai Langkah Anda
           <span className="block">
-            Bersama{' '}
-            <span className="text-brand">Jembatan Karya</span>?
+            Bersama <span className="text-brand">Jembatan Karya</span>?
           </span>
-        </h2>
-        <p className="animate-reveal animate-reveal-d2 mt-4 text-lg font-body text-slate-400">
+        </Reveal>
+
+        <Reveal
+          delay={1}
+          as="p"
+          className="mt-4 text-lg font-body text-slate-400"
+        >
           Daftarkan bisnis UMKM Anda atau profil mahasiswa bertalenta tinggi
           secara gratis sekarang juga.
-        </p>
+        </Reveal>
 
-        <div className="animate-reveal animate-reveal-d3 mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <Reveal
+          delay={2}
+          className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
+        >
           <Link
             href="/register?role=umkm"
             className="rounded-full bg-brand px-6 py-3 text-sm font-body font-black text-white hover:opacity-90"
@@ -29,7 +37,7 @@ export default function CtaSection() {
           >
             Daftar Sebagai Mahasiswa
           </Link>
-        </div>
+        </Reveal>
       </div>
     </section>
   );
