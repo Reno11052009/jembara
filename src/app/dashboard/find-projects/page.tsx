@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
+import DashboardRouteSkeleton from "@/components/layout/DashboardRouteSkeleton";
 import FilterBar from "@/components/projects/FilterBar";
 import ProjectCard from "@/components/projects/ProjectCard";
 import {
@@ -23,7 +25,7 @@ function createPageHref(filters: FindProjectFilters, page: number) {
     : "/dashboard/find-projects";
 }
 
-export default async function FindProjectsPage({
+async function FindProjectsContent({
   searchParams,
 }: {
   searchParams: Promise<FindProjectsSearchParams>;
@@ -122,5 +124,17 @@ export default async function FindProjectsPage({
         </nav>
       )}
     </>
+  );
+}
+
+export default function FindProjectsPage({
+  searchParams,
+}: {
+  searchParams: Promise<FindProjectsSearchParams>;
+}) {
+  return (
+    <Suspense fallback={<DashboardRouteSkeleton />}>
+      <FindProjectsContent searchParams={searchParams} />
+    </Suspense>
   );
 }

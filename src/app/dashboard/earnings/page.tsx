@@ -6,6 +6,8 @@ import { getEarningsData } from "@/lib/earnings";
 import WalletBalanceCard from "@/components/earnings/WalletBalanceCard";
 import ListPagination from "@/components/ui/ListPagination";
 
+export const instant = false;
+
 export default async function EarningsPage({ searchParams }: {
   searchParams: Promise<{ page?: string | string[] }>;
 }) {

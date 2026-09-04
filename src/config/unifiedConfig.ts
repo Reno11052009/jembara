@@ -55,6 +55,10 @@ export const config = {
           limit: 5,
           windowMs: 10 * 60 * 1000,
         },
+        paymentSyncByProject: {
+          limit: 30,
+          windowMs: 60 * 1000,
+        },
         chatbotByUserMinute: {
           limit: 10,
           windowMs: 60 * 1000,

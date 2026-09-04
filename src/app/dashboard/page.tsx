@@ -35,6 +35,8 @@ const dashboardSubtitles = {
   ADMIN: "Pantau pertumbuhan pengguna dan aktivitas proyek di platform Jembara.",
 };
 
+export const instant = false;
+
 export default async function DashboardPage() {
   const dashboard = await getDashboardData();
 

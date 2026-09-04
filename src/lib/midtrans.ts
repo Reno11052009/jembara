@@ -16,6 +16,7 @@ export const midtransStatusSchema = z.looseObject({
   transaction_id: z.string().optional(),
   payment_type: z.string().optional(),
   fraud_status: z.string().optional(),
+  refund_amount: z.string().regex(/^\d+(?:\.\d{1,2})?$/).optional(),
   signature_key: z.string().optional(),
 });
 

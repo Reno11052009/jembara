@@ -19,6 +19,16 @@ describe("security proxy", () => {
     expect(firstCsp).not.toContain("nonce-");
     expect(firstCsp).not.toContain("strict-dynamic");
     expect(firstCsp?.match(/script-src[^;]+/)?.[0]).toContain("'unsafe-inline'");
+    expect(firstCsp?.match(/script-src[^;]+/)?.[0]).toContain(
+      "https://*.midtrans.com",
+    );
+    expect(firstCsp?.match(/connect-src[^;]+/)?.[0]).toContain(
+      "https://*.veritrans.co.id",
+    );
+    expect(firstCsp?.match(/frame-src[^;]+/)?.[0]).toContain(
+      "https://*.midtrans.com",
+    );
+    expect(firstCsp).not.toContain("frame-src 'none'");
     expect(firstCsp).not.toContain("'unsafe-eval'");
     expect(secondCsp).toBe(firstCsp);
   });

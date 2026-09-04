@@ -5,6 +5,8 @@ import SkillEndorsementSection from "@/components/portofolio/SkillEndorsementSec
 import TestimonialSection from "@/components/portofolio/TestimonialSection";
 import { getPortfolioData } from "@/lib/portfolio";
 
+export const instant = false;
+
 export default async function PortfolioPage() {
   const data = await getPortfolioData();
 

@@ -80,7 +80,7 @@ export default function MyJobRow({ listing }: { listing: MyJobListing }) {
             href={`/dashboard/payments/${encodeURIComponent(listing.id)}`}
             className="rounded-full bg-brand px-4 py-2 text-xs font-display font-bold uppercase text-white hover:opacity-90"
           >
-            Bayar via Midtrans
+            Bayar / Cek Status
           </Link>
         ) : collaborationStarted ? (
           <Link

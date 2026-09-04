@@ -1,6 +1,8 @@
 import PelamarView from "@/components/dashboard/umkm/pelamar/PelamarView";
 import { getApplicantsData } from "@/lib/applicants";
 
+export const instant = false;
+
 export default async function PelamarPage({
   searchParams,
 }: {

@@ -365,6 +365,7 @@ model project_payment {
   paymentType           String?
   fraudStatus           String?
   rawStatus             Json?
+  reversedAmount        Int       @default(0) @db.Integer
   paidAt                DateTime? @db.Timestamp(6)
   heldAt                DateTime? @db.Timestamp(6)
   releasedAt            DateTime? @db.Timestamp(6)
@@ -372,28 +373,30 @@ model project_payment {
   createdAt             DateTime  @default(now()) @db.Timestamp(6)
   updatedAt             DateTime  @updatedAt @db.Timestamp(6)
 
-  project            project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  releasedTo         user?                @relation("PaymentReleasedTo", fields: [releasedToUserId], references: [id], onDelete: SetNull)
-  balanceTransaction balance_transaction?
+  project             project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  releasedTo          user?                 @relation("PaymentReleasedTo", fields: [releasedToUserId], references: [id], onDelete: SetNull)
+  balanceTransactions balance_transaction[]
 
   @@index([status, createdAt])
   @@index([releasedToUserId, releasedAt])
 }
 
 model balance_transaction {
-  id               String   @id @default(uuid()) @db.Uuid
-  userId           String   @db.Uuid
-  projectPaymentId String   @unique @db.Uuid
-  type             String   @default("PROJECT_EARNING")
-  amount           Int      @db.Integer
-  balanceBefore    Int      @db.Integer
-  balanceAfter     Int      @db.Integer
-  createdAt        DateTime @default(now()) @db.Timestamp(6)
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @db.Uuid
+  projectPaymentId  String   @db.Uuid
+  externalReference String?  @unique @db.VarChar(160)
+  type              String   @default("PROJECT_EARNING")
+  amount            Int      @db.Integer
+  balanceBefore     Int      @db.Integer
+  balanceAfter      Int      @db.Integer
+  createdAt         DateTime @default(now()) @db.Timestamp(6)
 
   user           user            @relation(fields: [userId], references: [id], onDelete: Restrict)
   projectPayment project_payment @relation(fields: [projectPaymentId], references: [id], onDelete: Restrict)
 
   @@index([userId, createdAt])
+  @@index([projectPaymentId, createdAt])
 }
 
 model project_submission {

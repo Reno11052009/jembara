@@ -13,9 +13,13 @@ import prisma from "@/lib/prisma";
 import { consumeRateLimit, createRateLimitKey } from "@/lib/rate-limit";
 import { verifySession } from "@/lib/session";
 import { getMidtransTransactionStatus, MidtransError } from "@/lib/midtrans";
-import type { PaymentActionResult } from "@/types/payment";
+import {
+  PROJECT_PAYMENT_STATUSES,
+  type PaymentActionResult,
+} from "@/types/payment";
 
 const projectIdSchema = z.string().uuid("Proyek tidak valid.");
+const paymentStatusSchema = z.enum(PROJECT_PAYMENT_STATUSES);
 
 async function requireUmkmPaymentViewer(projectId: unknown) {
   const parsed = projectIdSchema.safeParse(projectId);
@@ -62,6 +66,7 @@ export async function createProjectPaymentAction(
     return {
       success: true,
       redirectUrl: payment.redirectUrl,
+      snapToken: payment.snapToken || undefined,
       status: payment.status,
     };
   } catch (error) {
@@ -79,6 +84,16 @@ export async function syncProjectPaymentAction(
 ): Promise<PaymentActionResult> {
   try {
     const viewer = await requireUmkmPaymentViewer(projectId);
+    const rateLimit = await consumeRateLimit({
+      key: createRateLimitKey("payment:sync:project", viewer.projectId),
+      ...config.security.auth.rateLimit.paymentSyncByProject,
+    });
+    if (!rateLimit.allowed) {
+      return {
+        success: false,
+        error: "Status terlalu sering diperiksa. Tunggu sebentar lalu coba lagi.",
+      };
+    }
     const payment = await prisma.project_payment.findFirst({
       where: { projectId: viewer.projectId, project: { umkm: { userId: viewer.userId } } },
       select: { orderId: true },
@@ -107,14 +122,27 @@ export async function syncProjectPaymentAction(
         }),
       ]);
     }
+    const refreshed = await prisma.project_payment.findUnique({
+      where: { orderId: payment.orderId },
+      select: { status: true },
+    });
+    const refreshedStatus = paymentStatusSchema.safeParse(refreshed?.status);
     revalidatePaymentPaths(viewer.projectId);
-    return { success: true };
+    return {
+      success: true,
+      status: refreshedStatus.success ? refreshedStatus.data : undefined,
+    };
   } catch (error) {
     console.error("Gagal menyinkronkan pembayaran Midtrans:", error);
-    const message =
-      error instanceof PaymentFlowError || error instanceof MidtransError
-        ? error.message
-        : "Status pembayaran belum dapat diperbarui.";
+    let message = "Status pembayaran belum dapat diperbarui.";
+    if (error instanceof MidtransError) {
+      message =
+        error.status === 404
+          ? "Transaksi belum tercatat di Midtrans. Silakan lakukan pembayaran terlebih dahulu."
+          : error.message;
+    } else if (error instanceof PaymentFlowError) {
+      message = error.message;
+    }
     return { success: false, error: message };
   }
 }

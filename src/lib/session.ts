@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { cache } from "react";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies, headers } from "next/headers";
+import { connection } from "next/server";
 import { config } from "@/config/unifiedConfig";
 import { Prisma } from "@/generated/prisma/client";
 import prisma from "./prisma";
@@ -179,6 +180,22 @@ export async function deleteSession() {
 }
 
 async function verifySessionUncached() {
+  try {
+    await connection();
+  } catch (error: unknown) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "message" in error &&
+      typeof (error as { message: unknown }).message === "string" &&
+      (error as { message: string }).message.includes("outside a request scope")
+    ) {
+      // Ignored in standalone test environments where Next.js request store is not active
+    } else {
+      throw error;
+    }
+  }
+
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   const session = await decrypt(sessionCookie);

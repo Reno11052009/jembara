@@ -87,7 +87,7 @@ Dengan website Jembara ini kita dapat mengurangi jumlah pengangguran di Indonesi
 ### Screenshot Aplikasi
 
 <div align="center">
-  <img src="[URL_SCREENSHOT_1]" alt="Homepage" width="800"/>
+  <img src="./docs/landing_page.png" alt="Homepage" width="800"/>
   <p><em>Homepage - Tampilan utama aplikasi</em></p>
   
   <img src="[URL_SCREENSHOT_2]" alt="Dashboard" width="800"/>

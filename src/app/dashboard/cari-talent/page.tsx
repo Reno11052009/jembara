@@ -1,6 +1,8 @@
 import CariTalentView from "@/components/dashboard/umkm/cari-talents/CariTalentView";
 import { getTalentSearchData } from "@/lib/talents";
 
+export const instant = false;
+
 export default async function CariTalentPage({
   searchParams,
 }: {

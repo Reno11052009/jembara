@@ -3,6 +3,8 @@ import ProposalStatsGrid from "@/components/proposals/ProposalStatsGrid";
 import ProposalsView from "@/components/proposals/ProposalView";
 import { getStudentProposals } from "@/lib/proposals";
 
+export const instant = false;
+
 export default async function ProposalsPage({ searchParams }: {
   searchParams: Promise<{ page?: string | string[]; status?: string | string[] }>;
 }) {

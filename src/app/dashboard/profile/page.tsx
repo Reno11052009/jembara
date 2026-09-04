@@ -6,6 +6,8 @@ import { getCachedProfileData } from "@/lib/profile";
 const normalizeUrl = (url: string) =>
   /^https?:\/\//i.test(url) ? url : `https://${url}`;
 
+export const instant = false;
+
 export default async function ProfilePage() {
   const profileData = await getCachedProfileData();
 

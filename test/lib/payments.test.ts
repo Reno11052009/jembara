@@ -6,11 +6,14 @@ const mocks = vi.hoisted(() => ({
   paymentUpdateMany: vi.fn(),
   paymentUpdate: vi.fn(),
   projectUpdateMany: vi.fn(),
+  userUpdate: vi.fn(),
+  balanceTransactionCreate: vi.fn(),
 }));
 
 vi.mock("server-only", () => ({}));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
 vi.mock("@/lib/auth-guard", () => ({ requireAuthenticatedSession: vi.fn() }));
+vi.mock("@/lib/notifications", () => ({ createUserNotification: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
   default: {
     $transaction: mocks.transaction,
@@ -23,6 +26,8 @@ const paymentRecord = {
   id: "payment-1",
   amount: 500_000,
   status: "PENDING",
+  reversedAmount: 0,
+  releasedToUserId: null,
   project: {
     id: "project-1",
     title: "Website UMKM",
@@ -49,6 +54,8 @@ describe("applyMidtransStatus", () => {
     mocks.paymentFindUnique.mockResolvedValue(paymentRecord);
     mocks.paymentUpdateMany.mockResolvedValue({ count: 1 });
     mocks.projectUpdateMany.mockResolvedValue({ count: 1 });
+    mocks.userUpdate.mockResolvedValue({ saldo: 100_000 });
+    mocks.balanceTransactionCreate.mockResolvedValue({ id: "ledger-1" });
     mocks.transaction.mockImplementation(
       async (callback: (transaction: unknown) => Promise<unknown>) =>
         callback({
@@ -58,6 +65,8 @@ describe("applyMidtransStatus", () => {
             update: mocks.paymentUpdate,
           },
           project: { updateMany: mocks.projectUpdateMany },
+          user: { update: mocks.userUpdate },
+          balance_transaction: { create: mocks.balanceTransactionCreate },
         }),
     );
   });
@@ -150,6 +159,90 @@ describe("applyMidtransStatus", () => {
     await expect(
       applyMidtransStatus({ ...settlement, gross_amount: "499999.00" }),
     ).rejects.toThrow(PaymentFlowError);
+    expect(mocks.paymentUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it("reverses a released balance when Midtrans reports a full refund", async () => {
+    mocks.paymentFindUnique.mockResolvedValue({
+      ...paymentRecord,
+      status: "RELEASED",
+      releasedToUserId: "student-user-1",
+      project: { ...paymentRecord.project, status: "COMPLETED" },
+    });
+
+    await expect(
+      applyMidtransStatus({
+        ...settlement,
+        transaction_status: "refund",
+      }),
+    ).resolves.toMatchObject({ newlyHeld: false });
+
+    expect(mocks.paymentUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: "payment-1",
+          reversedAmount: 0,
+        }),
+        data: expect.objectContaining({
+          status: "REFUNDED",
+          reversedAmount: 500_000,
+        }),
+      }),
+    );
+    expect(mocks.userUpdate).toHaveBeenCalledWith({
+      where: { id: "student-user-1" },
+      data: { saldo: { decrement: 500_000 } },
+      select: { saldo: true },
+    });
+    expect(mocks.balanceTransactionCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        externalReference: "payment-1:REFUNDED:500000",
+        type: "PAYMENT_REFUND",
+        amount: -500_000,
+        balanceBefore: 600_000,
+        balanceAfter: 100_000,
+      }),
+      select: { id: true },
+    });
+  });
+
+  it("does not apply the same refund notification twice", async () => {
+    mocks.paymentFindUnique.mockResolvedValue({
+      ...paymentRecord,
+      status: "REFUNDED",
+      reversedAmount: 500_000,
+      releasedToUserId: "student-user-1",
+      project: { ...paymentRecord.project, status: "COMPLETED" },
+    });
+
+    await expect(
+      applyMidtransStatus({
+        ...settlement,
+        transaction_status: "refund",
+      }),
+    ).resolves.toMatchObject({ newlyHeld: false });
+
+    expect(mocks.paymentUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.userUpdate).not.toHaveBeenCalled();
+    expect(mocks.balanceTransactionCreate).not.toHaveBeenCalled();
+  });
+
+  it("does not downgrade a refunded payment when a stale pending status arrives", async () => {
+    mocks.paymentFindUnique.mockResolvedValue({
+      ...paymentRecord,
+      status: "REFUNDED",
+      reversedAmount: 500_000,
+      project: { ...paymentRecord.project, status: "COMPLETED" },
+    });
+
+    await expect(
+      applyMidtransStatus({
+        ...settlement,
+        status_code: "201",
+        transaction_status: "pending",
+      }),
+    ).resolves.toMatchObject({ newlyHeld: false });
+
     expect(mocks.paymentUpdateMany).not.toHaveBeenCalled();
   });
 });

@@ -8,6 +8,7 @@ import prisma from "./prisma";
 import { requireAuthenticatedSession } from "./auth-guard";
 import {
   createSnapTransaction,
+  getMidtransTransactionStatus,
   type MidtransStatusPayload,
 } from "./midtrans";
 import type {
@@ -106,6 +107,26 @@ function parseProjectAmount(budget: number | null) {
   return budget;
 }
 
+function getCumulativeReversalAmount(
+  payload: MidtransStatusPayload,
+  paymentAmount: number,
+) {
+  const transactionStatus = payload.transaction_status.toLowerCase();
+  if (transactionStatus === "refund" || transactionStatus === "chargeback") {
+    return paymentAmount;
+  }
+
+  const reversalAmount = Number(payload.refund_amount);
+  if (
+    !Number.isSafeInteger(reversalAmount) ||
+    reversalAmount <= 0 ||
+    reversalAmount > paymentAmount
+  ) {
+    throw new PaymentFlowError("Nominal refund atau chargeback tidak valid.");
+  }
+  return reversalAmount;
+}
+
 async function findOwnedPayableProject(projectId: string, userId: string) {
   const project = await prisma.project.findFirst({
     where: { id: projectId, umkm: { userId } },
@@ -134,6 +155,7 @@ async function findOwnedPayableProject(projectId: string, userId: string) {
           orderId: true,
           status: true,
           redirectUrl: true,
+          snapToken: true,
           updatedAt: true,
         },
       },
@@ -163,7 +185,53 @@ export async function getProjectPaymentData(
 
   const project = await findOwnedPayableProject(parsedProjectId.data, session.userId);
   const amount = parseProjectAmount(project.budget);
-  const status = normalizePaymentStatus(project.payment?.status);
+  let status = normalizePaymentStatus(project.payment?.status);
+
+  // Jika status masih PENDING atau CREATING dan orderId ada, periksa status terkini ke Midtrans
+  if (
+    project.payment?.orderId &&
+    (status === "PENDING" || status === "CREATING")
+  ) {
+    try {
+      const midtransStatus = await getMidtransTransactionStatus(project.payment.orderId);
+      const outcome = await applyMidtransStatus(midtransStatus);
+      if (outcome.newlyHeld && outcome.project.student) {
+        try {
+          const { createUserNotification } = await import("./notifications");
+          await Promise.allSettled([
+            createUserNotification({
+              userId: outcome.project.student.userId,
+              type: "PAYMENT",
+              title: "Dana proyek telah diamankan",
+              message: `Pembayaran ${outcome.project.title} sudah diterima. Anda dapat mulai mengerjakan proyek.`,
+              href: "/dashboard/active-projects",
+              preferenceKey: "pembayaran",
+            }),
+            createUserNotification({
+              userId: outcome.project.umkm.userId,
+              type: "PAYMENT",
+              title: "Pembayaran berhasil",
+              message: `Dana ${outcome.project.title} ditahan sampai hasil kerja disetujui.`,
+              href: "/dashboard/active-projects",
+              preferenceKey: "pembayaran",
+            }),
+          ]);
+        } catch {
+          // Abaikan jika pengiriman notifikasi gagal
+        }
+      }
+      const refreshed = await prisma.project_payment.findUnique({
+        where: { id: project.payment.id },
+        select: { status: true, redirectUrl: true },
+      });
+      if (refreshed) {
+        status = normalizePaymentStatus(refreshed.status);
+      }
+    } catch {
+      // Abaikan jika order belum dibuat di Core API (404) atau server Midtrans tidak dapat dihubungi
+    }
+  }
+
   const retryable = status === "NOT_CREATED" || RETRYABLE_PAYMENT_STATUSES.includes(
     status as (typeof RETRYABLE_PAYMENT_STATUSES)[number],
   );
@@ -177,6 +245,15 @@ export async function getProjectPaymentData(
     status,
     statusLabel: getPaymentStatusLabel(status),
     redirectUrl: project.payment?.redirectUrl ?? null,
+    snapToken: project.payment?.snapToken ?? null,
+    clientKey:
+      process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ||
+      process.env.MIDTRANS_CLIENT_KEY ||
+      "",
+    snapScriptUrl:
+      process.env.MIDTRANS_ENVIRONMENT?.toLowerCase() === "production"
+        ? "https://app.midtrans.com/snap/snap.js"
+        : "https://app.sandbox.midtrans.com/snap/snap.js",
     canPay:
       project.status === "PROPOSAL" &&
       (retryable || status === "PENDING"),
@@ -193,7 +270,11 @@ export async function createOrReuseProjectPayment(
   const currentStatus = normalizePaymentStatus(project.payment?.status);
 
   if (project.payment?.redirectUrl && currentStatus === "PENDING") {
-    return { redirectUrl: project.payment.redirectUrl, status: currentStatus };
+    return {
+      redirectUrl: project.payment.redirectUrl,
+      snapToken: project.payment.snapToken,
+      status: currentStatus,
+    };
   }
   if (
     currentStatus === "CREATING" &&
@@ -228,6 +309,7 @@ export async function createOrReuseProjectPayment(
         paymentType: null,
         fraudStatus: null,
         rawStatus: undefined,
+        reversedAmount: 0,
         paidAt: null,
         heldAt: null,
       },
@@ -265,7 +347,11 @@ export async function createOrReuseProjectPayment(
     if (updated.count !== 1) {
       throw new PaymentFlowError("Status pembayaran berubah. Muat ulang halaman.");
     }
-    return { redirectUrl: snap.redirect_url, status: "PENDING" as const };
+    return {
+      redirectUrl: snap.redirect_url,
+      snapToken: snap.token,
+      status: "PENDING" as const,
+    };
   } catch (error) {
     await prisma.project_payment.updateMany({
       where: { projectId: project.id, orderId, status: "CREATING" },
@@ -283,13 +369,17 @@ export async function applyMidtransStatus(payload: MidtransStatusPayload) {
     throw new PaymentFlowError("Nominal notifikasi Midtrans tidak valid.");
   }
 
-  return prisma.$transaction(async (transaction) => {
-    const payment = await transaction.project_payment.findUnique({
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await prisma.$transaction(async (transaction) => {
+        const payment = await transaction.project_payment.findUnique({
       where: { orderId: payload.order_id },
       select: {
         id: true,
         amount: true,
         status: true,
+        reversedAmount: true,
+        releasedToUserId: true,
         project: {
           select: {
             id: true,
@@ -318,9 +408,11 @@ export async function applyMidtransStatus(payload: MidtransStatusPayload) {
     const hasAcceptedFraudStatus =
       fraudStatus === undefined || fraudStatus === "accept";
     const isSuccessful =
-      payload.status_code === "200" &&
-      (transactionStatus === "capture" || transactionStatus === "settlement") &&
-      hasAcceptedFraudStatus;
+      ((payload.status_code === "200" || payload.status_code === "201") &&
+        transactionStatus === "settlement") ||
+      (payload.status_code === "200" &&
+        transactionStatus === "capture" &&
+        hasAcceptedFraudStatus);
 
     if (isSuccessful) {
       if (payment.status === "RELEASED" || payment.status === "HELD") {
@@ -360,9 +452,16 @@ export async function applyMidtransStatus(payload: MidtransStatusPayload) {
     }
 
     if (transactionStatus === "pending") {
-      if (!["HELD", "RELEASED"].includes(payment.status)) {
+      if (
+        !TERMINAL_PAYMENT_STATUSES.includes(
+          payment.status as (typeof TERMINAL_PAYMENT_STATUSES)[number],
+        )
+      ) {
         await transaction.project_payment.updateMany({
-          where: { id: payment.id, status: { notIn: ["HELD", "RELEASED"] } },
+          where: {
+            id: payment.id,
+            status: { notIn: [...TERMINAL_PAYMENT_STATUSES] },
+          },
           data: { ...commonData, status: "PENDING" },
         });
       }
@@ -388,6 +487,7 @@ export async function applyMidtransStatus(payload: MidtransStatusPayload) {
         "EXPIRED",
         "CANCELLED",
         "HELD",
+        "RELEASED",
         "REFUNDED",
         "CHARGEBACK",
       ];
@@ -398,9 +498,94 @@ export async function applyMidtransStatus(payload: MidtransStatusPayload) {
         "EXPIRED",
         "CANCELLED",
       ];
-      const allowedCurrentStatuses = ["REFUNDED", "CHARGEBACK"].includes(nextStatus)
+      const isReversal = ["REFUNDED", "CHARGEBACK"].includes(nextStatus);
+      const allowedCurrentStatuses = isReversal
         ? refundableStatuses
         : prePaymentFailureStatuses;
+
+      if (isReversal) {
+        const cumulativeAmount = getCumulativeReversalAmount(
+          payload,
+          payment.amount,
+        );
+        const finalStatus =
+          payment.status === "CHARGEBACK" ? "CHARGEBACK" : nextStatus;
+
+        if (
+          payment.releasedToUserId &&
+          ["RELEASED", "REFUNDED", "CHARGEBACK"].includes(payment.status)
+        ) {
+          if (cumulativeAmount <= payment.reversedAmount) {
+            if (
+              finalStatus === "CHARGEBACK" &&
+              payment.status !== "CHARGEBACK"
+            ) {
+              await transaction.project_payment.updateMany({
+                where: {
+                  id: payment.id,
+                  status: payment.status,
+                  reversedAmount: payment.reversedAmount,
+                },
+                data: { ...commonData, status: "CHARGEBACK" },
+              });
+            }
+            return { newlyHeld: false, project: payment.project };
+          }
+
+          const reversalDelta = cumulativeAmount - payment.reversedAmount;
+          const claimed = await transaction.project_payment.updateMany({
+            where: {
+              id: payment.id,
+              status: { in: ["RELEASED", "REFUNDED", "CHARGEBACK"] },
+              reversedAmount: payment.reversedAmount,
+            },
+            data: {
+              ...commonData,
+              status: finalStatus,
+              reversedAmount: cumulativeAmount,
+            },
+          });
+          if (claimed.count !== 1) {
+            return { newlyHeld: false, project: payment.project };
+          }
+
+          const updatedUser = await transaction.user.update({
+            where: { id: payment.releasedToUserId },
+            data: { saldo: { decrement: reversalDelta } },
+            select: { saldo: true },
+          });
+          await transaction.balance_transaction.create({
+            data: {
+              userId: payment.releasedToUserId,
+              projectPaymentId: payment.id,
+              externalReference: `${payment.id}:${finalStatus}:${cumulativeAmount}`,
+              type:
+                finalStatus === "CHARGEBACK"
+                  ? "PAYMENT_CHARGEBACK"
+                  : "PAYMENT_REFUND",
+              amount: -reversalDelta,
+              balanceBefore: updatedUser.saldo + reversalDelta,
+              balanceAfter: updatedUser.saldo,
+            },
+            select: { id: true },
+          });
+          return { newlyHeld: false, project: payment.project };
+        }
+
+        await transaction.project_payment.updateMany({
+          where: {
+            id: payment.id,
+            status: payment.status,
+            reversedAmount: payment.reversedAmount,
+          },
+          data: {
+            ...commonData,
+            status: finalStatus,
+            reversedAmount: cumulativeAmount,
+          },
+        });
+        return { newlyHeld: false, project: payment.project };
+      }
 
       // Midtrans dapat mengirim notifikasi tidak berurutan. Filter status pada
       // UPDATE mencegah event pending/expire lama menurunkan pembayaran HELD.
@@ -409,6 +594,20 @@ export async function applyMidtransStatus(payload: MidtransStatusPayload) {
         data: { ...commonData, status: nextStatus },
       });
     }
-    return { newlyHeld: false, project: payment.project };
-  });
+        return { newlyHeld: false, project: payment.project };
+      }, { isolationLevel: "Serializable" });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2034" &&
+        attempt < 2
+      ) {
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new PaymentFlowError(
+    "Status pembayaran gagal diproses setelah beberapa percobaan.",
+  );
 }

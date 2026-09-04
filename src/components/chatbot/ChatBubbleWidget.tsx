@@ -9,6 +9,7 @@ import {
   type FormEvent,
 } from "react";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 import { X, Send, ArrowUpRight, Sparkles } from "lucide-react";
 
 const AI_AVATAR_IMAGE_SRC = "/images/ai-avatar-placeholder.svg";
@@ -495,18 +496,24 @@ export default function ChatBubbleWidget({
           }
         >
           {isBallMode ? (
-            <img
+            <Image
               src={avatarSrc}
               alt=""
+              width={40}
+              height={40}
+              unoptimized
               className="h-10 w-10 rounded-full border-2 border-white object-cover"
               draggable={false}
             />
           ) : (
             <>
               <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white dark:bg-card p-0.5 shadow-md transition-transform duration-300 group-hover:scale-105">
-                <img
+                <Image
                   src={avatarSrc}
                   alt="Jelita AI Avatar"
+                  width={44}
+                  height={44}
+                  unoptimized
                   className="h-full w-full rounded-full object-cover"
                   draggable={false}
                 />
@@ -535,9 +542,12 @@ export default function ChatBubbleWidget({
           <div className="flex items-center justify-between border-b border-hairline bg-canvas/80 px-4 py-3.5 backdrop-blur-md">
             <div className="flex items-center gap-3">
               <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-600/10 p-0.5">
-                <img
+                <Image
                   src={avatarSrc}
                   alt="Jelita AI"
+                  width={40}
+                  height={40}
+                  unoptimized
                   className="h-full w-full rounded-full object-cover"
                 />
                 <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
@@ -567,9 +577,12 @@ export default function ChatBubbleWidget({
             {messages.length === 0 ? (
               <div className="my-auto flex flex-col items-center text-center">
                 <div className="relative mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-amber-600/10 p-1 ring-8 ring-amber-600/5">
-                  <img
+                  <Image
                     src={avatarSrc}
                     alt="Jelita AI Logo"
+                    width={80}
+                    height={80}
+                    unoptimized
                     className="h-full w-full rounded-full object-cover shadow-sm"
                   />
                 </div>

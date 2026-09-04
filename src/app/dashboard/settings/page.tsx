@@ -9,6 +9,8 @@ export const metadata = {
   description: "Kelola akun dan preferensi kamu di JemBara.",
 };
 
+export const instant = false;
+
 export default async function SettingsPage() {
   const [profileData, notificationPreferences, sessions, businessCategoryOptions] =
     await Promise.all([

@@ -1,13 +1,30 @@
+import "server-only";
+
 import { Calendar } from "lucide-react";
-import { latestProjects } from "@/lib/mock-landing";
-import { ProjectBadge } from "@/types/landing";
+import { cacheLife } from "next/cache";
+import { formatBudget, formatDeadline } from "@/lib/dashboard-utils";
+import prisma from "@/lib/prisma";
 
-const badgeStyles: Record<ProjectBadge, string> = {
-  Premium: "bg-brand-soft text-brand",
-  Urgent: "bg-danger-soft text-danger",
-};
+export default async function LatestProjects() {
+  "use cache";
+  cacheLife("minutes");
 
-export default function LatestProjects() {
+  const latestProjects = await prisma.project.findMany({
+    where: { status: "OPEN", studentId: null },
+    orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+    take: 3,
+    select: {
+      id: true,
+      title: true,
+      budget: true,
+      deadline: true,
+      umkm: { select: { nama_usaha: true } },
+      skillsNeeded: {
+        select: { skill: { select: { name: true } } },
+      },
+    },
+  });
+
   return (
     <section
       id="project"
@@ -26,44 +43,55 @@ export default function LatestProjects() {
         </p>
 
         <div className="mt-12 grid grid-cols-1 gap-5 text-left sm:grid-cols-2 lg:grid-cols-3">
-          {latestProjects.map((project, i) => (
-            <div
-              key={project.id}
-              className={`animate-reveal animate-reveal-d${Math.min(i + 1, 6)} rounded-xl border border-hairline bg-[#F9F9F9] dark:bg-card p-6`}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <p className="font-body font-black text-sm text-ink-muted">{project.clientName}</p>
-                {project.badge && (
-                  <span
-                    className={`font-display shrink-0 rounded-full px-2.5 py-1 text-xs font-black ${badgeStyles[project.badge]}`}
-                  >
-                    {project.badge}
-                  </span>
-                )}
+          {latestProjects.map((project, index) => {
+            const tags = project.skillsNeeded
+              .map(({ skill }) => skill.name)
+              .sort((first, second) => first.localeCompare(second, "id-ID"))
+              .slice(0, 3);
+
+            return (
+              <div
+                key={project.id}
+                className={`animate-reveal animate-reveal-d${Math.min(index + 1, 6)} rounded-xl border border-hairline bg-[#F9F9F9] dark:bg-card p-6`}
+              >
+                <p className="font-body text-sm font-black text-ink-muted">
+                  {project.umkm.nama_usaha}
+                </p>
+
+                <h3 className="mt-2 font-display text-base font-black text-ink">
+                  {project.title}
+                </h3>
+
+                <p className="font-body mt-4 text-xs text-ink-muted">
+                  Estimasi Budget
+                </p>
+                <p className="font-display text-sm font-black text-brand">
+                  {formatBudget(project.budget)}
+                </p>
+
+                <div className="font-body mt-3 flex items-center gap-1.5 text-xs text-ink">
+                  <Calendar size={12} />
+                  {formatDeadline(project.deadline)}
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="font-roboto rounded-md bg-canvas px-2.5 py-1 text-xs text-ink"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
-
-              <h3 className="mt-2 font-display text-base font-black text-ink">{project.title}</h3>
-
-              <p className="font-body mt-4 text-xs text-ink-muted">Estimasi Budget</p>
-              <p className="font-display text-sm font-black text-brand">{project.budgetLabel}</p>
-
-              <div className="font-body mt-3 flex items-center gap-1.5 text-xs text-ink">
-                <Calendar size={12} />
-                {project.durationLabel}
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                {project.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="font-roboto rounded-md bg-canvas px-2.5 py-1 text-xs text-ink"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
+            );
+          })}
+          {latestProjects.length === 0 && (
+            <p className="col-span-full rounded-xl border border-hairline bg-[#F9F9F9] p-10 text-center font-body text-sm text-ink-muted dark:bg-card">
+              Belum ada project terbuka saat ini.
+            </p>
+          )}
         </div>
       </div>
     </section>

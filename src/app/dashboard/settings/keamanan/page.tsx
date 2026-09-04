@@ -6,6 +6,8 @@ export const metadata = {
   description: "Kelola keamanan akun dan verifikasi autentikasi.",
 };
 
+export const instant = false;
+
 export default async function KeamananSettingsPage() {
   const sessions = await getActiveSessionsData();
   return <SecuritySettingsView sessions={sessions} />;

@@ -4,6 +4,8 @@ import MonthlyActivityCard from "@/components/active-projects/MonthlyActivityCar
 import CollaborationTipsCard from "@/components/active-projects/CollaborationTipsCard";
 import { getActiveProjectsData } from "@/lib/active-projects";
 
+export const instant = false;
+
 export default async function ActiveProjectsPage({ searchParams }: {
   searchParams: Promise<{ page?: string | string[]; status?: string | string[] }>;
 }) {

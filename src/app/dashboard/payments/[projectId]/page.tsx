@@ -3,12 +3,17 @@ import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import PaymentCheckout from "@/components/payments/PaymentCheckout";
 import { getProjectPaymentData, PaymentFlowError } from "@/lib/payments";
 
+export const instant = false;
+
 export default async function ProjectPaymentPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ projectId: string }>;
+  searchParams?: Promise<{ payment?: string }>;
 }) {
   const { projectId } = await params;
+  const search = searchParams ? await searchParams : undefined;
   let payment;
   try {
     payment = await getProjectPaymentData(projectId);
@@ -24,7 +29,10 @@ export default async function ProjectPaymentPage({
         subtitle="Amankan dana proyek sebelum kolaborasi dimulai."
       />
       <div className="mx-auto max-w-2xl">
-        <PaymentCheckout payment={payment} />
+        <PaymentCheckout
+          payment={payment}
+          paymentFinished={search?.payment === "finish"}
+        />
       </div>
     </>
   );

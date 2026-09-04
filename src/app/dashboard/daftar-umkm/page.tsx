@@ -1,6 +1,8 @@
 import AdminUmkmListView from "@/components/dashboard/admin/umkm/AdminUmkmListView";
 import { getAdminUmkmData, type AdminSearchParams } from "@/lib/admin";
 
+export const instant = false;
+
 export default async function DaftarUmkmPage({
   searchParams,
 }: {
