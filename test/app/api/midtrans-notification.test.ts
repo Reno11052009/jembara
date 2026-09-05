@@ -4,9 +4,11 @@ const mocks = vi.hoisted(() => ({
   verifySignature: vi.fn(),
   applyStatus: vi.fn(),
   createNotification: vi.fn(),
+  revalidatePath: vi.fn(),
 }));
 
 vi.mock("server-only", () => ({}));
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("@/lib/midtrans", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/midtrans")>()),
   verifyMidtransSignature: mocks.verifySignature,
@@ -71,7 +73,41 @@ describe("Midtrans notification route", () => {
     );
 
     expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
     await expect(response.json()).resolves.toEqual({ received: true });
     expect(mocks.applyStatus).toHaveBeenCalledWith(payload);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/dashboard/settings");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith(
+      "/dashboard/settings/pembayaran",
+    );
+  });
+
+  it("requires JSON content", async () => {
+    const response = await POST(
+      new Request("http://localhost/api/payments/midtrans/notification", {
+        method: "POST",
+        headers: { "content-type": "text/plain" },
+        body: JSON.stringify(payload),
+      }),
+    );
+
+    expect(response.status).toBe(415);
+    expect(mocks.verifySignature).not.toHaveBeenCalled();
+  });
+
+  it("rejects an oversized body before parsing or signature checks", async () => {
+    const response = await POST(
+      new Request("http://localhost/api/payments/midtrans/notification", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "content-length": String(65 * 1024),
+        },
+        body: JSON.stringify(payload),
+      }),
+    );
+
+    expect(response.status).toBe(413);
+    expect(mocks.verifySignature).not.toHaveBeenCalled();
   });
 });

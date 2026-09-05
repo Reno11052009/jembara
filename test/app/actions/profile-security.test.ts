@@ -177,6 +177,20 @@ describe("profile action security", () => {
     });
   });
 
+  it("publishes a student profile only after explicit opt-in", async () => {
+    const formData = profileForm();
+    formData.set("publicProfileSubmitted", "1");
+    formData.set("isPublicProfile", "on");
+
+    await expect(updateProfileAction(formData)).resolves.toEqual({ success: true });
+
+    expect(mocks.studentUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: expect.objectContaining({ isPublicProfile: true }),
+      }),
+    );
+  });
+
   it("stores a verified structured address for a student", async () => {
     const formData = profileForm();
     formData.set("addressDetail", "Jalan Veteran 8, RT 02/RW 03");

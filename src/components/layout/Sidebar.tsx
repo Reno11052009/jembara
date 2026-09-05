@@ -13,7 +13,15 @@ import {
   Building2,
   Handshake,
 } from "lucide-react";
-import { Home, ListChecks, FolderOpen, MessageSquare, CreditCard, FileText } from "lucide-react";
+import {
+  Home,
+  ListChecks,
+  FolderOpen,
+  MessageSquare,
+  CreditCard,
+  FileText,
+  BanknoteArrowDown,
+} from "lucide-react";
 import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface NavItem {
@@ -25,6 +33,7 @@ interface NavItem {
     | "portfolio"
     | "messages"
     | "earnings"
+    | "withdrawals"
     | "profile"
     | "settings"
     | "cariTalent"
@@ -47,6 +56,7 @@ const studentNavItems: NavItem[] = [
   { key: "portfolio", href: "/dashboard/portfolio", icon: FolderOpen },
   { key: "messages", href: "/dashboard/messages", icon: MessageSquare },
   { key: "earnings", href: "/dashboard/earnings", icon: CreditCard },
+  { key: "withdrawals", href: "/dashboard/withdrawals", icon: BanknoteArrowDown },
   { key: "profile", href: "/dashboard/profile", icon: User },
   { key: "settings", href: "/dashboard/settings", icon: Settings },
 ];
@@ -70,6 +80,7 @@ const adminNavItems: NavItem[] = [
   { key: "relasi", href: "/dashboard/relasi", icon: Handshake },
   { key: "lowongan", href: "/dashboard/lowongan", icon: Briefcase },
   { key: "monitorPesan", href: "/dashboard/monitor-pesan", icon: MessageSquare },
+  { key: "withdrawals", href: "/dashboard/withdrawals", icon: BanknoteArrowDown },
 ];
 
 export default function Sidebar({ role }: { role: string }) {

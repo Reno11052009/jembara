@@ -15,6 +15,7 @@ export interface Dictionary {
     portfolio: string;
     messages: string;
     earnings: string;
+    withdrawals: string;
     profile: string;
     settings: string;
     cariTalent: string;
@@ -68,6 +69,7 @@ const dictionary: Record<Language, Dictionary> = {
       portfolio: "Portofolio",
       messages: "Pesan",
       earnings: "Pendapatan",
+      withdrawals: "Penarikan Saldo",
       profile: "Profil",
       settings: "Pengaturan",
       cariTalent: "Cari Talent",
@@ -119,6 +121,7 @@ const dictionary: Record<Language, Dictionary> = {
       portfolio: "Portfolio",
       messages: "Messages",
       earnings: "Earnings",
+      withdrawals: "Withdrawals",
       profile: "Profile",
       settings: "Settings",
       cariTalent: "Find Talent",
@@ -170,6 +173,7 @@ const dictionary: Record<Language, Dictionary> = {
       portfolio: "ポートフォリオ",
       messages: "メッセージ",
       earnings: "収益",
+      withdrawals: "出金",
       profile: "プロフィール",
       settings: "設定",
       cariTalent: "人材を探す",

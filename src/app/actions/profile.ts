@@ -93,6 +93,8 @@ const profileSchema = z.object({
   behance: optionalText(2048),
   skills: optionalText(1200),
   avatarBase64: optionalText(360_000),
+  publicProfileSubmitted: z.literal("1").optional(),
+  isPublicProfile: z.literal("on").optional(),
 });
 
 const skillNameSchema = z
@@ -225,6 +227,8 @@ export async function updateProfileAction(formData: FormData) {
     behance: formEntry(formData, "behance"),
     skills: formEntry(formData, "skills"),
     avatarBase64: formEntry(formData, "avatarBase64"),
+    publicProfileSubmitted: formEntry(formData, "publicProfileSubmitted"),
+    isPublicProfile: formEntry(formData, "isPublicProfile"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message || "Data profil tidak valid" };
@@ -382,6 +386,11 @@ export async function updateProfileAction(formData: FormData) {
     }
   }
 
+  const isPublicProfile =
+    parsed.data.publicProfileSubmitted === "1"
+      ? parsed.data.isPublicProfile === "on"
+      : undefined;
+
   try {
     await prisma.$transaction(async (transaction) => {
       await transaction.user.update({
@@ -411,6 +420,7 @@ export async function updateProfileAction(formData: FormData) {
         const student = await transaction.student.upsert({
           where: { userId: session.userId },
           update: {
+            ...(isPublicProfile !== undefined ? { isPublicProfile } : {}),
             ...(parsed.data.headline !== undefined
               ? { jurusan: parsed.data.headline || null }
               : {}),
@@ -437,6 +447,7 @@ export async function updateProfileAction(formData: FormData) {
           },
           create: {
             userId: session.userId,
+            isPublicProfile: isPublicProfile ?? false,
             jurusan: parsed.data.headline || null,
             school: parsed.data.school || null,
             tingkat_pendidikan: parsed.data.tingkat_pendidikan || null,
@@ -562,5 +573,6 @@ export async function updateProfileAction(formData: FormData) {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/profile");
   revalidatePath("/dashboard/settings");
+  revalidatePath("/");
   return { success: true };
 }

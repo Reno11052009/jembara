@@ -35,6 +35,8 @@ function revalidateProjectLifecyclePaths() {
   revalidatePath("/dashboard/active-projects");
   revalidatePath("/dashboard/lowongan-saya");
   revalidatePath("/dashboard/earnings");
+  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings/pembayaran");
   revalidatePath("/dashboard/portfolio");
 }
 

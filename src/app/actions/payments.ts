@@ -35,6 +35,13 @@ async function requireUmkmPaymentViewer(projectId: unknown) {
   if (!viewer || viewer.role !== "UMKM" || !viewer.umkm) {
     throw new PaymentFlowError("Hanya pemilik UMKM yang dapat membayar proyek.");
   }
+  const ownedProject = await prisma.project.findFirst({
+    where: { id: parsed.data, umkmId: viewer.umkm.id },
+    select: { id: true },
+  });
+  if (!ownedProject) {
+    throw new PaymentFlowError("Proyek tidak ditemukan atau tidak dapat diakses.");
+  }
   return { projectId: parsed.data, userId: session.userId };
 }
 
@@ -43,6 +50,8 @@ function revalidatePaymentPaths(projectId: string) {
   revalidatePath("/dashboard/pelamar");
   revalidatePath("/dashboard/lowongan-saya");
   revalidatePath("/dashboard/active-projects");
+  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings/pembayaran");
   revalidatePath("/dashboard");
 }
 

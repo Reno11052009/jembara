@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createUserNotification } from "@/lib/notifications";
 import {
@@ -7,14 +8,59 @@ import {
 } from "@/lib/midtrans";
 import { applyMidtransStatus, PaymentFlowError } from "@/lib/payments";
 
+const MAX_WEBHOOK_BODY_BYTES = 64 * 1024;
+
+function json(body: object, status = 200) {
+  return NextResponse.json(body, {
+    status,
+    headers: { "Cache-Control": "no-store" },
+  });
+}
+
+async function readLimitedJson(request: Request): Promise<unknown> {
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+    throw new Error("UNSUPPORTED_MEDIA_TYPE");
+  }
+
+  const declaredLength = Number(request.headers.get("content-length"));
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_WEBHOOK_BODY_BYTES) {
+    throw new Error("PAYLOAD_TOO_LARGE");
+  }
+  if (!request.body) throw new Error("INVALID_JSON");
+
+  const reader = request.body.getReader();
+  const decoder = new TextDecoder();
+  let byteLength = 0;
+  let raw = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    byteLength += value.byteLength;
+    if (byteLength > MAX_WEBHOOK_BODY_BYTES) {
+      await reader.cancel();
+      throw new Error("PAYLOAD_TOO_LARGE");
+    }
+    raw += decoder.decode(value, { stream: true });
+  }
+  raw += decoder.decode();
+
+  try {
+    return JSON.parse(raw) as unknown;
+  } catch {
+    throw new Error("INVALID_JSON");
+  }
+}
+
 export async function POST(request: Request) {
   try {
-    const payload = midtransStatusSchema.parse(await request.json());
+    const payload = midtransStatusSchema.parse(await readLimitedJson(request));
     if (!verifyMidtransSignature(payload)) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+      return json({ error: "Invalid signature" }, 401);
     }
 
     const outcome = await applyMidtransStatus(payload);
+    revalidatePath("/dashboard/settings");
+    revalidatePath("/dashboard/settings/pembayaran");
     if (outcome.newlyHeld && outcome.project.student) {
       await Promise.allSettled([
         createUserNotification({
@@ -35,15 +81,24 @@ export async function POST(request: Request) {
         }),
       ]);
     }
-    return NextResponse.json({ received: true });
+    return json({ received: true });
   } catch (error) {
+    if (error instanceof Error && error.message === "PAYLOAD_TOO_LARGE") {
+      return json({ error: "Payload too large" }, 413);
+    }
+    if (error instanceof Error && error.message === "UNSUPPORTED_MEDIA_TYPE") {
+      return json({ error: "Content-Type must be application/json" }, 415);
+    }
+    if (error instanceof Error && error.message === "INVALID_JSON") {
+      return json({ error: "Invalid payload" }, 400);
+    }
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+      return json({ error: "Invalid payload" }, 400);
     }
     if (error instanceof PaymentFlowError) {
-      return NextResponse.json({ error: error.message }, { status: 422 });
+      return json({ error: "Notification rejected" }, 422);
     }
     console.error("Webhook Midtrans gagal diproses:", error);
-    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
+    return json({ error: "Webhook processing failed" }, 500);
   }
 }

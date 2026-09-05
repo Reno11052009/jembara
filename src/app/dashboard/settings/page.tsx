@@ -3,6 +3,7 @@ import { getCurrentNotificationPreferences } from "@/lib/notification-preference
 import SettingsView from "@/components/settings/SettingsView";
 import { getActiveSessionsData } from "@/lib/account-security";
 import { getBusinessCategoryOptions } from "@/lib/business-categories";
+import { getPaymentSettingsData } from "@/lib/payment-settings";
 
 export const metadata = {
   title: "Settings | JemBara",
@@ -12,12 +13,13 @@ export const metadata = {
 export const instant = false;
 
 export default async function SettingsPage() {
-  const [profileData, notificationPreferences, sessions, businessCategoryOptions] =
+  const [profileData, notificationPreferences, sessions, businessCategoryOptions, paymentSettings] =
     await Promise.all([
       getCachedProfileData(),
       getCurrentNotificationPreferences(),
       getActiveSessionsData(),
       getBusinessCategoryOptions(),
+      getPaymentSettingsData(),
     ]);
 
   return (
@@ -26,6 +28,7 @@ export default async function SettingsPage() {
       initialNotificationPreferences={notificationPreferences}
       initialSessions={sessions}
       businessCategoryOptions={businessCategoryOptions}
+      initialPaymentSettings={paymentSettings}
     />
   );
 }

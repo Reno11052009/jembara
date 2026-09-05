@@ -253,7 +253,7 @@ export default function ChatComposer({
                 />
               </div>
               <p className="mt-1 text-[11px] text-ink-muted">
-                {formatMessageAttachmentSize(uploadState.sizeBytes)} · maks. 512 MB
+                {formatMessageAttachmentSize(uploadState.sizeBytes)} · maks. 25 MB
               </p>
             </div>
             <div className="flex shrink-0 items-center">
@@ -298,8 +298,8 @@ export default function ChatComposer({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          aria-label="Lampirkan file, maksimal 512 MB"
-          title="Lampirkan file (maks. 512 MB)"
+          aria-label="Lampirkan file, maksimal 25 MB"
+          title="Lampirkan file (maks. 25 MB)"
           disabled={!canSend || isBusy}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-canvas hover:text-brand disabled:cursor-not-allowed disabled:opacity-50"
         >

@@ -5,14 +5,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   register: vi.fn(),
-  alert: vi.fn(),
 }));
 
 vi.mock("@/app/actions/auth", () => ({
   registerAction: mocks.register,
-}));
-vi.mock("sweetalert2", () => ({
-  default: { fire: mocks.alert },
 }));
 
 import RegisterForm from "@/components/auth/RegisterForm";
@@ -20,10 +16,9 @@ import RegisterForm from "@/components/auth/RegisterForm";
 describe("RegisterForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.alert.mockResolvedValue({});
     mocks.register.mockResolvedValue({
-      error: "Email sudah terdaftar. Silakan masuk atau gunakan email lain.",
-      code: "EMAIL_ALREADY_REGISTERED",
+      error:
+        "Pendaftaran belum dapat diproses. Periksa data atau masuk jika sudah memiliki akun.",
     });
   });
 
@@ -31,7 +26,7 @@ describe("RegisterForm", () => {
     cleanup();
   });
 
-  it("shows an alert when the registration email already exists", async () => {
+  it("shows a generic error when registration cannot continue", async () => {
     render(<RegisterForm />);
 
     fireEvent.change(screen.getByLabelText(/Nama Lengkap/), {
@@ -52,14 +47,7 @@ describe("RegisterForm", () => {
     fireEvent.click(screen.getByRole("button", { name: "Gabung Matchmaking" }));
 
     await waitFor(() => {
-      expect(mocks.alert).toHaveBeenCalledWith({
-        icon: "warning",
-        title: "Email sudah terdaftar",
-        text: "Silakan masuk dengan akun tersebut atau gunakan alamat email lain.",
-        confirmButtonColor: "#FF6B35",
-        confirmButtonText: "Mengerti",
-      });
+      expect(screen.getByText(/Pendaftaran belum dapat diproses/)).toBeTruthy();
     });
-    expect(screen.getByText(/Email sudah terdaftar/)).toBeTruthy();
   });
 });

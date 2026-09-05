@@ -9,7 +9,7 @@ export default async function TopTalent() {
   cacheLife("minutes");
 
   const topTalents = await prisma.student.findMany({
-    where: { available: true },
+    where: { available: true, isPublicProfile: true },
     orderBy: [
       { rating: "desc" },
       { total_project: "desc" },

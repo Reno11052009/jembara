@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   verifySession: vi.fn(),
   userFindUnique: vi.fn(),
+  projectFindFirst: vi.fn(),
   paymentFindFirst: vi.fn(),
   paymentFindUnique: vi.fn(),
   consumeRateLimit: vi.fn(),
@@ -28,6 +29,7 @@ vi.mock("@/lib/session", () => ({ verifySession: mocks.verifySession }));
 vi.mock("@/lib/prisma", () => ({
   default: {
     user: { findUnique: mocks.userFindUnique },
+    project: { findFirst: mocks.projectFindFirst },
     project_payment: {
       findFirst: mocks.paymentFindFirst,
       findUnique: mocks.paymentFindUnique,
@@ -69,6 +71,7 @@ describe("syncProjectPaymentAction", () => {
       role: "UMKM",
       umkm: { id: "umkm-1" },
     });
+    mocks.projectFindFirst.mockResolvedValue({ id: projectId });
     mocks.paymentFindFirst.mockResolvedValue({ orderId: "JEM-order-1" });
     mocks.getMidtransStatus.mockResolvedValue({ transaction_status: "pending" });
     mocks.applyMidtransStatus.mockResolvedValue({
@@ -86,6 +89,19 @@ describe("syncProjectPaymentAction", () => {
       error: "Status terlalu sering diperiksa. Tunggu sebentar lalu coba lagi.",
     });
 
+    expect(mocks.paymentFindFirst).not.toHaveBeenCalled();
+    expect(mocks.getMidtransStatus).not.toHaveBeenCalled();
+  });
+
+  it("does not let another UMKM consume a project's rate-limit bucket", async () => {
+    mocks.projectFindFirst.mockResolvedValue(null);
+
+    await expect(syncProjectPaymentAction(projectId)).resolves.toEqual({
+      success: false,
+      error: "Proyek tidak ditemukan atau tidak dapat diakses.",
+    });
+
+    expect(mocks.consumeRateLimit).not.toHaveBeenCalled();
     expect(mocks.paymentFindFirst).not.toHaveBeenCalled();
     expect(mocks.getMidtransStatus).not.toHaveBeenCalled();
   });

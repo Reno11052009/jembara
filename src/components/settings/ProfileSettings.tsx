@@ -449,6 +449,34 @@ export default function ProfileSettings({
             />
           </div>
 
+          {!isUmkm && (
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-hairline dark:bg-surface">
+              <input type="hidden" name="publicProfileSubmitted" value="1" />
+              <label
+                htmlFor="isPublicProfile"
+                className="flex cursor-pointer items-start gap-3"
+              >
+                <input
+                  id="isPublicProfile"
+                  name="isPublicProfile"
+                  type="checkbox"
+                  defaultChecked={initialData.isPublicProfile}
+                  className="mt-1 h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
+                />
+                <span>
+                  <span className="block text-sm font-bold text-gray-900 dark:text-ink">
+                    Tampilkan profil di halaman publik
+                  </span>
+                  <span className="mt-1 block text-xs leading-relaxed text-gray-500 dark:text-ink-muted">
+                    Jika diaktifkan, nama, sekolah, jurusan, skill, rating, dan
+                    jumlah proyek dapat tampil pada bagian talenta di beranda.
+                    Alamat, email, dan nomor telepon tetap tidak ditampilkan.
+                  </span>
+                </span>
+              </label>
+            </div>
+          )}
+
           <div className="flex justify-end mt-2">
             <button 
               type="submit" 

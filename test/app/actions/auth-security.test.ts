@@ -90,7 +90,7 @@ describe("login rate-limit security", () => {
     );
   });
 
-  it("returns a dedicated error when a registration email already exists", async () => {
+  it("returns a generic error when a registration email already exists", async () => {
     mocks.userFindFirst.mockResolvedValue({ id: "existing-user" });
 
     await expect(
@@ -102,8 +102,8 @@ describe("login rate-limit security", () => {
         confirmPassword: "Password123!",
       }),
     ).resolves.toEqual({
-      error: "Email sudah terdaftar. Silakan masuk atau gunakan email lain.",
-      code: "EMAIL_ALREADY_REGISTERED",
+      error:
+        "Pendaftaran belum dapat diproses. Periksa data atau masuk jika sudah memiliki akun.",
     });
     expect(mocks.userCreate).not.toHaveBeenCalled();
   });
@@ -126,8 +126,8 @@ describe("login rate-limit security", () => {
         confirmPassword: "Password123!",
       }),
     ).resolves.toEqual({
-      error: "Email sudah terdaftar. Silakan masuk atau gunakan email lain.",
-      code: "EMAIL_ALREADY_REGISTERED",
+      error:
+        "Pendaftaran belum dapat diproses. Periksa data atau masuk jika sudah memiliki akun.",
     });
     expect(mocks.createSession).not.toHaveBeenCalled();
   });

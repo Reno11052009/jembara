@@ -90,7 +90,7 @@ import LanguageAppearanceSettings from "./LanguageAppearanceSettings";
 import { usePreferences } from "@/contexts/PreferencesContext";
 import type { ProfileData } from "@/lib/profile";
 import type { NotificationPreferences } from "@/types/notification";
-import type { ActiveSession } from "@/types/settings";
+import type { ActiveSession, PaymentSettingsData } from "@/types/settings";
 import type { BusinessCategoryOption } from "@/lib/business-categories";
 
 const tabIds = ["profil", "keamanan", "notifikasi", "pembayaran", "privasi", "bahasa"] as const;
@@ -100,6 +100,7 @@ interface SettingsViewProps {
   initialNotificationPreferences: NotificationPreferences;
   initialSessions: ActiveSession[];
   businessCategoryOptions: BusinessCategoryOption[];
+  initialPaymentSettings: PaymentSettingsData;
 }
 
 export default function SettingsView({
@@ -107,6 +108,7 @@ export default function SettingsView({
   initialNotificationPreferences,
   initialSessions,
   businessCategoryOptions,
+  initialPaymentSettings,
 }: SettingsViewProps) {
   const [activeTab, setActiveTab] = useState<(typeof tabIds)[number]>("profil");
   const { dict } = usePreferences();
@@ -184,7 +186,9 @@ export default function SettingsView({
           {activeTab === "notifikasi" && (
             <NotificationSettingsCard initialPreferences={initialNotificationPreferences} />
           )}
-          {activeTab === "pembayaran" && <PaymentSettingsView />}
+          {activeTab === "pembayaran" && (
+            <PaymentSettingsView data={initialPaymentSettings} />
+          )}
           {activeTab === "privasi" && <PrivacySettingsView />}
           {activeTab === "bahasa" && <LanguageAppearanceSettings />}
         </div>

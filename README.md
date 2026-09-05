@@ -306,6 +306,7 @@ npm run lint
 5. Isi proposal minimal 50 karakter, setujui budget project, kemudian tekan **Kirim Proposal**.
 6. Pantau status pengajuan melalui **Proposal Saya**, aktivitas kerja melalui **Proyek Aktif**, dan komunikasi project melalui **Pesan**.
 7. Periksa notifikasi pada bagian kanan atas dashboard agar tidak melewatkan pembaruan penting.
+8. Simpan rekening atau e-wallet pada **Pengaturan → Pembayaran**. Setelah saldo tersedia mencapai minimal Rp10.000, buka **Penarikan Saldo**, pilih rekening tujuan, lalu kirim permintaan untuk diproses Admin.
 
 #### Sebagai UMKM
 
@@ -323,6 +324,7 @@ npm run lint
 1. Untuk lingkungan lokal, jalankan seed database dan masuk menggunakan kredensial `ADMIN_SEED_EMAIL` serta `ADMIN_SEED_PASSWORD` yang dikonfigurasi pada file `.env`.
 2. Gunakan dashboard admin untuk memantau ringkasan pengguna, UMKM, project, dan aktivitas platform.
 3. Buka menu **Daftar User**, **Daftar UMKM**, **Relasi**, **Lowongan**, atau **Monitor Pesan** sesuai data yang ingin ditinjau.
+4. Buka **Penarikan Saldo** untuk memeriksa tujuan transfer, memproses pembayaran manual, atau menolak permintaan. Penolakan otomatis mengembalikan saldo Student.
 
 > **Catatan:** Setiap pengguna hanya dapat mengakses halaman dan tindakan yang sesuai dengan perannya. Jangan membagikan kata sandi atau kredensial admin kepada pihak lain.
 

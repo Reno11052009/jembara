@@ -20,8 +20,12 @@ describe("security proxy", () => {
     expect(firstCsp).not.toContain("strict-dynamic");
     expect(firstCsp?.match(/script-src[^;]+/)?.[0]).toContain("'unsafe-inline'");
     expect(firstCsp?.match(/script-src[^;]+/)?.[0]).toContain(
-      "https://*.midtrans.com",
+      "https://app.midtrans.com",
     );
+    expect(firstCsp?.match(/script-src[^;]+/)?.[0]).not.toContain(
+      "https://*.cloudfront.net",
+    );
+    expect(firstCsp).toContain("script-src-attr 'none'");
     expect(firstCsp?.match(/connect-src[^;]+/)?.[0]).toContain(
       "https://*.veritrans.co.id",
     );

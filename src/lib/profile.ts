@@ -64,6 +64,7 @@ export const getCachedProfileData = cache(async () => {
               kelurahan_kode: true,
               kelurahan_nama: true,
               available: true,
+              isPublicProfile: true,
               rating: true,
               total_project: true,
               skills: {
@@ -153,6 +154,7 @@ export const getCachedProfileData = cache(async () => {
           linkedin: user.linkedin || "",
           behance: user.behance || "",
           available: student?.available || false,
+          isPublicProfile: student?.isPublicProfile || false,
           rating: student?.rating || 0,
           reviewCount: student?._count.reviews || 0,
           totalProject: student?.total_project || 0,
@@ -202,6 +204,7 @@ export const getCachedProfileData = cache(async () => {
     linkedin: "",
     behance: "",
     available: false,
+    isPublicProfile: false,
     rating: 0,
     reviewCount: 0,
     totalProject: 0,

@@ -39,6 +39,14 @@ export const config = {
           limit: 60,
           windowMs: 60 * 1000,
         },
+        attachmentUploadByUserHour: {
+          limit: 10,
+          windowMs: 60 * 60 * 1000,
+        },
+        attachmentUploadByUserDay: {
+          limit: 20,
+          windowMs: 24 * 60 * 60 * 1000,
+        },
         portfolioCreateByUser: {
           limit: 5,
           windowMs: 10 * 60 * 1000,
@@ -58,6 +66,18 @@ export const config = {
         paymentSyncByProject: {
           limit: 30,
           windowMs: 60 * 1000,
+        },
+        withdrawalCreateByUser: {
+          limit: 5,
+          windowMs: 24 * 60 * 60 * 1000,
+        },
+        withdrawalDecisionByAdmin: {
+          limit: 30,
+          windowMs: 60 * 60 * 1000,
+        },
+        payoutMethodMutationByUser: {
+          limit: 20,
+          windowMs: 60 * 60 * 1000,
         },
         chatbotByUserMinute: {
           limit: 10,

@@ -28,8 +28,15 @@ export interface Transaction {
   date: string; // e.g. "15 Jan 2026"
   description: string;
   amount: string; // formatted, e.g. "Rp 1.500.000"
-  amountType: "credit" | "debit";
+  amountType: "credit" | "debit" | "neutral";
   status: string; // e.g. "Selesai"
+}
+
+export interface PaymentSettingsData {
+  canManagePayoutMethods: boolean;
+  balanceLabel: string;
+  paymentMethods: PaymentMethod[];
+  transactions: Transaction[];
 }
 
 export interface ProfileVisibilityOption {
