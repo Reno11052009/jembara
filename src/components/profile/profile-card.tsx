@@ -40,7 +40,7 @@ export default function ProfileCard({
           : "Pengguna";
 
   return (
-    <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-100 dark:border-hairline p-6 flex flex-col items-center text-center sticky top-24">
+    <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-100 dark:border-hairline p-6 flex flex-col items-center text-center static lg:sticky lg:top-24">
       {/* Avatar dapat berupa data URL hasil unggahan profil. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img

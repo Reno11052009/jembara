@@ -15,6 +15,23 @@ export const mockPaymentMethods: PaymentMethod[] = [
   },
 ];
 
+// Metode pembayaran untuk akun UMKM — dipakai buat membayar talenta/proyek,
+// bukan buat menarik dana seperti versi Student di atas.
+export const mockPaymentMethodsUmkm: PaymentMethod[] = [
+  {
+    id: "payment-method-umkm-1",
+    name: "Bank BCA",
+    detailLine: "Virtual Account • •••• 5678",
+    isPrimary: true,
+  },
+  {
+    id: "payment-method-umkm-2",
+    name: "GoPay",
+    detailLine: "E-Wallet • +62 812 •••• 7890",
+    isPrimary: false,
+  },
+];
+
 export const mockTransactions: Transaction[] = [
   {
     id: "transaction-1",
@@ -53,6 +70,36 @@ export const mockTransactions: Transaction[] = [
     date: "15 Des 2025",
     description: "Biaya Platform Jasa Layanan",
     amount: "Rp 50.000",
+    amountType: "debit",
+    status: "Selesai",
+  },
+];
+
+// Riwayat transaksi untuk akun UMKM — semuanya pembayaran keluar untuk
+// proyek/layanan, jadi ditampilkan polos tanpa tanda +/- seperti versi
+// Student (yang membedakan uang masuk vs keluar).
+export const mockTransactionsUmkm: Transaction[] = [
+  {
+    id: "transaction-umkm-1",
+    date: "15 Jan 2026",
+    description: "Pembayaran DP Desain Website",
+    amount: "Rp 1.500.000",
+    amountType: "debit",
+    status: "Selesai",
+  },
+  {
+    id: "transaction-umkm-2",
+    date: "10 Jan 2026",
+    description: "Biaya Pasang Lowongan Tambahan",
+    amount: "Rp 150.000",
+    amountType: "debit",
+    status: "Selesai",
+  },
+  {
+    id: "transaction-umkm-3",
+    date: "05 Des 2025",
+    description: "Pelunasan Proyek Optimasi SEO",
+    amount: "Rp 2.000.000",
     amountType: "debit",
     status: "Selesai",
   },

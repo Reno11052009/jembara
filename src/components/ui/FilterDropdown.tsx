@@ -50,7 +50,7 @@ export default function FilterDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full z-10 mt-2 w-56 overflow-hidden rounded-2xl border border-hairline bg-card py-2 shadow-xl">
+        <div className="absolute left-0 top-full z-20 mt-2 w-56 max-w-[calc(100vw-2.5rem)] overflow-hidden rounded-2xl border border-hairline bg-card py-2 shadow-xl">
           <button
             type="button"
             onClick={() => {

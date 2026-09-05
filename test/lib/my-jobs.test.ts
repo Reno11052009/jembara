@@ -86,7 +86,7 @@ describe("UMKM project data", () => {
     const data = await getMyJobsData();
 
     expect(mocks.projectFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { umkmId: "umkm-1" } }),
+      expect.objectContaining({ where: expect.objectContaining({ umkmId: "umkm-1" }) }),
     );
     expect(data.listings[0]).toMatchObject({
       id: "project-1",

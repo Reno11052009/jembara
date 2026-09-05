@@ -1,10 +1,12 @@
-import { mockTransactions } from "@/lib/mock-payment-settings";
+import { mockTransactions, mockTransactionsUmkm } from "@/lib/mock-payment-settings";
 
-export default function TransactionHistoryCard() {
+export default function TransactionHistoryCard({ isUmkm = false }: { isUmkm?: boolean }) {
+  const transactions = isUmkm ? mockTransactionsUmkm : mockTransactions;
+
   return (
     <section className="rounded-xl border border-[#ECECEC] dark:border-[#2A2A2A] bg-white dark:bg-card p-6">
       <h2 className="font-display text-lg font-bold text-neutral-900 dark:text-ink mb-5">
-        Riwayat Transaksi
+        {isUmkm ? "Riwayat Transaksi Terakhir" : "Riwayat Transaksi"}
       </h2>
 
       <div className="overflow-x-auto">
@@ -26,7 +28,7 @@ export default function TransactionHistoryCard() {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#ECECEC]">
-            {mockTransactions.map((transaction) => (
+            {transactions.map((transaction) => (
               <tr key={transaction.id}>
                 <td className="font-body text-sm text-neutral-900 dark:text-ink px-4 py-4 whitespace-nowrap">
                   {transaction.date}
@@ -36,12 +38,12 @@ export default function TransactionHistoryCard() {
                 </td>
                 <td
                   className={`font-body text-sm font-semibold text-right px-4 py-4 whitespace-nowrap ${
-                    transaction.amountType === "credit"
+                    !isUmkm && transaction.amountType === "credit"
                       ? "text-green-600 dark:text-green-400"
                       : "text-neutral-900 dark:text-ink"
                   }`}
                 >
-                  {transaction.amountType === "credit" ? "+ " : "- "}
+                  {!isUmkm && (transaction.amountType === "credit" ? "+ " : "- ")}
                   {transaction.amount}
                 </td>
                 <td className="px-4 py-4">

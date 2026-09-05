@@ -47,7 +47,7 @@ export default function ChangePasswordCard() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-xl border border-[#ECECEC] bg-white dark:bg-card p-6">
+    <form onSubmit={handleSubmit} className="rounded-xl border border-[#ECECEC] dark:border-gray bg-white dark:bg-card p-6">
       <h2 className="mb-5 font-display text-lg font-bold text-neutral-900 dark:text-ink">
         Ubah Password
       </h2>
@@ -55,7 +55,7 @@ export default function ChangePasswordCard() {
       <div className="mb-4">
         <Input
           type="password"
-          label="PASSWORD SAAT INI"
+          label="Password Saat Ini"
           value={currentPassword}
           onChange={(event) => setCurrentPassword(event.target.value)}
           autoComplete="current-password"
@@ -66,7 +66,7 @@ export default function ChangePasswordCard() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Input
           type="password"
-          label="PASSWORD BARU"
+          label="Password Baru"
           value={newPassword}
           onChange={(event) => setNewPassword(event.target.value)}
           autoComplete="new-password"
@@ -75,7 +75,7 @@ export default function ChangePasswordCard() {
         />
         <Input
           type="password"
-          label="KONFIRMASI PASSWORD BARU"
+          label="Konfirmasi Password Baru"
           value={confirmPassword}
           onChange={(event) => setConfirmPassword(event.target.value)}
           autoComplete="new-password"
@@ -90,7 +90,7 @@ export default function ChangePasswordCard() {
           disabled={isSaving}
           className="rounded-full bg-brand px-6 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSaving ? "Menyimpan..." : "Ubah Password"}
+          {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
         </button>
       </div>
     </form>

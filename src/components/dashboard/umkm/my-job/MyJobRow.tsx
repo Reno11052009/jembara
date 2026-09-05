@@ -22,14 +22,19 @@ export default function MyJobRow({ listing }: { listing: MyJobListing }) {
 
   return (
     <article className="rounded-xl border border-hairline bg-card px-6 py-5">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex items-start gap-4">
+        {/* Kolom kiri: title/badge/desc/skills — lebar fleksibel, boleh
+            tumbuh/menyusut, tapi TIDAK mempengaruhi lebar kolom kanan. */}
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-3">
-            <h3 className="font-display text-lg font-black text-ink">
+          <div className="flex min-w-0 items-center gap-3">
+            <h3
+              title={listing.title}
+              className="truncate font-display text-lg font-black text-ink"
+            >
               {listing.title}
             </h3>
             <span
-              className={`rounded-full px-3 py-1 text-xs font-bold ${statusStyles[listing.status]}`}
+              className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${statusStyles[listing.status]}`}
             >
               {listing.status}
             </span>
@@ -49,29 +54,40 @@ export default function MyJobRow({ listing }: { listing: MyJobListing }) {
           </div>
         </div>
 
-        <div className="grid min-w-64 grid-cols-2 gap-x-6 gap-y-3 text-sm">
-          <div>
+        {/* Kolom kanan: Budget/Proposal/Tanggal/Lokasi — LEBAR FIXED (w-72),
+            bukan min-w. shrink-0 biar flex parent nggak pernah nyusutin dia.
+            Ini kunci alignment: box ini selalu punya lebar sama persis di
+            SEMUA card, nggak peduli sepanjang apa teks di dalamnya. */}
+        <div className="grid w-72 shrink-0 grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          <div className="min-w-0">
             <p className="text-xs text-ink-muted">Budget</p>
-            <p className="mt-0.5 font-display font-black text-ink">
+            <p className="mt-0.5 truncate font-display font-black text-ink">
               {listing.budgetLabel}
             </p>
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-xs text-ink-muted">Proposal Masuk</p>
-            <p className="mt-0.5 font-display font-black text-ink">
+            <p className="mt-0.5 truncate font-display font-black text-ink">
               {listing.applicantCount} proposal
             </p>
           </div>
-          <p className="flex items-center gap-1.5 text-ink-muted">
-            <CalendarDays size={14} /> {listing.deadlineLabel}
+          <p className="flex min-w-0 items-center gap-1.5 text-ink-muted">
+            <CalendarDays size={14} className="shrink-0" />
+            <span className="truncate">{listing.deadlineLabel}</span>
           </p>
-          <p className="flex items-center gap-1.5 text-ink-muted">
-            <MapPin size={14} /> {listing.workModeLabel} · {listing.locationLabel}
+          <p
+            title={`${listing.workModeLabel} · ${listing.locationLabel}`}
+            className="flex min-w-0 items-center gap-1.5 text-ink-muted"
+          >
+            <MapPin size={14} className="shrink-0" />
+            <span className="truncate">
+              {listing.workModeLabel} · {listing.locationLabel}
+            </span>
           </p>
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-4">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-4">
         <p className="text-xs text-ink-muted">
           Dipublikasikan {listing.postedDateLabel}
         </p>

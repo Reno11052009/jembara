@@ -44,6 +44,9 @@ export default function ProfileSettings({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const isUmkm = initialData.role === "UMKM";
+  const displayName = isUmkm
+    ? initialData.businessName || initialData.name
+    : initialData.name;
   const showSemester = educationUsesSemester(educationLevel);
   const hasLegacyEducationLevel =
     Boolean(initialData.tingkat_pendidikan) &&
@@ -211,6 +214,232 @@ export default function ProfileSettings({
     }
   };
 
+  // Perusahaan (UMKM) belum punya foto logo asli — sementara tampilkan
+  // inisial nama perusahaan sebagai placeholder visual, bukan foto sungguhan.
+  const companyInitials = displayName
+    .split(" ")
+    .map((part) => part[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  if (isUmkm) {
+    return (
+      <div className="flex flex-col gap-6 pb-10">
+        {/* Header Logo Card — Perusahaan */}
+        <div className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline p-6 shadow-sm flex items-center gap-5">
+          <div
+            className="relative group cursor-pointer w-18 h-18 shrink-0"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <div className="w-full h-full rounded-full overflow-hidden border border-gray-200 dark:border-hairline bg-brand-soft flex items-center justify-center">
+              <span className="font-display text-lg font-black text-brand">
+                {companyInitials}
+              </span>
+            </div>
+            <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <Camera className="w-5 h-5 text-white" />
+            </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept="image/*"
+              className="hidden"
+            />
+          </div>
+          <div>
+            <h2 className="font-display text-xl font-bold text-gray-900 dark:text-ink leading-none mb-2.5">
+              {displayName}
+            </h2>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="rounded-full border border-gray-900 dark:border-ink px-4 py-1.5 text-xs font-body font-semibold text-gray-900 dark:text-ink hover:bg-gray-900 dark:hover:bg-ink hover:text-white dark:hover:text-canvas transition"
+            >
+              Ganti Logo
+            </button>
+          </div>
+        </div>
+
+        <form onSubmit={handleSaveProfile} className="flex flex-col gap-6">
+          {/* "Nama Lengkap" tidak ditampilkan untuk perusahaan — dikirim
+              tersembunyi agar validasi backend (name wajib diisi) tetap lolos. */}
+          <input type="hidden" name="name" value={initialData.name} />
+
+          {/* Profil Perusahaan Card */}
+          <div className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline p-6 lg:p-7 shadow-sm flex flex-col gap-5">
+            <h3 className="font-display text-lg font-bold text-gray-900 dark:text-ink mb-1">
+              Profil Perusahaan
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block font-body text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
+                  Nama Perusahaan <span className="text-red-500 dark:text-red-400">*</span>
+                </label>
+                <input
+                  id="businessName"
+                  type="text"
+                  name="businessName"
+                  defaultValue={initialData.businessName}
+                  minLength={3}
+                  maxLength={120}
+                  autoComplete="organization"
+                  placeholder="Contoh: Java Woodcraft"
+                  className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm font-body text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                  required
+                />
+              </div>
+              <div>
+                <SearchableSelect
+                  id="businessCategory"
+                  name="businessCategory"
+                  label="Industri / Kategori"
+                  value={businessCategory}
+                  onChange={setBusinessCategory}
+                  options={selectableBusinessCategories}
+                  placeholder="Pilih industri / kategori usaha"
+                  searchPlaceholder="Cari industri / kategori..."
+                  required
+                />
+                {selectableBusinessCategories.length === 0 ? (
+                  <p className="mt-1.5 text-xs font-body text-red-600">
+                    Master kategori usaha belum tersedia.
+                  </p>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block font-body text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
+                  Email Perusahaan <span className="text-red-500 dark:text-red-400">*</span>
+                </label>
+                <input
+                  type="email"
+                  defaultValue={initialData.email || ""}
+                  placeholder="contact@perusahaan.com"
+                  className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm font-body text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                  disabled
+                />
+              </div>
+              <div>
+                <label className="block font-body text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
+                  Nomor Telepon
+                </label>
+                <input
+                  type="text"
+                  name="phone"
+                  defaultValue={initialData.phone || ""}
+                  placeholder="+62 812-3456-7890"
+                  className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm font-body text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                />
+              </div>
+            </div>
+
+            <div>
+              <h4 className="mb-3 font-body text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase">
+                Alamat Utama
+              </h4>
+              <IndonesiaRegionFields
+                initialValue={{
+                  addressDetail: initialData.addressDetail,
+                  provinceCode: initialData.provinceCode,
+                  provinceName: initialData.provinceName,
+                  regencyCode: initialData.regencyCode,
+                  regencyName: initialData.regencyName,
+                  districtCode: initialData.districtCode,
+                  districtName: initialData.districtName,
+                  villageCode: initialData.villageCode,
+                  villageName: initialData.villageName,
+                }}
+                allowManualFallback
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-5">
+              <div>
+                <label htmlFor="businessWebsite" className="block font-body text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
+                  Website Resmi
+                </label>
+                <input
+                  id="businessWebsite"
+                  type="text"
+                  name="businessWebsite"
+                  defaultValue={initialData.businessWebsite}
+                  maxLength={2048}
+                  inputMode="url"
+                  autoComplete="url"
+                  placeholder="www.javawoodcraft.com"
+                  className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm font-body text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                />
+              </div>
+            </div>
+
+            {/*
+              Jumlah Karyawan & Tahun Berdiri: kolomnya belum ada di database
+              (lihat lib/profile.ts & app/actions/profile.ts). Ditampilkan
+              dulu sesuai desain, tapi belum tersambung ke penyimpanan —
+              backend perlu nambahin field ini dulu di skema UMKM.
+            */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label htmlFor="employeeCount" className="block font-body text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
+                  Jumlah Karyawan
+                </label>
+                <input
+                  id="employeeCount"
+                  type="text"
+                  name="employeeCount"
+                  placeholder="Contoh: 11 - 50 Karyawan"
+                  className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm font-body text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                />
+              </div>
+              <div>
+                <label htmlFor="foundedYear" className="block font-body text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
+                  Tahun Berdiri
+                </label>
+                <input
+                  id="foundedYear"
+                  type="number"
+                  name="foundedYear"
+                  min={1900}
+                  max={new Date().getFullYear()}
+                  placeholder="Contoh: 2018"
+                  className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm font-body text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-body text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
+                Deskripsi Perusahaan
+              </label>
+              <textarea
+                name="about"
+                rows={3}
+                defaultValue={initialData.about}
+                className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm font-body text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand resize-y min-h-11.5"
+              />
+            </div>
+
+            <div className="flex justify-end mt-2">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="bg-brand hover:bg-brand-dark text-white font-body font-bold text-sm px-6 py-2.5 rounded-full shadow-sm transition disabled:opacity-70"
+              >
+                {isLoading ? "Menyimpan..." : "Simpan Perubahan"}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6 pb-10">
       {/* Header Avatar Card */}
@@ -314,64 +543,10 @@ export default function ProfileSettings({
 
           <div className="border-t border-gray-100 dark:border-hairline pt-6">
             <h3 className="mb-5 text-lg font-bold text-gray-900 dark:text-ink">
-              {isUmkm ? "Informasi Usaha" : "Informasi Pendidikan"}
+              Informasi Pendidikan
             </h3>
 
-            {isUmkm ? (
-              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
-                    Nama Usaha <span className="text-red-500 dark:text-red-400">*</span>
-                  </label>
-                  <input
-                    id="businessName"
-                    type="text"
-                    name="businessName"
-                    defaultValue={initialData.businessName}
-                    minLength={3}
-                    maxLength={120}
-                    autoComplete="organization"
-                    placeholder="Contoh: Kopi Jembara"
-                    className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-                    required
-                  />
-                </div>
-                <div>
-                  <SearchableSelect
-                    id="businessCategory"
-                    name="businessCategory"
-                    label="Kategori Usaha"
-                    value={businessCategory}
-                    onChange={setBusinessCategory}
-                    options={selectableBusinessCategories}
-                    placeholder="Pilih kategori usaha"
-                    searchPlaceholder="Cari kategori usaha..."
-                    required
-                  />
-                  {selectableBusinessCategories.length === 0 ? (
-                    <p className="mt-1.5 text-xs text-red-600">
-                      Master kategori usaha belum tersedia.
-                    </p>
-                  ) : null}
-                </div>
-                <div>
-                  <label htmlFor="businessWebsite" className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
-                    Website Usaha
-                  </label>
-                  <input
-                    id="businessWebsite"
-                    type="text"
-                    name="businessWebsite"
-                    defaultValue={initialData.businessWebsite}
-                    maxLength={2048}
-                    inputMode="url"
-                    autoComplete="url"
-                    placeholder="tokokamu.id"
-                    className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-                  />
-                </div>
-              </div>
-            ) : (
+            {(
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <div>
                   <SearchableSelect
@@ -439,7 +614,7 @@ export default function ProfileSettings({
 
           <div>
             <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
-              {isUmkm ? "Deskripsi Usaha" : "Bio"}
+              Bio
             </label>
             <textarea
               name="about"
@@ -460,8 +635,8 @@ export default function ProfileSettings({
           </div>
         </div>
 
-        {/* Skill & Keahlian hanya relevan untuk profil pelajar. */}
-        {!isUmkm && <div className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline p-6 lg:p-7 shadow-sm">
+        {/* Skill & Keahlian — khusus profil pelajar. */}
+        <div className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline p-6 lg:p-7 shadow-sm">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
             <h3 className="text-lg font-bold text-gray-900 dark:text-ink">Skill & Keahlian</h3>
             <button 
@@ -493,7 +668,7 @@ export default function ProfileSettings({
               <p className="text-sm text-gray-500 dark:text-ink-muted italic">Belum ada skill yang ditambahkan.</p>
             )}
           </div>
-        </div>}
+        </div>
 
 
         {/* Link Portfolio & Sosial Media Card */}

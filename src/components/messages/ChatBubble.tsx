@@ -22,7 +22,7 @@ function MessageStatusTicks({ status }: { status: ChatMessage["status"] }) {
     return <CheckCheck size={14} className="text-white/60" />;
   }
 
-  return <CheckCheck size={14} className="text-white" />;
+  return <CheckCheck size={14} className="text-sky-300" />;
 }
 
 export default function ChatBubble({ message }: ChatBubbleProps) {

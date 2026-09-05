@@ -1,19 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { profileVisibilityOptions, defaultProfileVisibility } from "@/lib/mock-privacy-settings";
+import {
+  profileVisibilityOptions,
+  defaultProfileVisibility,
+  profileVisibilityOptionsUmkm,
+  defaultProfileVisibilityUmkm,
+} from "@/lib/mock-privacy-settings";
 
-export default function ProfileVisibilityCard() {
-  const [selected, setSelected] = useState(defaultProfileVisibility);
+export default function ProfileVisibilityCard({ isUmkm = false }: { isUmkm?: boolean }) {
+  const options = isUmkm ? profileVisibilityOptionsUmkm : profileVisibilityOptions;
+  const [selected, setSelected] = useState(
+    isUmkm ? defaultProfileVisibilityUmkm : defaultProfileVisibility
+  );
 
   return (
     <section className="rounded-xl border border-[#ECECEC] dark:border-[#2A2A2A] bg-white dark:bg-card p-6">
       <h2 className="font-display text-lg font-bold text-neutral-900 dark:text-ink mb-5">
-        Visibilitas Profil
+        {isUmkm ? "Visibilitas Profil Perusahaan" : "Visibilitas Profil"}
       </h2>
 
       <div className="flex flex-col gap-5">
-        {profileVisibilityOptions.map((option) => {
+        {options.map((option) => {
           const isSelected = option.id === selected;
 
           return (

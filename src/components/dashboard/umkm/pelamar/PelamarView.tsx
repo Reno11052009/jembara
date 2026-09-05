@@ -67,8 +67,8 @@ export default function PelamarView({ data }: { data: ApplicantsData }) {
             onClick={() => setActiveTab(tab)}
             className={`rounded-full px-4 py-2 text-sm font-display font-bold transition-colors ${
               activeTab === tab
-                ? "bg-ink text-white"
-                : "border border-hairline bg-card text-ink hover:border-brand hover:text-brand"
+                  ? "bg-ink text-white dark:text-canvas"
+                  : "border border-hairline bg-card text-ink hover:border-brand hover:text-brand"
             }`}
           >
             {tab} ({data.tabCounts[tab]})

@@ -34,29 +34,59 @@ export default function MessagesView({
     });
   };
 
+  const handleBackToList = () => {
+    router.replace(`/dashboard/messages`, {
+      scroll: false,
+    });
+  };
+
+  const hasSelected = Boolean(initialSelectedConversationId && selectedConversation);
+
   return (
-    <div className="flex h-full">
-      <ConversationListPanel
-        conversations={conversations}
-        selectedConversationId={initialSelectedConversationId}
-        onSelectConversation={handleSelectConversation}
-      />
-      {selectedConversation ? (
-        <ChatPanel
-          key={
-            selectedConversation.id +
-            ":" +
-            ((conversationMessages[selectedConversation.id] ?? []).at(-1)?.id ??
-              "empty")
-          }
-          conversation={selectedConversation}
-          messages={conversationMessages[selectedConversation.id] ?? []}
+    <div className="flex h-full w-full overflow-hidden">
+      {/* 
+        Di layar mobile (< lg):
+        - Jika belum ada obrolan dipilih (!hasSelected), tampilkan daftar percakapan (ConversationListPanel).
+        - Jika obrolan dipilih (hasSelected), tampilkan ChatPanel saja dengan tombol kembali ke daftar.
+        Di layar desktop (>= lg): Tampilkan kedua panel bersisian (2 kolom).
+      */}
+      <div
+        className={`h-full w-full lg:w-90 shrink-0 ${
+          hasSelected ? "hidden lg:block" : "block"
+        }`}
+      >
+        <ConversationListPanel
+          conversations={conversations}
+          selectedConversationId={initialSelectedConversationId}
+          onSelectConversation={handleSelectConversation}
         />
-      ) : (
-        <div className="flex flex-1 items-center justify-center bg-card">
-          <p className="font-body text-sm text-ink-muted">Pilih percakapan.</p>
-        </div>
-      )}
+      </div>
+
+      <div
+        className={`h-full flex-1 ${
+          hasSelected ? "block" : "hidden lg:block"
+        }`}
+      >
+        {selectedConversation ? (
+          <ChatPanel
+            key={
+              selectedConversation.id +
+              ":" +
+              ((conversationMessages[selectedConversation.id] ?? []).at(-1)?.id ??
+                "empty")
+            }
+            conversation={selectedConversation}
+            messages={conversationMessages[selectedConversation.id] ?? []}
+            onBack={handleBackToList}
+          />
+        ) : (
+          <div className="flex h-full flex-1 items-center justify-center bg-card p-6 text-center">
+            <p className="font-body text-sm text-ink-muted">
+              Pilih percakapan untuk memulai obrolan.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

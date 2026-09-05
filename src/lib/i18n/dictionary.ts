@@ -26,12 +26,15 @@ export interface Dictionary {
     relasi: string;
     lowongan: string;
     monitorPesan: string;
+    logout: string;
   };
   settings: {
     pageTitle: string;
     pageSubtitle: string;
+    pageSubtitleUmkm: string;
     tabs: {
       profil: string;
+      profilUmkm: string;
       keamanan: string;
       notifikasi: string;
       pembayaran: string;
@@ -41,6 +44,11 @@ export interface Dictionary {
     language: {
       cardTitle: string;
       selectLabel: string;
+    };
+    headers: {
+      keamanan: { title: string; subtitle: string; subtitleUmkm: string };
+      notifikasi: { title: string; subtitle: string; subtitleUmkm: string };
+      privasi: { title: string; subtitle: string; subtitleUmkm: string };
     };
     theme: {
       cardTitle: string;
@@ -79,12 +87,15 @@ const dictionary: Record<Language, Dictionary> = {
       relasi: "Relasi",
       lowongan: "Lowongan",
       monitorPesan: "Monitor Pesan",
+      logout: "Log Out",
     },
     settings: {
       pageTitle: "Pengaturan",
       pageSubtitle: "Kelola akun dan preferensi kamu.",
+      pageSubtitleUmkm: "Kelola profil perusahaan dan preferensi bisnis {businessName}.",
       tabs: {
         profil: "Profil",
+        profilUmkm: "Profil Perusahaan",
         keamanan: "Keamanan",
         notifikasi: "Notifikasi",
         pembayaran: "Pembayaran",
@@ -94,6 +105,23 @@ const dictionary: Record<Language, Dictionary> = {
       language: {
         cardTitle: "Bahasa Sistem",
         selectLabel: "PILIH BAHASA",
+      },
+      headers: {
+        keamanan: {
+          title: "Keamanan Akun",
+          subtitle: "Kelola autentikasi dan perlindungan data akun Anda.",
+          subtitleUmkm: "Kelola autentikasi dan perlindungan data perusahaan Anda.",
+        },
+        notifikasi: {
+          title: "Preferensi Notifikasi",
+          subtitle: "Pilih bagaimana dan kapan Anda ingin menerima pembaruan dari klien.",
+          subtitleUmkm: "Pilih bagaimana dan kapan Anda ingin menerima pembaruan dari talenta.",
+        },
+        privasi: {
+          title: "Keamanan & Privasi",
+          subtitle: "Kelola visibilitas data Anda di dalam platform.",
+          subtitleUmkm: "Kelola visibilitas data perusahaan Anda di dalam platform.",
+        },
       },
       theme: {
         cardTitle: "Tema Aplikasi",
@@ -130,12 +158,15 @@ const dictionary: Record<Language, Dictionary> = {
       relasi: "Relations",
       lowongan: "Listings",
       monitorPesan: "Message Monitoring",
+      logout: "Log Out",
     },
     settings: {
       pageTitle: "Settings",
       pageSubtitle: "Manage your account and preferences.",
+      pageSubtitleUmkm: "Manage your company profile and business preferences for {businessName}.",
       tabs: {
         profil: "Profile",
+        profilUmkm: "Company Profile",
         keamanan: "Security",
         notifikasi: "Notifications",
         pembayaran: "Payment",
@@ -145,6 +176,23 @@ const dictionary: Record<Language, Dictionary> = {
       language: {
         cardTitle: "System Language",
         selectLabel: "SELECT LANGUAGE",
+      },
+      headers: {
+        keamanan: {
+          title: "Account Security",
+          subtitle: "Manage authentication and protection for your account data.",
+          subtitleUmkm: "Manage authentication and protection for your company data.",
+        },
+        notifikasi: {
+          title: "Notification Preferences",
+          subtitle: "Choose how and when you want to receive updates from clients.",
+          subtitleUmkm: "Choose how and when you want to receive updates from talent.",
+        },
+        privasi: {
+          title: "Security & Privacy",
+          subtitle: "Manage the visibility of your data on the platform.",
+          subtitleUmkm: "Manage the visibility of your company data on the platform.",
+        },
       },
       theme: {
         cardTitle: "App Theme",
@@ -181,12 +229,15 @@ const dictionary: Record<Language, Dictionary> = {
       relasi: "関係",
       lowongan: "求人モニタリング",
       monitorPesan: "メッセージ監視",
+      logout: "ログアウト",
     },
     settings: {
       pageTitle: "設定",
       pageSubtitle: "アカウントと環境設定を管理します。",
+      pageSubtitleUmkm: "{businessName}の企業プロフィールとビジネス設定を管理します。",
       tabs: {
         profil: "プロフィール",
+        profilUmkm: "企業プロフィール",
         keamanan: "セキュリティ",
         notifikasi: "通知",
         pembayaran: "支払い",
@@ -196,6 +247,23 @@ const dictionary: Record<Language, Dictionary> = {
       language: {
         cardTitle: "システム言語",
         selectLabel: "言語を選択",
+      },
+      headers: {
+        keamanan: {
+          title: "アカウントセキュリティ",
+          subtitle: "アカウントデータの認証と保護を管理します。",
+          subtitleUmkm: "企業データの認証と保護を管理します。",
+        },
+        notifikasi: {
+          title: "通知設定",
+          subtitle: "クライアントからの更新をどのように、いつ受け取るか選択します。",
+          subtitleUmkm: "タレントからの更新をどのように、いつ受け取るか選択します。",
+        },
+        privasi: {
+          title: "セキュリティとプライバシー",
+          subtitle: "プラットフォーム上でのデータの公開範囲を管理します。",
+          subtitleUmkm: "プラットフォーム上での企業データの公開範囲を管理します。",
+        },
       },
       theme: {
         cardTitle: "アプリのテーマ",

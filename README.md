@@ -164,8 +164,66 @@ Monitoring   : -
 
 ### System Architecture
 
-```
-[Tambahkan diagram arsitektur sistem - bisa menggunakan Mermaid atau gambar]
+```mermaid
+graph TD
+    %% --- TIER 1: CLIENT ---
+    subgraph Client_Environment [Client Tier]
+        CC[Client Components]:::client
+    end
+
+    %% --- TIER 2: SERVER (Node.js) ---
+    subgraph Server_Environment [Server Tier Node.js]
+        
+        subgraph Security_and_Auth [Alur Autentikasi & Keamanan]
+            Proxy[proxy.ts<br/>CSP Header Control]:::server
+            Session[lib/session.ts]:::server
+            Decrypt[decrypt()<br/>Evaluasi Signature JWT]:::server
+            Verify[verifySession()<br/>Validasi Stateful]:::server
+            AuthGuard[auth-guard.ts<br/>RBAC: STUDENT, UMKM, ADMIN]:::server
+        end
+
+        subgraph Business_Logic [Alur Mutasi & Pengambilan Data]
+            Actions[Server Actions app/actions/*<br/>& API Routes app/api/*]:::server
+            Zod[Zod Schema<br/>Validasi Payload]:::server
+            Prisma[Prisma ORM v7<br/>@prisma/adapter-pg + pg.Pool]:::server
+        end
+    end
+
+    %% --- TIER 3: DATABASE ---
+    subgraph Database_Environment [Database Tier PostgreSQL]
+        DB_Auth[(Tabel: auth_session<br/>Idle: 24h, Exp: 7d)]:::db
+        DB_Rate[(Tabel: security_rate_limit)]:::db
+        DB_Main[(Tabel Transaksi Utama)]:::db
+    end
+
+    %% --- TIER 4: EKSTERNAL ---
+    subgraph External_Integrations [Layanan Eksternal]
+        Supabase[Supabase Storage<br/>File Media & Lampiran]:::external
+        Midtrans[Midtrans Payment Gateway<br/>Transaksi Escrow]:::external
+    end
+
+    %% ==============================
+    %% ALUR KONEKSI (RELASI)
+    %% ==============================
+
+    CC -->|1. Request HTTP-Only Cookie<br/>__Host-jembara_session| Proxy
+    Proxy -->|2. Kontrol Keamanan| Session
+    Session -->|3. Ekstrak Token| Decrypt
+    Decrypt -->|4. Matematis Valid| Verify
+    Verify -->|5. Cocokkan sessionId & userId| DB_Auth
+    Verify -->|6. Sesi Aktif| AuthGuard
+    AuthGuard -.->|7. Otorisasi Berhasil| Actions
+
+    CC -->|8. Kirim Proposal/Proyek/Bayar| Actions
+    Actions -->|9. Cek Payload| Zod
+    Zod -->|10. Data Valid| Prisma
+    Prisma -->|11. Cek Rate Limit| DB_Rate
+    Prisma -->|12. Eksekusi Atomic| DB_Main
+
+    Actions -->|13. Integrasi Terisolasi| Supabase
+    Actions -->|14. Integrasi Terisolasi| Midtrans
+
+    Actions -.->|15. Return Type-Safe Data| CC
 ```
 
 ### Database Schema

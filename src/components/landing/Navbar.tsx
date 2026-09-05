@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
-import { ChevronDown, Menu, User, X, Landmark } from "lucide-react";
+import { ChevronDown, Menu, User, X } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
 
 const navLinks = [
@@ -115,9 +115,11 @@ export default function Navbar({ sessionName }: NavbarProps) {
     <header className="sticky top-0 z-40 border-b border-hairline bg-card">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-10 w-10 items-center justify-center rounded-md bg-brand">
-            <Landmark size={23} className="text-white" />
-          </span>
+          <img
+            src="/images/LOGO.png"
+            alt="Jembatan Karya Logo"
+            className="h-10 w-10 rounded-md object-contain"
+          />
           <span className="font-display text-lg font-black text-ink">
             Jembatan <span className="text-brand">Karya</span>
           </span>
@@ -145,7 +147,7 @@ export default function Navbar({ sessionName }: NavbarProps) {
               </Link>
               <Link
                 href="/register"
-                className="flex items-center justify-center rounded-full bg-ink px-5 py-2.5 text-sm font-body font-black text-white hover:opacity-90"
+                className="flex items-center justify-center rounded-full bg-ink dark:bg-brand px-5 py-2.5 text-sm font-body font-black text-white hover:opacity-90"
               >
                 DAFTAR SEKARANG
               </Link>
@@ -179,7 +181,7 @@ export default function Navbar({ sessionName }: NavbarProps) {
                 </Link>
                 <Link
                   href="/register"
-                  className="rounded-full bg-ink px-5 py-2.5 text-center text-sm font-semibold text-white"
+                  className="rounded-full bg-ink dark:bg-brand px-5 py-2.5 text-center text-sm font-semibold text-white"
                 >
                   Daftar Sekarang
                 </Link>

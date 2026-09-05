@@ -1,10 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { privacyPreferences as initialPreferences } from "@/lib/mock-privacy-settings";
+import {
+  privacyPreferences as initialPreferences,
+  privacyPreferencesUmkm,
+} from "@/lib/mock-privacy-settings";
 
-export default function PrivacyPreferencesCard() {
-  const [preferences, setPreferences] = useState(initialPreferences);
+export default function PrivacyPreferencesCard({ isUmkm = false }: { isUmkm?: boolean }) {
+  const [preferences, setPreferences] = useState(
+    isUmkm ? privacyPreferencesUmkm : initialPreferences
+  );
 
   const toggle = (id: string) => {
     setPreferences((prev) =>
@@ -19,7 +24,7 @@ export default function PrivacyPreferencesCard() {
   return (
     <section className="rounded-xl border border-[#ECECEC] dark:border-hairline bg-white dark:bg-card p-6">
       <h2 className="font-display text-lg font-bold text-neutral-900 dark:text-ink mb-2">
-        Preferensi Kehadiran & Data
+        {isUmkm ? "Preferensi Data" : "Preferensi Kehadiran & Data"}
       </h2>
 
       <div>

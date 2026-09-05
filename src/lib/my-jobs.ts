@@ -136,7 +136,9 @@ function whereForJobsFilter(filter: MyJobsFilter): Prisma.projectWhereInput {
   if (filter === "Lainnya") {
     return { status: { notIn: ["OPEN", "PROPOSAL", "IN_PROGRESS", "REVIEW", "COMPLETED", "CANCELLED"] } };
   }
-  return {};
+  // "Semua" — tampilkan semua status KECUALI Dibatalkan.
+  // Dibatalkan cuma muncul lewat tab filter "Dibatalkan" sendiri.
+  return { status: { not: "CANCELLED" } };
 }
 
 export async function getMyJobsData(options: {
@@ -159,7 +161,13 @@ export async function getMyJobsData(options: {
     statusGroups.find((group) => group.status === status)?._count._all ?? 0;
   const knownStatuses = new Set(["OPEN", "PROPOSAL", "IN_PROGRESS", "REVIEW", "COMPLETED", "CANCELLED"]);
   const tabCounts: MyJobsData["tabCounts"] = {
-    Semua: statusGroups.reduce((total, group) => total + group._count._all, 0),
+    // Semua — total dikurangi yang Dibatalkan, biar konsisten sama query
+    // di whereForJobsFilter (kalau nggak, angka di tombol beda sama jumlah
+    // card yang beneran tampil, keliatan kayak bug).
+    Semua: statusGroups.reduce(
+      (total, group) => total + (group.status === "CANCELLED" ? 0 : group._count._all),
+      0,
+    ),
     Terbuka: countFor("OPEN"),
     Seleksi: Math.max(0, countFor("PROPOSAL") - waitingPaymentCount),
     "Menunggu Pembayaran": waitingPaymentCount,

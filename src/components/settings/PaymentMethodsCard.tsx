@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { CreditCard, Pencil, Trash2, Plus } from "lucide-react";
-import { mockPaymentMethods } from "@/lib/mock-payment-settings";
+import { mockPaymentMethods, mockPaymentMethodsUmkm } from "@/lib/mock-payment-settings";
 import Input from "@/components/ui/Input";
 import type { PaymentMethod } from "@/types/settings";
 
-export default function PaymentMethodsCard() {
-  const [methods, setMethods] = useState<PaymentMethod[]>(mockPaymentMethods);
+export default function PaymentMethodsCard({ isUmkm = false }: { isUmkm?: boolean }) {
+  const [methods, setMethods] = useState<PaymentMethod[]>(
+    isUmkm ? mockPaymentMethodsUmkm : mockPaymentMethods
+  );
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
   const [isAdding, setIsAdding] = useState(false);
@@ -50,9 +52,21 @@ export default function PaymentMethodsCard() {
 
   return (
     <section className="rounded-xl border border-[#ECECEC] dark:border-hairline bg-white dark:bg-card p-6">
-      <h2 className="font-display text-lg font-bold text-neutral-900 dark:text-ink mb-5">
-        Metode Pembayaran
-      </h2>
+      <div className="flex items-center justify-between gap-4 mb-5">
+        <h2 className="font-display text-lg font-bold text-neutral-900 dark:text-ink">
+          Metode Pembayaran
+        </h2>
+        {isUmkm && !isAdding && (
+          <button
+            type="button"
+            onClick={() => setIsAdding(true)}
+            className="inline-flex shrink-0 items-center gap-1.5 font-body text-sm font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/15 rounded-full px-4 py-2 hover:bg-orange-100 dark:hover:bg-orange-500/25 transition-colors"
+          >
+            <Plus size={14} />
+            Tambah Metode
+          </button>
+        )}
+      </div>
 
       <div className="flex flex-col gap-4 mb-5">
         {methods.map((method) => (
@@ -169,14 +183,16 @@ export default function PaymentMethodsCard() {
           </div>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => setIsAdding(true)}
-          className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-neutral-900 dark:text-ink border border-neutral-300 rounded-full px-5 py-2.5 hover:bg-neutral-50 dark:hover:bg-void transition-colors"
-        >
-          <Plus size={14} />
-          Tambah Metode Penarikan
-        </button>
+        !isUmkm && (
+          <button
+            type="button"
+            onClick={() => setIsAdding(true)}
+            className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-neutral-900 dark:text-ink border border-neutral-300 rounded-full px-5 py-2.5 hover:bg-neutral-50 dark:hover:bg-void transition-colors"
+          >
+            <Plus size={14} />
+            Tambah Metode Penarikan
+          </button>
+        )
       )}
     </section>
   );

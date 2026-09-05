@@ -1,14 +1,36 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { MoreVertical, User, Trash2, Ban } from "lucide-react";
 import { Conversation } from "@/types/messages";
 
 interface ChatHeaderProps {
   conversation: Conversation;
+  projectLabel?: string;
+  onViewProfile?: () => void;
+  onClearChat?: () => void;
+  onToggleBlock?: () => void;
+  isBlocked?: boolean;
 }
 
-export default function ChatHeader({ conversation }: ChatHeaderProps) {
+function useOptionalRouter() {
+  try {
+    return useRouter();
+  } catch {
+    return null;
+  }
+}
+
+export default function ChatHeader({
+  conversation,
+  projectLabel,
+  onViewProfile,
+  onClearChat,
+  onToggleBlock,
+  isBlocked = false,
+}: ChatHeaderProps) {
+  const router = useOptionalRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -37,27 +59,34 @@ export default function ChatHeader({ conversation }: ChatHeaderProps) {
 
   function handleProfileClick() {
     setIsMenuOpen(false);
-    // TODO: arahkan ke halaman profil lawan bicara bila sudah tersedia.
-    // window.location.href = `/dashboard/profile/${conversation.id}`;
-    alert(`Buka profil ${conversation.contactName}`);
+    if (onViewProfile) {
+      onViewProfile();
+    } else if (router) {
+      router.push("/dashboard/profile");
+    } else if (typeof window !== "undefined") {
+      window.location.href = "/dashboard/profile";
+    }
   }
 
   function handleClearMessages() {
     setIsMenuOpen(false);
-    // TODO: integrasikan dengan server action untuk membersihkan percakapan.
-    alert(`Percakapan dengan ${conversation.contactName} akan dibersihkan.`);
+    onClearChat?.();
   }
 
   function handleBlock() {
     setIsMenuOpen(false);
-    // TODO: integrasikan dengan server action untuk memblokir kontak.
-    alert(`Kamu akan memblokir ${conversation.contactName}.`);
+    onToggleBlock?.();
   }
 
   return (
     <div className="flex items-center justify-between border-b border-hairline px-6 py-4">
-      <div className="flex items-center gap-3">
-        <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-display font-black text-brand">
+      <button
+        type="button"
+        onClick={handleProfileClick}
+        className="group flex items-center gap-3 text-left focus:outline-none"
+        title={`Lihat profil ${conversation.contactName}`}
+      >
+        <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-display font-black text-brand transition-transform group-hover:scale-105">
           {conversation.contactName
             .split(" ")
             .map((part) => part[0])
@@ -70,19 +99,19 @@ export default function ChatHeader({ conversation }: ChatHeaderProps) {
           )}
         </span>
         <div>
-          <p className="font-display text-base font-black text-ink">
+          <p className="font-display text-base font-black text-ink transition-colors group-hover:text-brand">
             {conversation.contactName}
           </p>
-          {conversation.projectName && (
+          {(conversation.projectName || projectLabel) && (
             <p className="font-body text-xs text-ink-muted">
               Project:{" "}
               <span className="font-semibold font-body text-brand">
-                {conversation.projectName}
+                {conversation.projectName || projectLabel}
               </span>
             </p>
           )}
         </div>
-      </div>
+      </button>
 
       {/* Dropdown Opsi */}
       <div className="relative" ref={menuRef}>
@@ -126,10 +155,14 @@ export default function ChatHeader({ conversation }: ChatHeaderProps) {
               type="button"
               role="menuitem"
               onClick={handleBlock}
-              className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-danger transition hover:bg-danger-soft"
+              className={`flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium transition ${
+                isBlocked
+                  ? "text-brand hover:bg-brand-soft"
+                  : "text-danger hover:bg-danger-soft"
+              }`}
             >
               <Ban size={15} className="shrink-0" />
-              Blokir
+              {isBlocked ? "Buka Blokir" : "Blokir"}
             </button>
           </div>
         )}

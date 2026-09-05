@@ -57,7 +57,7 @@ export default function ActiveSessionsCard({
   };
 
   return (
-    <section className="rounded-xl border border-[#ECECEC] bg-white dark:bg-card p-6">
+    <section className="rounded-xl border border-[#ECECEC] dark:border-gray bg-white dark:bg-card p-6">
       <h2 className="mb-5 font-display text-lg font-bold text-neutral-900 dark:text-ink">
         Sesi Aktif
       </h2>
@@ -81,7 +81,13 @@ export default function ActiveSessionsCard({
                     <p className="truncate font-body text-sm font-semibold text-neutral-900 dark:text-ink">
                       {session.deviceName}
                     </p>
-                    <p className="font-body text-xs text-neutral-500 dark:text-ink-muted">
+                    <p
+                      className={`font-body text-xs ${
+                        session.isCurrentSession
+                          ? "font-semibold text-green-600 dark:text-green-400"
+                          : "text-neutral-500 dark:text-ink-muted"
+                      }`}
+                    >
                       {session.location} · {session.status}
                     </p>
                   </div>
@@ -91,7 +97,9 @@ export default function ActiveSessionsCard({
                   type="button"
                   disabled={revokingId === session.id}
                   onClick={() => void revokeSession(session)}
-                  className="shrink-0 rounded-full border border-red-200 dark:border-red-500/30 px-4 py-1.5 font-body text-xs font-semibold text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 disabled:opacity-50"
+                  className={`shrink-0 rounded-full border border-red-200 dark:border-red-500/30 px-4 py-1.5 font-body text-xs font-semibold text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 disabled:opacity-50 ${
+                    session.isCurrentSession ? "hidden" : ""
+                  }`}
                 >
                   {revokingId === session.id ? "Memproses..." : "Logout"}
                 </button>

@@ -13,9 +13,11 @@ export default function Footer() {
         <div className="max-w-xs">
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2">
-              <span className="flex h-10 w-10 items-center justify-center rounded-md bg-brand">
-                <Landmark size={23} className="text-white" />
-              </span>
+              <img
+                src="/images/LOGO.png"
+                alt="Jembatan Karya Logo"
+                className="h-10 w-10 rounded-md object-contain"
+              />
               <span className="font-display text-lg font-black text-ink">
                 Jembatan <span className="text-brand">Karya</span>
               </span>

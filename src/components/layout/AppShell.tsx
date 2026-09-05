@@ -56,8 +56,8 @@ export default function AppShell({ children, role, userId }: AppShellProps) {
         aria-expanded={isSidebarOpen}
         aria-controls="main-sidebar"
         aria-label={isSidebarOpen ? "Tutup menu" : "Buka menu"}
-        className={`fixed left-4 top-4 z-[60] flex h-10 w-10 items-center justify-center rounded-lg border border-[#ECECEC] bg-white shadow-sm transition-transform duration-300 ease-out dark:bg-card lg:hidden ${
-          isSidebarOpen ? "translate-x-[272px]" : "translate-x-0"
+        className={`fixed left-4 top-4 z-60 flex h-10 w-10 items-center justify-center rounded-lg border border-[#ECECEC] bg-white shadow-sm transition-transform duration-300 ease-out dark:bg-card lg:hidden ${
+          isSidebarOpen ? "translate-x-[min(17rem,calc(80vw-3rem))]" : "translate-x-0"
         }`}
       >
         {isSidebarOpen ? (
@@ -69,8 +69,8 @@ export default function AppShell({ children, role, userId }: AppShellProps) {
 
       <Sidebar role={role} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-      <div className="flex flex-1 flex-col">
-        <main className="flex-1 px-6 pb-8 pt-16 sm:px-8 lg:pt-8">{children}</main>
+      <div className="flex flex-1 flex-col min-w-0">
+        <main className="flex-1 px-4 pb-6 pt-16 sm:px-8 lg:pt-8">{children}</main>
         <DashboardFooter />
       </div>
       <ChatBubbleWidget role={role} userId={userId} />
