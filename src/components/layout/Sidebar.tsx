@@ -20,7 +20,6 @@ import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface NavItem {
   key:
-<<<<<<< HEAD
     | "dashboard"
     | "findProjects"
     | "myProposals"
@@ -38,12 +37,6 @@ interface NavItem {
     | "relasi"
     | "lowongan"
     | "monitorPesan";
-=======
-    | "dashboard" | "findProjects" | "myProposals" | "activeProjects"
-    | "portfolio" | "messages" | "earnings" | "profile" | "settings"
-    | "cariTalent" | "pelamar" | "daftarUser" | "daftarUmkm" | "relasi"
-    | "lowongan" | "monitorPesan";
->>>>>>> 21c38751a638041c925d7476a9a57ff87f36a877
   href: string;
   icon?: React.ElementType;
   iconSrc?: string;

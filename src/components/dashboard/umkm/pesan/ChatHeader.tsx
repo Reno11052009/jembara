@@ -6,9 +6,13 @@ import { Conversation } from "@/types/messages";
 
 interface ChatHeaderProps {
   conversation: Conversation;
+  projectLabel?: string;
 }
 
-export default function ChatHeader({ conversation }: ChatHeaderProps) {
+export default function ChatHeader({
+  conversation,
+  projectLabel = "Project",
+}: ChatHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -75,7 +79,7 @@ export default function ChatHeader({ conversation }: ChatHeaderProps) {
           </p>
           {conversation.projectName && (
             <p className="font-body text-xs text-ink-muted">
-              Project:{" "}
+              {projectLabel}:{" "}
               <span className="font-semibold font-body text-brand">
                 {conversation.projectName}
               </span>

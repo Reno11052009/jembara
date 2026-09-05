@@ -5,38 +5,8 @@ import { topTalents } from "@/lib/mock-landing";
 import { useReveal } from "@/hooks/useReveal";
 import { Reveal } from "@/components/ui/Reveal";
 
-<<<<<<< HEAD
-export default async function TopTalent() {
-  "use cache";
-  cacheLife("minutes");
-
-  const topTalents = await prisma.student.findMany({
-    where: { available: true, isPublicProfile: true },
-    orderBy: [
-      { rating: "desc" },
-      { total_project: "desc" },
-      { createdAt: "desc" },
-    ],
-    take: 3,
-    select: {
-      id: true,
-      school: true,
-      jurusan: true,
-      rating: true,
-      total_project: true,
-      user: { select: { name: true } },
-      skills: {
-        select: {
-          skill: { select: { name: true, category: true } },
-        },
-      },
-      _count: { select: { reviews: true } },
-    },
-  });
-=======
 export default function TopTalent() {
   const { ref, isVisible } = useReveal<HTMLElement>();
->>>>>>> 21c38751a638041c925d7476a9a57ff87f36a877
 
   return (
     <section
