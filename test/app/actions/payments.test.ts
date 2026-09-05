@@ -48,15 +48,11 @@ vi.mock("@/lib/payments", () => {
     createOrReuseProjectPayment: vi.fn(),
   };
 });
-vi.mock("@/lib/midtrans", () => {
-  class MidtransError extends Error {
-    status?: number;
-  }
-  return {
-    MidtransError,
-    getMidtransTransactionStatus: mocks.getMidtransStatus,
-  };
-});
+vi.mock("server-only", () => ({}));
+vi.mock("@/lib/midtrans", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/midtrans")>()),
+  getMidtransPaymentStatus: mocks.getMidtransStatus,
+}));
 vi.mock("@/lib/notifications", () => ({ createUserNotification: vi.fn() }));
 
 import { syncProjectPaymentAction } from "@/app/actions/payments";
@@ -73,7 +69,7 @@ describe("syncProjectPaymentAction", () => {
     });
     mocks.projectFindFirst.mockResolvedValue({ id: projectId });
     mocks.paymentFindFirst.mockResolvedValue({ orderId: "JEM-order-1" });
-    mocks.getMidtransStatus.mockResolvedValue({ transaction_status: "pending" });
+    mocks.getMidtransStatus.mockResolvedValue({ order_id: "JEM-order-1", transaction_status: "pending" });
     mocks.applyMidtransStatus.mockResolvedValue({
       newlyHeld: false,
       project: {},
@@ -118,5 +114,45 @@ describe("syncProjectPaymentAction", () => {
       limit: 30,
       windowMs: 60_000,
     });
+  });
+
+  it("uses a stored transaction ID for payment methods requiring it", async () => {
+    mocks.consumeRateLimit.mockResolvedValue({ allowed: true });
+    mocks.paymentFindFirst.mockResolvedValue({
+      orderId: "JEM-order-1", midtransTransactionId: "midtrans-transaction-1",
+    });
+    await syncProjectPaymentAction(projectId);
+    expect(mocks.getMidtransStatus).toHaveBeenCalledWith({
+      orderId: "JEM-order-1", midtransTransactionId: "midtrans-transaction-1",
+    }, undefined);
+  });
+
+  it("verifies a callback transaction ID against the owned order before applying payment", async () => {
+    mocks.consumeRateLimit.mockResolvedValue({ allowed: true });
+    const transactionId = "A120260905101415U461HEEMUJID";
+    mocks.paymentFindUnique.mockResolvedValue({ status: "HELD" });
+    await expect(syncProjectPaymentAction(projectId, transactionId)).resolves.toEqual({
+      success: true, status: "HELD",
+    });
+    expect(mocks.getMidtransStatus).toHaveBeenCalledWith({ orderId: "JEM-order-1" }, transactionId);
+    expect(mocks.applyMidtransStatus).toHaveBeenCalledOnce();
+  });
+
+  it("does not apply another order's payment supplied through a callback ID", async () => {
+    mocks.consumeRateLimit.mockResolvedValue({ allowed: true });
+    mocks.getMidtransStatus.mockResolvedValue({
+      order_id: "someone-elses-order", transaction_status: "settlement",
+    });
+    await expect(syncProjectPaymentAction(
+      projectId, "22222222-2222-4222-8222-222222222222",
+    )).resolves.toMatchObject({ success: false });
+    expect(mocks.applyMidtransStatus).not.toHaveBeenCalled();
+  });
+
+  it("rejects a malformed transaction reference without contacting Midtrans", async () => {
+    await expect(syncProjectPaymentAction(projectId, "../../status")).resolves.toMatchObject({
+      success: false,
+    });
+    expect(mocks.getMidtransStatus).not.toHaveBeenCalled();
   });
 });

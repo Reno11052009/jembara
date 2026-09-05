@@ -30,8 +30,8 @@ export default function TalentCard({
               {talent.name}
             </h3>
             {showSkillMatch && (
-              <span className="shrink-0 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-display font-black text-brand">
-                {talent.matchPercent}% skill cocok
+              <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-display font-black ${talent.matchEligible === false ? "bg-danger-soft text-danger" : "bg-brand-soft text-brand"}`}>
+                {talent.matchEligible === false ? "Belum memenuhi" : `${talent.matchPercent}% Match`}
               </span>
             )}
           </div>
@@ -77,6 +77,14 @@ export default function TalentCard({
           </span>
         )}
       </div>
+
+      {showSkillMatch && talent.matchReasons && (
+        <ul className="mt-4 space-y-1 text-xs text-ink-muted">
+          {talent.matchReasons.slice(0, 3).map((reason) => (
+            <li key={reason}>• {reason}</li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

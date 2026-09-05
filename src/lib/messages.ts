@@ -12,12 +12,14 @@ import {
 } from "./rate-limit";
 import {
   getMessageAttachmentValidationError,
+  hasExpectedMessageAttachmentSignature,
   MAX_MESSAGE_ATTACHMENT_BYTES,
 } from "./message-attachment-policy";
 import {
   getMessageAttachmentBucketName,
   getSupabaseResumableUploadEndpoint,
   getSupabaseStorageAdmin,
+  isMessageAttachmentStorageConfigured,
 } from "./supabase-storage";
 import { config } from "@/config/unifiedConfig";
 import type {
@@ -35,8 +37,53 @@ const MAX_MESSAGES_PER_PROJECT = 100;
 const MAX_PENDING_UPLOADS_PER_USER = 5;
 const ATTACHMENT_UPLOAD_TTL_MS = 2 * 60 * 60 * 1000;
 const ATTACHMENT_DOWNLOAD_TTL_SECONDS = 60;
+const ATTACHMENT_SIGNATURE_BYTES = 4096;
 
 type StorageAdmin = ReturnType<typeof getSupabaseStorageAdmin>;
+
+async function readStoredAttachmentHeader(
+  storage: StorageAdmin,
+  bucketName: string,
+  storagePath: string,
+) {
+  const signed = await storage.storage
+    .from(bucketName)
+    .createSignedUrl(storagePath, 60);
+  if (signed.error || !signed.data?.signedUrl) throw new Error("SIGNED_URL_FAILED");
+
+  const response = await fetch(signed.data.signedUrl, {
+    headers: { Range: `bytes=0-${ATTACHMENT_SIGNATURE_BYTES - 1}` },
+    cache: "no-store",
+    redirect: "error",
+    signal: AbortSignal.timeout(5_000),
+  });
+  if (!response.ok || !response.body) throw new Error("FILE_HEADER_UNAVAILABLE");
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (total < ATTACHMENT_SIGNATURE_BYTES) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const remaining = ATTACHMENT_SIGNATURE_BYTES - total;
+      const chunk = value.slice(0, remaining);
+      chunks.push(chunk);
+      total += chunk.byteLength;
+      if (value.byteLength > remaining) break;
+    }
+  } finally {
+    await reader.cancel().catch(() => undefined);
+  }
+
+  const result = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return result;
+}
 
 async function removeStoredAttachments(
   storage: StorageAdmin,
@@ -174,6 +221,7 @@ export async function getMessagesData(
   requestedProjectId?: unknown,
 ): Promise<MessagesData> {
   const session = await requireAuthenticatedSession();
+  const attachmentsEnabled = isMessageAttachmentStorageConfigured();
   const now = new Date();
   const projects = await prisma.project.findMany({
     where: {
@@ -267,6 +315,7 @@ export async function getMessagesData(
       conversations,
       conversationMessages: {},
       selectedConversationId: "",
+      attachmentsEnabled,
     };
   }
 
@@ -324,6 +373,7 @@ export async function getMessagesData(
     conversations,
     conversationMessages: { [selectedConversationId]: messages },
     selectedConversationId,
+    attachmentsEnabled,
   };
 }
 
@@ -481,6 +531,10 @@ export async function prepareMessageAttachmentUpload(
       success: false,
       error: "Percakapan tidak ditemukan atau proyek sudah tidak aktif.",
     };
+  }
+
+  if (!isMessageAttachmentStorageConfigured()) {
+    return { success: false, error: "Penyimpanan lampiran belum dikonfigurasi." };
   }
 
   const uploadRateLimits = await consumeRateLimits([
@@ -669,6 +723,34 @@ export async function finalizeMessageAttachmentUpload(
     return {
       success: false,
       error: "Verifikasi ukuran file gagal. Silakan unggah ulang.",
+    };
+  }
+
+  try {
+    const header = await readStoredAttachmentHeader(
+      storage,
+      bucketName,
+      pendingUpload.storagePath,
+    );
+    if (
+      !hasExpectedMessageAttachmentSignature({
+        name: pendingUpload.fileName,
+        type: storedObject.data.contentType || pendingUpload.contentType,
+        bytes: header,
+      })
+    ) {
+      throw new Error("SIGNATURE_MISMATCH");
+    }
+  } catch (error) {
+    console.error("Isi lampiran tidak cocok dengan format yang dinyatakan:", error);
+    await removeStoredAttachments(storage, bucketName, [pendingUpload.storagePath]);
+    await prisma.message_attachment_upload.updateMany({
+      where: { id: pendingUpload.id, uploaderId: session.userId },
+      data: { cancelledAt: new Date() },
+    });
+    return {
+      success: false,
+      error: "Verifikasi isi file gagal. Silakan pilih file lain.",
     };
   }
 

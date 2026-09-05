@@ -61,7 +61,7 @@ export default function Footer() {
 
       <div className="mx-auto mt-10 flex justify-between max-w-8xl flex-col items-center gap-4 sm:flex-row">
         <p className="text-xs font-body text-ink-muted">
-          © 2026 Jembatan Karya Indonesia. Hak Cipta Dilindungi Undang-Undang.
+          © 2026 Jembara. Hak Cipta Dilindungi Undang-Undang.
         </p>
         <div className="flex gap-4 text-ink-muted">
           <FaInstagram size={16} className="cursor-pointer transition hover:text-brand" />

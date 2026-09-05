@@ -26,6 +26,7 @@ import {
   RegionServiceError,
   validateRegionSelection,
 } from "@/lib/regions";
+import { decryptTotpSecret, hashRecoveryCode, verifyTotp } from "@/lib/totp";
 
 const INVALID_CREDENTIALS_MESSAGE = "Email atau password salah";
 const RATE_LIMIT_MESSAGE = "Terlalu banyak percobaan. Silakan coba lagi nanti";
@@ -66,13 +67,13 @@ async function checkRegistrationRateLimit() {
   return result.allowed;
 }
 
-export async function loginAction(formData: LoginFormData): Promise<{ error?: string } | never> {
+export async function loginAction(formData: LoginFormData): Promise<{ error?: string; requiresTwoFactor?: boolean } | never> {
   const parsed = loginSchema.safeParse(formData);
   if (!parsed.success) {
     return { error: getValidationMessage(parsed.error) };
   }
 
-  const { email, password } = parsed.data;
+  const { email, password, twoFactorCode } = parsed.data;
   const rateLimit = await checkLoginRateLimit(email);
   if (!rateLimit.allowed) {
     return { error: RATE_LIMIT_MESSAGE };
@@ -89,6 +90,29 @@ export async function loginAction(formData: LoginFormData): Promise<{ error?: st
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
     return { error: INVALID_CREDENTIALS_MESSAGE };
+  }
+
+  if (user.twoFactorEnabledAt && user.twoFactorSecret) {
+    if (!twoFactorCode) return { requiresTwoFactor: true };
+    let validSecondFactor = false;
+    try {
+      validSecondFactor = verifyTotp(decryptTotpSecret(user.twoFactorSecret), twoFactorCode);
+    } catch {
+      return { error: "Konfigurasi 2FA bermasalah. Gunakan kode pemulihan atau hubungi admin.", requiresTwoFactor: true };
+    }
+    if (!validSecondFactor) {
+      const recoveryCodes = Array.isArray(user.twoFactorRecoveryCodes)
+        ? user.twoFactorRecoveryCodes.filter((value): value is string => typeof value === "string")
+        : [];
+      const recoveryHash = hashRecoveryCode(twoFactorCode);
+      const recoveryIndex = recoveryCodes.indexOf(recoveryHash);
+      if (recoveryIndex >= 0) {
+        validSecondFactor = true;
+        recoveryCodes.splice(recoveryIndex, 1);
+        await prisma.user.update({ where: { id: user.id }, data: { twoFactorRecoveryCodes: recoveryCodes } });
+      }
+    }
+    if (!validSecondFactor) return { error: "Kode autentikator atau kode pemulihan salah.", requiresTwoFactor: true };
   }
 
   await clearRateLimit(rateLimit.identityKey);

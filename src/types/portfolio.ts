@@ -12,6 +12,8 @@ export interface PortfolioSkill {
   name: string;
   category: string | null;
   isVerified: boolean;
+  level: string;
+  evidencePortfolioId: string | null;
 }
 
 export interface PortfolioTestimonial {

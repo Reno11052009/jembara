@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 import { decideWithdrawalRequestAction } from "@/app/actions/withdrawals";
 import Button from "@/components/ui/Button";
 import type { WithdrawalListItem } from "@/types/withdrawal";
@@ -12,19 +13,27 @@ function WithdrawalDecision({ request }: { request: WithdrawalListItem }) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  function decide(decision: "COMPLETE" | "REJECT") {
-    if (
-      decision === "COMPLETE" &&
-      !window.confirm("Pastikan transfer manual sudah dilakukan. Tandai penarikan selesai?")
-    ) {
-      return;
-    }
-    if (
-      decision === "REJECT" &&
-      !window.confirm("Tolak permintaan dan kembalikan saldo Student?")
-    ) {
-      return;
-    }
+  async function decide(decision: "COMPLETE" | "REJECT") {
+    const confirmation = await Swal.fire({
+      icon: "warning",
+      title:
+        decision === "COMPLETE"
+          ? "Transfer sudah dilakukan?"
+          : "Tolak permintaan penarikan?",
+      text:
+        decision === "COMPLETE"
+          ? "Pastikan transfer manual sudah dilakukan sebelum menandai penarikan selesai."
+          : "Saldo penarikan akan dikembalikan kepada Student.",
+      showCancelButton: true,
+      confirmButtonText:
+        decision === "COMPLETE" ? "Tandai Selesai" : "Tolak & Kembalikan Saldo",
+      cancelButtonText: "Batal",
+      confirmButtonColor: decision === "COMPLETE" ? "#FF6B35" : "#DC2626",
+      focusCancel: true,
+      reverseButtons: true,
+    });
+
+    if (!confirmation.isConfirmed) return;
 
     setError(null);
     startTransition(async () => {
@@ -51,10 +60,10 @@ function WithdrawalDecision({ request }: { request: WithdrawalListItem }) {
         />
       </label>
       <div className="mt-3 flex flex-wrap gap-2">
-        <Button type="button" size="sm" disabled={isPending} onClick={() => decide("COMPLETE")}>
+        <Button type="button" size="sm" disabled={isPending} onClick={() => void decide("COMPLETE")}>
           Tandai Selesai
         </Button>
-        <Button type="button" size="sm" variant="danger-outline" disabled={isPending} onClick={() => decide("REJECT")}>
+        <Button type="button" size="sm" variant="danger-outline" disabled={isPending} onClick={() => void decide("REJECT")}>
           Tolak & Kembalikan Saldo
         </Button>
       </div>

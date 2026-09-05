@@ -58,8 +58,8 @@ describe("getProjectDetailData", () => {
         user: { location: "Batu" },
       },
       skillsNeeded: [
-        { skill: { name: "React" } },
-        { skill: { name: "Figma" } },
+        { required: true, skill: { name: "React" } },
+        { required: false, skill: { name: "Figma" } },
       ],
     });
     mocks.proposalFindUnique.mockResolvedValue(null);
@@ -70,9 +70,9 @@ describe("getProjectDetailData", () => {
 
     expect(data).toMatchObject({
       id: PROJECT_ID,
-      skillMatchPercent: 50,
+      skillMatchPercent: 100,
       matchedSkills: ["React"],
-      missingSkills: ["Figma"],
+      missingSkills: [],
       workModeLabel: "Hybrid",
       locationLabel: "Malang",
       canApply: true,

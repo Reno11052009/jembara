@@ -35,6 +35,7 @@ export default function ProfileSettings({
   const [avatarPreview, setAvatarPreview] = useState<string>(initialData.avatarUrl);
   const [avatarBase64, setAvatarBase64] = useState<string | null>(null);
   const [skills, setSkills] = useState<string[]>(initialData.skills || []);
+  const [skillLevels, setSkillLevels] = useState<Record<string, string>>(initialData.skillLevels || {});
   const [educationLevel, setEducationLevel] = useState(
     initialData.tingkat_pendidikan || "",
   );
@@ -128,6 +129,7 @@ export default function ProfileSettings({
 
   const removeSkill = (skillToRemove: string) => {
     setSkills(skills.filter(s => s !== skillToRemove));
+    setSkillLevels((current) => { const next = { ...current }; delete next[skillToRemove]; return next; });
   };
 
   const handleAddSkill = async () => {
@@ -172,6 +174,7 @@ export default function ProfileSettings({
 
     if (newSkill) {
       setSkills([...skills, newSkill]);
+      setSkillLevels((current) => ({ ...current, [newSkill]: "BEGINNER" }));
     }
   };
 
@@ -182,6 +185,7 @@ export default function ProfileSettings({
     const formData = new FormData(e.currentTarget);
     if (!isUmkm) {
       formData.append("skills", skills.join(","));
+      formData.append("skillLevels", JSON.stringify(skillLevels));
     }
     if (avatarBase64) {
       formData.append("avatarBase64", avatarBase64);
@@ -450,30 +454,52 @@ export default function ProfileSettings({
           </div>
 
           {!isUmkm && (
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-hairline dark:bg-surface">
-              <input type="hidden" name="publicProfileSubmitted" value="1" />
-              <label
-                htmlFor="isPublicProfile"
-                className="flex cursor-pointer items-start gap-3"
-              >
-                <input
-                  id="isPublicProfile"
-                  name="isPublicProfile"
-                  type="checkbox"
-                  defaultChecked={initialData.isPublicProfile}
-                  className="mt-1 h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
-                />
-                <span>
-                  <span className="block text-sm font-bold text-gray-900 dark:text-ink">
-                    Tampilkan profil di halaman publik
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-hairline dark:bg-surface">
+                <input type="hidden" name="availabilitySubmitted" value="1" />
+                <label htmlFor="available" className="flex cursor-pointer items-start gap-3">
+                  <input
+                    id="available"
+                    name="available"
+                    type="checkbox"
+                    defaultChecked={initialData.available}
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
+                  />
+                  <span>
+                    <span className="block text-sm font-bold text-gray-900 dark:text-ink">
+                      Tersedia menerima proyek
+                    </span>
+                    <span className="mt-1 block text-xs leading-relaxed text-gray-500 dark:text-ink-muted">
+                      Aktifkan agar profil masuk rekomendasi Smart Matching dan pencarian talent.
+                    </span>
                   </span>
-                  <span className="mt-1 block text-xs leading-relaxed text-gray-500 dark:text-ink-muted">
-                    Jika diaktifkan, nama, sekolah, jurusan, skill, rating, dan
-                    jumlah proyek dapat tampil pada bagian talenta di beranda.
-                    Alamat, email, dan nomor telepon tetap tidak ditampilkan.
+                </label>
+              </div>
+
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-hairline dark:bg-surface">
+                <input type="hidden" name="publicProfileSubmitted" value="1" />
+                <label
+                  htmlFor="isPublicProfile"
+                  className="flex cursor-pointer items-start gap-3"
+                >
+                  <input
+                    id="isPublicProfile"
+                    name="isPublicProfile"
+                    type="checkbox"
+                    defaultChecked={initialData.isPublicProfile}
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
+                  />
+                  <span>
+                    <span className="block text-sm font-bold text-gray-900 dark:text-ink">
+                      Tampilkan profil di halaman publik
+                    </span>
+                    <span className="mt-1 block text-xs leading-relaxed text-gray-500 dark:text-ink-muted">
+                      Nama, sekolah, jurusan, skill, rating, dan jumlah proyek dapat tampil.
+                      Alamat, email, dan nomor telepon tetap dirahasiakan.
+                    </span>
                   </span>
-                </span>
-              </label>
+                </label>
+              </div>
             </div>
           )}
 
@@ -520,6 +546,19 @@ export default function ProfileSettings({
             {skills.length === 0 && (
               <p className="text-sm text-gray-500 dark:text-ink-muted italic">Belum ada skill yang ditambahkan.</p>
             )}
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {skills.map((skill) => (
+              <label key={`${skill}-level`} className="text-xs font-semibold text-ink-muted">Level {skill}
+                <select value={skillLevels[skill] || "BEGINNER"} onChange={(event) => setSkillLevels((current) => ({ ...current, [skill]: event.target.value }))} className="mt-1 w-full rounded-lg border border-hairline bg-card px-3 py-2 text-sm text-ink">
+                  <option value="BEGINNER">Beginner</option><option value="INTERMEDIATE">Intermediate</option><option value="ADVANCED">Advanced</option>
+                </select>
+              </label>
+            ))}
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <label className="text-xs font-semibold text-ink-muted">Ekspektasi budget minimum (Rp)<input name="expectedBudgetMin" type="number" min={50000} step={50000} defaultValue={initialData.expectedBudgetMin ?? ""} className="mt-1 w-full rounded-lg border border-hairline bg-card px-3 py-2 text-sm text-ink" /></label>
+            <label className="text-xs font-semibold text-ink-muted">Ekspektasi budget maksimum (Rp)<input name="expectedBudgetMax" type="number" min={50000} step={50000} defaultValue={initialData.expectedBudgetMax ?? ""} className="mt-1 w-full rounded-lg border border-hairline bg-card px-3 py-2 text-sm text-ink" /></label>
           </div>
         </div>}
 

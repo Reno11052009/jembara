@@ -1,6 +1,6 @@
 "use client";
 
-import { processSteps } from "@/lib/mock-landing";
+import { processSteps } from "@/lib/landing-content";
 import { useReveal } from "@/hooks/useReveal";
 import { Reveal } from "@/components/ui/Reveal";
 
@@ -28,7 +28,7 @@ export default function ProcessSteps() {
           delay={2}
           className="mt-2 font-display text-3xl font-black text-ink"
         >
-          Bagaimana Jembatan Karya Membantu Anda
+          Bagaimana Jembara Membantu Anda
         </Reveal>
         <Reveal
           as="p"

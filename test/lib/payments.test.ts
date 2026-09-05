@@ -6,8 +6,12 @@ const mocks = vi.hoisted(() => ({
   paymentUpdateMany: vi.fn(),
   paymentUpdate: vi.fn(),
   projectUpdateMany: vi.fn(),
+  userFindUnique: vi.fn(),
   userUpdate: vi.fn(),
+  withdrawalFindMany: vi.fn(),
+  withdrawalUpdateMany: vi.fn(),
   balanceTransactionCreate: vi.fn(),
+  notificationCreate: vi.fn(),
 }));
 
 vi.mock("server-only", () => ({}));
@@ -54,8 +58,12 @@ describe("applyMidtransStatus", () => {
     mocks.paymentFindUnique.mockResolvedValue(paymentRecord);
     mocks.paymentUpdateMany.mockResolvedValue({ count: 1 });
     mocks.projectUpdateMany.mockResolvedValue({ count: 1 });
+    mocks.userFindUnique.mockResolvedValue({ saldo: 600_000 });
     mocks.userUpdate.mockResolvedValue({ saldo: 100_000 });
+    mocks.withdrawalFindMany.mockResolvedValue([]);
+    mocks.withdrawalUpdateMany.mockResolvedValue({ count: 1 });
     mocks.balanceTransactionCreate.mockResolvedValue({ id: "ledger-1" });
+    mocks.notificationCreate.mockResolvedValue({ id: "notification-1" });
     mocks.transaction.mockImplementation(
       async (callback: (transaction: unknown) => Promise<unknown>) =>
         callback({
@@ -65,8 +73,16 @@ describe("applyMidtransStatus", () => {
             update: mocks.paymentUpdate,
           },
           project: { updateMany: mocks.projectUpdateMany },
-          user: { update: mocks.userUpdate },
+          user: {
+            findUnique: mocks.userFindUnique,
+            update: mocks.userUpdate,
+          },
+          withdrawal_request: {
+            findMany: mocks.withdrawalFindMany,
+            updateMany: mocks.withdrawalUpdateMany,
+          },
           balance_transaction: { create: mocks.balanceTransactionCreate },
+          notification: { create: mocks.notificationCreate },
         }),
     );
   });
@@ -225,6 +241,52 @@ describe("applyMidtransStatus", () => {
     expect(mocks.paymentUpdateMany).not.toHaveBeenCalled();
     expect(mocks.userUpdate).not.toHaveBeenCalled();
     expect(mocks.balanceTransactionCreate).not.toHaveBeenCalled();
+  });
+
+  it("cancels a pending withdrawal before reversing released funds", async () => {
+    mocks.paymentFindUnique.mockResolvedValue({
+      ...paymentRecord,
+      status: "RELEASED",
+      releasedToUserId: "student-user-1",
+      project: { ...paymentRecord.project, status: "COMPLETED" },
+    });
+    mocks.userFindUnique.mockResolvedValue({ saldo: 0 });
+    mocks.withdrawalFindMany.mockResolvedValue([
+      { id: "withdrawal-1", amount: 500_000 },
+    ]);
+    mocks.userUpdate
+      .mockResolvedValueOnce({ saldo: 500_000 })
+      .mockResolvedValueOnce({ saldo: 0 });
+
+    await expect(
+      applyMidtransStatus({ ...settlement, transaction_status: "chargeback" }),
+    ).resolves.toMatchObject({ newlyHeld: false });
+
+    expect(mocks.withdrawalUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "withdrawal-1", status: "PENDING" },
+        data: expect.objectContaining({ status: "REJECTED" }),
+      }),
+    );
+    expect(mocks.balanceTransactionCreate).toHaveBeenNthCalledWith(
+      1,
+      {
+        data: expect.objectContaining({
+          withdrawalId: "withdrawal-1",
+          type: "WITHDRAWAL_REFUND",
+          amount: 500_000,
+          balanceBefore: 0,
+          balanceAfter: 500_000,
+        }),
+        select: { id: true },
+      },
+    );
+    expect(mocks.notificationCreate).toHaveBeenCalledOnce();
+    expect(mocks.userUpdate).toHaveBeenLastCalledWith({
+      where: { id: "student-user-1" },
+      data: { saldo: { decrement: 500_000 } },
+      select: { saldo: true },
+    });
   });
 
   it("does not downgrade a refunded payment when a stale pending status arrives", async () => {

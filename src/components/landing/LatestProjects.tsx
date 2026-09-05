@@ -1,8 +1,7 @@
 "use client";
 
 import { Calendar } from "lucide-react";
-import { latestProjects } from "@/lib/mock-landing";
-import { ProjectBadge } from "@/types/landing";
+import type { LandingProject, ProjectBadge } from "@/types/landing";
 import { useReveal } from "@/hooks/useReveal";
 import { Reveal } from "@/components/ui/Reveal";
 
@@ -11,7 +10,7 @@ const badgeStyles: Record<ProjectBadge, string> = {
   Urgent: "bg-danger-soft text-danger",
 };
 
-export default function LatestProjects() {
+export default function LatestProjects({ projects }: { projects: LandingProject[] }) {
   const { ref, isVisible } = useReveal<HTMLElement>();
 
   return (
@@ -48,7 +47,7 @@ export default function LatestProjects() {
         </Reveal>
 
         <div className="mt-12 grid grid-cols-1 gap-5 text-left sm:grid-cols-2 lg:grid-cols-3">
-          {latestProjects.map((project, i) => (
+          {projects.map((project, i) => (
             <Reveal
               key={project.id}
               active={isVisible}
@@ -101,6 +100,7 @@ export default function LatestProjects() {
               </div>
             </Reveal>
           ))}
+          {projects.length === 0 && <p className="col-span-full rounded-xl border border-dashed border-hairline p-8 text-center text-ink-muted">Belum ada project OPEN. Jadilah UMKM pertama yang memasang project.</p>}
         </div>
       </div>
     </section>

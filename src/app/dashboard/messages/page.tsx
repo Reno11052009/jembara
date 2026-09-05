@@ -22,7 +22,7 @@ async function MessagesContent({
 }) {
   const rawProjectId = (await searchParams).project;
   const projectId = Array.isArray(rawProjectId) ? rawProjectId[0] : rawProjectId;
-  const { conversations, conversationMessages, selectedConversationId } =
+  const { conversations, conversationMessages, selectedConversationId, attachmentsEnabled } =
     await getMessagesData(projectId);
 
   return (
@@ -35,6 +35,7 @@ async function MessagesContent({
         conversations={conversations}
         conversationMessages={conversationMessages}
         selectedConversationId={selectedConversationId}
+        attachmentsEnabled={attachmentsEnabled}
       />
     </div>
   );

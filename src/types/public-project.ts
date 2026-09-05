@@ -9,4 +9,5 @@ export interface PublicProjectDetailData {
   workModeLabel: string;
   locationLabel: string;
   requiredSkills: string[];
+  optionalSkills: string[];
 }

@@ -49,3 +49,5 @@ next-env.d.ts
 .claude/
 .windsurf_config/
 /src/generated/prisma
+.npm-cache
+.github

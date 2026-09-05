@@ -3,68 +3,22 @@
 export const MAX_MESSAGE_ATTACHMENT_BYTES = 25 * 1024 * 1024;
 export const MESSAGE_ATTACHMENT_TUS_CHUNK_BYTES = 6 * 1024 * 1024;
 
-const BLOCKED_FILE_EXTENSIONS = new Set([
-  "apk",
-  "app",
-  "appref-ms",
-  "application",
-  "bat",
-  "cmd",
-  "com",
-  "command",
-  "cpl",
-  "dll",
-  "dmg",
-  "docm",
-  "exe",
-  "gadget",
-  "hta",
-  "inf",
-  "ins",
-  "isu",
-  "jar",
-  "job",
-  "js",
-  "jse",
-  "lnk",
-  "msc",
-  "msi",
-  "msp",
-  "mst",
-  "paf",
-  "pif",
-  "ps1",
-  "reg",
-  "rgs",
-  "scr",
-  "sct",
-  "scf",
-  "sh",
-  "sys",
-  "url",
-  "vb",
-  "vbe",
-  "vbs",
-  "workflow",
-  "ws",
-  "wsc",
-  "wsf",
-  "wsh",
-  "xlsm",
-  "pptm",
-]);
+const ALLOWED_ATTACHMENT_TYPES: Record<string, readonly string[]> = {
+  jpg: ["image/jpeg"],
+  jpeg: ["image/jpeg"],
+  png: ["image/png"],
+  webp: ["image/webp"],
+  pdf: ["application/pdf"],
+  txt: ["text/plain"],
+};
 
-const BLOCKED_CONTENT_TYPES = new Set([
-  "application/hta",
-  "application/javascript",
-  "application/x-executable",
-  "application/x-msdos-program",
-  "application/x-sh",
-  "application/xhtml+xml",
-  "image/svg+xml",
-  "text/html",
-  "text/javascript",
-]);
+function normalizeContentType(value?: string) {
+  return value?.split(";", 1)[0]?.trim().toLowerCase() || "";
+}
+
+function getExtension(fileName: string) {
+  return fileName.match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase() || "";
+}
 
 export function getMessageAttachmentValidationError(file: {
   name: string;
@@ -80,16 +34,57 @@ export function getMessageAttachmentValidationError(file: {
     return "Ukuran file maksimal 25 MB.";
   }
 
-  const extension = file.name.split(".").pop()?.toLowerCase();
-  if (extension && BLOCKED_FILE_EXTENSIONS.has(extension)) {
-    return "Jenis file executable atau script tidak diizinkan.";
+  const extension = getExtension(file.name);
+  const allowedTypes = ALLOWED_ATTACHMENT_TYPES[extension];
+  if (!allowedTypes) {
+    return "Format lampiran harus JPG, PNG, WebP, PDF, atau TXT.";
   }
-  const contentType = file.type?.split(";", 1)[0]?.trim().toLowerCase();
-  if (contentType && BLOCKED_CONTENT_TYPES.has(contentType)) {
-    return "Tipe konten aktif atau executable tidak diizinkan.";
+  const contentType = normalizeContentType(file.type);
+  if (!contentType || !allowedTypes.includes(contentType)) {
+    return "Ekstensi dan tipe isi file tidak cocok.";
   }
 
   return null;
+}
+
+export function hasExpectedMessageAttachmentSignature(file: {
+  name: string;
+  type: string;
+  bytes: Uint8Array;
+}) {
+  const extension = getExtension(file.name);
+  const contentType = normalizeContentType(file.type);
+  const bytes = file.bytes;
+  if (!ALLOWED_ATTACHMENT_TYPES[extension]?.includes(contentType)) return false;
+
+  if (extension === "png") {
+    return [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].every(
+      (value, index) => bytes[index] === value,
+    );
+  }
+  if (extension === "jpg" || extension === "jpeg") {
+    return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  }
+  if (extension === "webp") {
+    const decoder = new TextDecoder();
+    return (
+      decoder.decode(bytes.slice(0, 4)) === "RIFF" &&
+      decoder.decode(bytes.slice(8, 12)) === "WEBP"
+    );
+  }
+  if (extension === "pdf") {
+    return new TextDecoder().decode(bytes.slice(0, 1024)).includes("%PDF-");
+  }
+  if (extension === "txt") {
+    if (bytes.some((byte) => byte === 0)) return false;
+    try {
+      new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  return false;
 }
 
 export function formatMessageAttachmentSize(sizeBytes: number) {

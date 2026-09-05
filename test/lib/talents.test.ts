@@ -47,14 +47,20 @@ describe("getTalentSearchData", () => {
       {
         id: "project-1",
         title: "Desain Logo",
-        skillsNeeded: [{ skill: { name: "Figma" } }],
+        budget: 1_000_000,
+        workMode: "REMOTE",
+        location: null,
+        skillsNeeded: [{ required: true, skill: { id: "figma", name: "Figma", category: "UI/UX" } }],
       },
       {
         id: "project-2",
         title: "Website UMKM",
+        budget: 1_000_000,
+        workMode: "REMOTE",
+        location: null,
         skillsNeeded: [
-          { skill: { name: "React" } },
-          { skill: { name: "TypeScript" } },
+          { required: true, skill: { id: "react", name: "React", category: "Web Development" } },
+          { required: true, skill: { id: "typescript", name: "TypeScript", category: "Web Development" } },
         ],
       },
     ]);
@@ -64,6 +70,11 @@ describe("getTalentSearchData", () => {
         jurusan: "Rekayasa Perangkat Lunak",
         rating: 0,
         total_project: 2,
+        available: true,
+        expectedBudgetMin: null,
+        expectedBudgetMax: null,
+        provinsi_nama: "Jawa Barat",
+        kabupaten_nama: "Bandung",
         user: {
           name: "Ayu Developer",
           location: "Bandung",
@@ -73,8 +84,8 @@ describe("getTalentSearchData", () => {
           behance: null,
         },
         skills: [
-          { skill: { name: "React", category: "Web Development" } },
-          { skill: { name: "TypeScript", category: "Web Development" } },
+          { skill: { id: "react", name: "React", category: "Web Development" } },
+          { skill: { id: "typescript", name: "TypeScript", category: "Web Development" } },
         ],
         portfolios: [],
         _count: { portfolios: 0, reviews: 0 },
@@ -84,6 +95,11 @@ describe("getTalentSearchData", () => {
         jurusan: "Desain Komunikasi Visual",
         rating: 4.8,
         total_project: 4,
+        available: true,
+        expectedBudgetMin: null,
+        expectedBudgetMax: null,
+        provinsi_nama: "DKI Jakarta",
+        kabupaten_nama: "Jakarta",
         user: {
           name: "Bima Designer",
           location: "Jakarta",
@@ -92,8 +108,8 @@ describe("getTalentSearchData", () => {
           linkedin: null,
           behance: null,
         },
-        skills: [{ skill: { name: "Figma", category: "UI/UX" } }],
-        portfolios: [{ link: "https://portfolio.example/bima" }],
+        skills: [{ skill: { id: "figma", name: "Figma", category: "UI/UX" } }],
+        portfolios: [{ title: "Logo", description: "Figma", skillEvidence: [{ skillId: "figma" }] }],
         _count: { portfolios: 1, reviews: 3 },
       },
     ]);
@@ -118,13 +134,13 @@ describe("getTalentSearchData", () => {
       talents: [
         {
           id: "student-1",
-          matchPercent: 100,
+          matchPercent: 73,
           rating: null,
-          profileUrl: "https://github.com/ayu",
+          profileUrl: "/talent/student-1",
         },
         {
           id: "student-2",
-          matchPercent: 0,
+          matchEligible: false,
           rating: 4.8,
         },
       ],

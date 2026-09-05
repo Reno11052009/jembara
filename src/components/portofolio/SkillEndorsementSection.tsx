@@ -1,12 +1,13 @@
-import type { PortfolioSkill } from "@/types/portfolio";
+import type { PortfolioProject, PortfolioSkill } from "@/types/portfolio";
 import SkillEndorsementCard from "@/components/portofolio/SkillEndorsementCard";
 
 interface SkillEndorsementSectionProps {
   skills: PortfolioSkill[];
+  projects: PortfolioProject[];
 }
 
 export default function SkillEndorsementSection({
-  skills,
+  skills, projects,
 }: SkillEndorsementSectionProps) {
   return (
     <div>
@@ -14,7 +15,7 @@ export default function SkillEndorsementSection({
       {skills.length ? (
         <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {skills.map((skill) => (
-            <SkillEndorsementCard key={skill.id} skill={skill} />
+            <SkillEndorsementCard key={skill.id} skill={skill} projects={projects} />
           ))}
         </div>
       ) : (

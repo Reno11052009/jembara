@@ -14,7 +14,7 @@ export default function Hero() {
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
-        Solusi Digital untuk UMKM Indonesia
+          Jembatani Keterampilan, Wujudkan Peluang
         </span>
 
         <h1
@@ -32,7 +32,7 @@ export default function Hero() {
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 font-body"
           }`}
         >
-          Jembatan Karya menghubungkan UMKM yang membutuhkan solusi digital
+          Jembara menghubungkan UMKM yang membutuhkan solusi digital
           berkualitas dengan mahasiswa berbakat yang siap menghadirkan karya
           terbaik.
         </p>

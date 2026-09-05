@@ -1,11 +1,12 @@
 "use client";
 
 import { Star } from "lucide-react";
-import { topTalents } from "@/lib/mock-landing";
+import Link from "next/link";
+import type { Talent } from "@/types/landing";
 import { useReveal } from "@/hooks/useReveal";
 import { Reveal } from "@/components/ui/Reveal";
 
-export default function TopTalent() {
+export default function TopTalent({ talents }: { talents: Talent[] }) {
   const { ref, isVisible } = useReveal<HTMLElement>();
 
   return (
@@ -42,7 +43,7 @@ export default function TopTalent() {
         </Reveal>
 
         <div className="mt-12 grid grid-cols-1 gap-5 text-left sm:grid-cols-2 lg:grid-cols-3">
-          {topTalents.map((talent, i) => (
+          {talents.map((talent, i) => (
             <Reveal
               key={talent.id}
               active={isVisible}
@@ -82,8 +83,10 @@ export default function TopTalent() {
                   </span>
                 ))}
               </div>
+              <Link href={`/talent/${talent.id}`} className="mt-5 inline-flex text-sm font-bold text-brand">Lihat Skill Passport</Link>
             </Reveal>
           ))}
+          {talents.length === 0 && <p className="col-span-full rounded-xl border border-dashed border-hairline p-8 text-center text-ink-muted">Belum ada talent publik yang sedang tersedia.</p>}
         </div>
       </div>
     </section>

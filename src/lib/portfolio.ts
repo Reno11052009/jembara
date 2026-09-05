@@ -49,6 +49,8 @@ export async function getPortfolioData(): Promise<PortfolioData> {
             select: {
               id: true,
               isVerified: true,
+              level: true,
+              evidencePortfolioId: true,
               skill: { select: { name: true, category: true } },
             },
           },
@@ -107,11 +109,13 @@ export async function getPortfolioData(): Promise<PortfolioData> {
       imageUrl: normalizeStoredImage(portfolio.image),
       updatedLabel: `Diperbarui ${formatRelativeDate(portfolio.updatedAt).toLocaleLowerCase("id-ID")}`,
     })),
-    skills: student.skills.map(({ id, isVerified, skill }) => ({
+    skills: student.skills.map(({ id, isVerified, level, evidencePortfolioId, skill }) => ({
       id,
       name: skill.name,
       category: skill.category,
       isVerified,
+      level,
+      evidencePortfolioId,
     })),
     testimonials: student.reviews.map((review) => ({
       id: review.id,

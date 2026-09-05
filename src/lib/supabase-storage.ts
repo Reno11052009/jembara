@@ -4,6 +4,21 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 let storageClient: SupabaseClient | undefined;
 
+export function isMessageAttachmentStorageConfigured() {
+  try {
+    const projectUrl = new URL(process.env.SUPABASE_URL?.trim() || "");
+    return (
+      projectUrl.protocol === "https:" &&
+      Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) &&
+      /^[a-z0-9][a-z0-9._-]{0,99}$/.test(
+        process.env.SUPABASE_STORAGE_BUCKET?.trim() || "message-attachments",
+      )
+    );
+  } catch {
+    return false;
+  }
+}
+
 function requiredStorageEnvironmentValue(name: string) {
   const value = process.env[name]?.trim();
   if (!value) throw new Error(`${name} wajib tersedia untuk upload lampiran.`);

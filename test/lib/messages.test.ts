@@ -22,6 +22,7 @@ const mocks = vi.hoisted(() => ({
   createSignedUrl: vi.fn(),
   storageRemove: vi.fn(),
   createUserNotification: vi.fn(),
+  fetch: vi.fn(),
   consumeRateLimit: vi.fn(),
   consumeRateLimits: vi.fn(),
   transaction: vi.fn(),
@@ -43,6 +44,7 @@ vi.mock("@/lib/rate-limit", () => ({
   createRateLimitKey: vi.fn(() => "message:test"),
 }));
 vi.mock("@/lib/supabase-storage", () => ({
+  isMessageAttachmentStorageConfigured: () => true,
   getSupabaseStorageAdmin: () => ({
     storage: { from: mocks.storageFrom },
   }),
@@ -140,6 +142,12 @@ describe("messages", () => {
       remove: mocks.storageRemove,
     });
     mocks.storageRemove.mockResolvedValue({ data: [], error: null });
+    mocks.createSignedUrl.mockResolvedValue({
+      data: { signedUrl: "https://storage.example.test/file" },
+      error: null,
+    });
+    mocks.fetch.mockResolvedValue(new Response("%PDF-1.7\n"));
+    vi.stubGlobal("fetch", mocks.fetch);
     mocks.transaction.mockImplementation(async (callback) =>
       callback({
         message: { create: mocks.messageCreate },
@@ -274,6 +282,7 @@ describe("messages", () => {
       conversations: [],
       conversationMessages: {},
       selectedConversationId: "",
+      attachmentsEnabled: true,
     });
     expect(mocks.messageFindMany).not.toHaveBeenCalled();
   });

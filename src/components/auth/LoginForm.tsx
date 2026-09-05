@@ -17,6 +17,7 @@ export default function LoginForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [status, setStatus] = useState<FormStatus>("idle");
   const [modalOpen, setModalOpen] = useState(false);
+  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
 
   function handleChange(field: keyof LoginFormData, value: string) {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -45,8 +46,12 @@ export default function LoginForm() {
 
     const result = await loginAction(formData);
 
-    if (result?.error) {
+    if (result?.requiresTwoFactor && !result.error) {
+      setRequiresTwoFactor(true);
+      setStatus("idle");
+    } else if (result?.error) {
       setServerError(result.error);
+      setRequiresTwoFactor(Boolean(result.requiresTwoFactor));
       setStatus("error");
     } else {
       setStatus("success");
@@ -66,6 +71,18 @@ export default function LoginForm() {
           error={errors.email}
           onChange={(e) => handleChange("email", e.target.value)}
         />
+
+        {requiresTwoFactor && (
+          <InputField
+            label="Kode autentikator atau pemulihan"
+            required
+            type="text"
+            autoComplete="one-time-code"
+            placeholder="123456 atau ABCD-EFGH"
+            value={formData.twoFactorCode || ""}
+            onChange={(e) => handleChange("twoFactorCode", e.target.value)}
+          />
+        )}
         <InputField
           label="Password"
           required

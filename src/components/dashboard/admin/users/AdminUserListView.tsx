@@ -9,7 +9,7 @@ export default function AdminUserListView({ data }: { data: AdminUsersData }) {
     <>
       <PageHeader
         title="Daftar User"
-        subtitle="Manajemen seluruh talenta / mahasiswa yang terdaftar di Jembatan Karya."
+        subtitle="Manajemen seluruh talenta / mahasiswa yang terdaftar di Jembara."
         userName={data.adminName}
         avatarUrl={data.adminAvatarUrl}
       />

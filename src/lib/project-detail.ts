@@ -35,6 +35,7 @@ function getApplyDisabledReason(input: {
   hasSelectedStudent: boolean;
   deadline: Date | null;
   existingProposalStatus: string | null;
+  missingRequiredSkills: string[];
 }) {
   if (input.viewerRole !== "STUDENT") {
     return "Hanya akun pelajar yang dapat mengirim proposal.";
@@ -44,6 +45,9 @@ function getApplyDisabledReason(input: {
   }
   if (input.existingProposalStatus) {
     return "Anda sudah mengirim proposal untuk project ini.";
+  }
+  if (input.missingRequiredSkills.length > 0) {
+    return `Lengkapi skill wajib: ${input.missingRequiredSkills.join(", ")}.`;
   }
   if (input.projectStatus !== "OPEN" || input.hasSelectedStudent) {
     return "Project ini sudah tidak menerima proposal.";
@@ -94,7 +98,7 @@ export async function getProjectDetailData(
         },
       },
       skillsNeeded: {
-        select: { skill: { select: { name: true } } },
+        select: { required: true, skill: { select: { name: true } } },
       },
     },
   });
@@ -113,7 +117,8 @@ export async function getProjectDetailData(
     : null;
   const viewerRole = normalizeRole(viewer.role);
   const studentSkills = viewer.student?.skills.map(({ skill }) => skill.name) ?? [];
-  const requiredSkills = project.skillsNeeded.map(({ skill }) => skill.name);
+  const requiredSkills = project.skillsNeeded.filter(({ required }) => required !== false).map(({ skill }) => skill.name);
+  const optionalSkills = project.skillsNeeded.filter(({ required }) => !required).map(({ skill }) => skill.name);
   const normalizedStudentSkills = new Set(studentSkills.map(normalizeSkill));
   const matchedSkills = requiredSkills.filter((skill) =>
     normalizedStudentSkills.has(normalizeSkill(skill)),
@@ -129,6 +134,7 @@ export async function getProjectDetailData(
     hasSelectedStudent: Boolean(project.studentId),
     deadline: project.deadline,
     existingProposalStatus,
+    missingRequiredSkills: missingSkills,
   });
 
   return {
@@ -145,6 +151,7 @@ export async function getProjectDetailData(
         ? "Remote"
         : project.location || project.umkm.user.location || "Lokasi belum ditentukan",
     requiredSkills,
+    optionalSkills,
     matchedSkills,
     missingSkills,
     skillMatchPercent: calculateSkillMatch(studentSkills, requiredSkills),

@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import { MoreVertical, User, Trash2, Ban } from "lucide-react";
+import Swal from "sweetalert2";
 import { Conversation } from "@/types/messages";
 
 interface ChatHeaderProps {
@@ -43,19 +44,37 @@ export default function ChatHeader({
     setIsMenuOpen(false);
     // TODO: arahkan ke halaman profil lawan bicara bila sudah tersedia.
     // window.location.href = `/dashboard/profile/${conversation.id}`;
-    alert(`Buka profil ${conversation.contactName}`);
+    void Swal.fire({
+      icon: "info",
+      title: "Profil belum tersedia",
+      text: `Halaman profil ${conversation.contactName} belum tersedia.`,
+      confirmButtonText: "Mengerti",
+      confirmButtonColor: "#FF6B35",
+    });
   }
 
   function handleClearMessages() {
     setIsMenuOpen(false);
     // TODO: integrasikan dengan server action untuk membersihkan percakapan.
-    alert(`Percakapan dengan ${conversation.contactName} akan dibersihkan.`);
+    void Swal.fire({
+      icon: "info",
+      title: "Fitur belum tersedia",
+      text: `Percakapan dengan ${conversation.contactName} belum dapat dibersihkan.`,
+      confirmButtonText: "Mengerti",
+      confirmButtonColor: "#FF6B35",
+    });
   }
 
   function handleBlock() {
     setIsMenuOpen(false);
     // TODO: integrasikan dengan server action untuk memblokir kontak.
-    alert(`Kamu akan memblokir ${conversation.contactName}.`);
+    void Swal.fire({
+      icon: "info",
+      title: "Fitur belum tersedia",
+      text: `${conversation.contactName} belum dapat diblokir saat ini.`,
+      confirmButtonText: "Mengerti",
+      confirmButtonColor: "#FF6B35",
+    });
   }
 
   return (

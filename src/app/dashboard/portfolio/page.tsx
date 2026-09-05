@@ -20,7 +20,7 @@ export default async function PortfolioPage() {
       <div className="flex flex-col gap-8">
         <PortfolioStatsGrid summary={data.summary} />
         <PortfolioProjectSection projects={data.projects} />
-        <SkillEndorsementSection skills={data.skills} />
+        <SkillEndorsementSection skills={data.skills} projects={data.projects} />
         <TestimonialSection testimonials={data.testimonials} />
       </div>
     </>

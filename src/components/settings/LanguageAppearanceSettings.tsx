@@ -161,14 +161,7 @@ export default function LanguageAppearanceSettings() {
         </div>
       </section>
 
-      <div className="flex justify-end">
-        <button
-          type="button"
-          className="font-body text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 transition-colors rounded-full px-8 py-3"
-        >
-          {dict.settings.save}
-        </button>
-      </div>
+      <p className="text-right text-xs text-ink-muted">Perubahan bahasa, tema, dan ukuran huruf tersimpan otomatis di perangkat ini.</p>
     </div>
   );
 }

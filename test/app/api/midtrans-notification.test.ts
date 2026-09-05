@@ -76,6 +76,8 @@ describe("Midtrans notification route", () => {
     expect(response.headers.get("cache-control")).toBe("no-store");
     await expect(response.json()).resolves.toEqual({ received: true });
     expect(mocks.applyStatus).toHaveBeenCalledWith(payload);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/dashboard/payments/project-1");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/dashboard/active-projects");
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/dashboard/settings");
     expect(mocks.revalidatePath).toHaveBeenCalledWith(
       "/dashboard/settings/pembayaran",

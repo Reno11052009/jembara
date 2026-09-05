@@ -1,10 +1,10 @@
 "use client";
 
-import { stats } from "@/lib/mock-landing";
+import type { StatItem } from "@/types/landing";
 import { useReveal } from "@/hooks/useReveal";
 import { Reveal } from "@/components/ui/Reveal";
 
-export default function StatsBar() {
+export default function StatsBar({ stats }: { stats: StatItem[] }) {
   const { ref, isVisible } = useReveal<HTMLElement>();
 
   return (

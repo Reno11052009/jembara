@@ -1,12 +1,15 @@
 import ProfileVisibilityCard from "@/components/settings/ProfileVisibilityCard";
-import PrivacyPreferencesCard from "@/components/settings/PrivacyPreferencesCard";
 import DataAccountCard from "@/components/settings/DataAccountCard";
+import type { PrivacySettingsData } from "@/lib/privacy";
 
-export default function PrivacySettingsView() {
+export default function PrivacySettingsView({
+  initialData,
+}: {
+  initialData: PrivacySettingsData;
+}) {
   return (
     <div className="flex flex-col gap-6">
-      <ProfileVisibilityCard />
-      <PrivacyPreferencesCard />
+      <ProfileVisibilityCard initialData={initialData} />
       <DataAccountCard />
     </div>
   );

@@ -9,9 +9,14 @@ import ChatComposer from "@/components/messages/ChatComposer";
 interface ChatPanelProps {
   conversation: Conversation;
   messages: ChatMessage[];
+  attachmentsEnabled?: boolean;
 }
 
-export default function ChatPanel({ conversation, messages }: ChatPanelProps) {
+export default function ChatPanel({
+  conversation,
+  messages,
+  attachmentsEnabled = true,
+}: ChatPanelProps) {
   const [displayMessages, setDisplayMessages] = useState(messages);
 
   function addOptimisticMessage(message: ChatMessage) {
@@ -52,6 +57,7 @@ export default function ChatPanel({ conversation, messages }: ChatPanelProps) {
       <ChatComposer
         conversationId={conversation.id}
         canSend={conversation.canSend}
+        attachmentsEnabled={attachmentsEnabled}
         onOptimisticSend={addOptimisticMessage}
         onSendSuccess={confirmOptimisticMessage}
         onSendError={removeOptimisticMessage}

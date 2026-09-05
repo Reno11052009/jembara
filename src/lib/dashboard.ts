@@ -869,6 +869,8 @@ async function getAdminDashboard(user: {
       ],
       userGrowthData,
       quickActions: [
+        { id: "reports", label: "Moderasi Laporan", href: "/dashboard/laporan" },
+        { id: "skills", label: "Verifikasi Skill", href: "/dashboard/verifikasi-skill" },
         {
           id: "users",
           label: `Kelola ${formatCount(studentCount + umkmCount)} pengguna`,

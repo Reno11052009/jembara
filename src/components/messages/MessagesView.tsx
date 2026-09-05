@@ -11,12 +11,14 @@ interface MessagesViewProps {
   conversations: Conversation[];
   conversationMessages: Record<string, ChatMessage[]>;
   selectedConversationId: string;
+  attachmentsEnabled: boolean;
 }
 
 export default function MessagesView({
   conversations,
   conversationMessages,
   selectedConversationId: initialSelectedConversationId,
+  attachmentsEnabled,
 }: MessagesViewProps) {
   const router = useRouter();
   const selectedConversation = conversations.find(
@@ -51,6 +53,7 @@ export default function MessagesView({
           }
           conversation={selectedConversation}
           messages={conversationMessages[selectedConversation.id] ?? []}
+          attachmentsEnabled={attachmentsEnabled}
         />
       ) : (
         <div className="flex flex-1 items-center justify-center bg-card">

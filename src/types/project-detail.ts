@@ -9,6 +9,7 @@ export interface ProjectDetailData {
   workModeLabel: string;
   locationLabel: string;
   requiredSkills: string[];
+  optionalSkills: string[];
   matchedSkills: string[];
   missingSkills: string[];
   skillMatchPercent: number;

@@ -26,6 +26,7 @@ export const loginSchema = z
   .object({
     email: emailSchema,
     password: loginPasswordSchema,
+    twoFactorCode: z.string().trim().max(20).optional(),
   })
   .strict();
 

@@ -1,5 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 import { CalendarDays, MapPin } from "lucide-react";
+import { cancelProjectAction } from "@/app/actions/projects";
 import type { MyJobListing } from "@/types/my-jobs";
 
 const statusStyles: Record<MyJobListing["status"], string> = {
@@ -14,11 +20,23 @@ const statusStyles: Record<MyJobListing["status"], string> = {
 };
 
 export default function MyJobRow({ listing }: { listing: MyJobListing }) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
   const collaborationStarted = [
     "IN_PROGRESS",
     "REVIEW",
     "COMPLETED",
   ].includes(listing.statusCode);
+
+  async function cancelProject() {
+    const confirmation = await Swal.fire({ icon: "warning", title: "Batalkan project?", text: "Project akan ditutup dan proposal yang masih menunggu akan ditolak.", showCancelButton: true, confirmButtonText: "Batalkan Project", cancelButtonText: "Kembali", confirmButtonColor: "#dc2626", reverseButtons: true });
+    if (!confirmation.isConfirmed) return;
+    startTransition(async () => {
+      const result = await cancelProjectAction(listing.id);
+      if (result.error) await Swal.fire({ icon: "error", title: "Gagal", text: result.error });
+      else { await Swal.fire({ icon: "success", title: "Project dibatalkan" }); router.refresh(); }
+    });
+  }
 
   return (
     <article className="rounded-xl border border-hairline bg-card px-6 py-5">
@@ -106,6 +124,9 @@ export default function MyJobRow({ listing }: { listing: MyJobListing }) {
             >
               Cari Talent
             </Link>
+            {listing.statusCode === "OPEN" && !listing.hasSelectedStudent && (
+              <><Link href={`/dashboard/lowongan-saya/${listing.id}/edit`} className="rounded-full border border-ink px-4 py-2 text-xs font-display font-bold uppercase text-ink">Edit</Link><button type="button" disabled={pending} onClick={() => void cancelProject()} className="rounded-full border border-danger px-4 py-2 text-xs font-display font-bold uppercase text-danger disabled:opacity-60">Batalkan</button></>
+            )}
           </div>
         ) : null}
       </div>

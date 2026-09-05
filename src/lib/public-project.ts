@@ -44,7 +44,7 @@ export async function getPublicProjectDetailData(
         },
       },
       skillsNeeded: {
-        select: { skill: { select: { name: true } } },
+        select: { required: true, skill: { select: { name: true } } },
       },
     },
   });
@@ -66,6 +66,7 @@ export async function getPublicProjectDetailData(
         : project.location ||
           project.umkm.user.location ||
           "Lokasi belum ditentukan",
-    requiredSkills: project.skillsNeeded.map(({ skill }) => skill.name),
+    requiredSkills: project.skillsNeeded.filter(({ required }) => required !== false).map(({ skill }) => skill.name),
+    optionalSkills: project.skillsNeeded.filter(({ required }) => !required).map(({ skill }) => skill.name),
   };
 }

@@ -90,7 +90,7 @@ export default function PaymentCheckout({
     redirectUrl: payment.redirectUrl,
   });
   const isSyncingRef = useRef(false);
-  const pollCountRef = useRef(0);
+  const transactionIdRef = useRef<string | undefined>(undefined);
   const currentStatus = serverAuthoritativeStatuses.includes(payment.status)
     ? payment.status
     : localStatus ?? payment.status;
@@ -137,8 +137,11 @@ export default function PaymentCheckout({
       }
 
       try {
-        const result = await syncProjectPaymentAction(payment.projectId);
+        const result = transactionIdRef.current
+          ? await syncProjectPaymentAction(payment.projectId, transactionIdRef.current)
+          : await syncProjectPaymentAction(payment.projectId);
         if (result.success) {
+          setError(null);
           if (result.status) {
             setLocalStatus(result.status);
             if (retryableStatuses.includes(result.status)) {
@@ -153,15 +156,13 @@ export default function PaymentCheckout({
               "Pembayaran belum terkonfirmasi oleh Midtrans. Jika sudah membayar, silakan tunggu beberapa saat lalu coba lagi.",
             );
           }
-        } else if (!silent) {
+        } else {
           setError(result.error || "Status pembayaran belum dapat diperbarui.");
           setSyncMessage(null);
         }
       } catch {
-        if (!silent) {
-          setError("Gagal menghubungi server. Silakan coba lagi.");
-          setSyncMessage(null);
-        }
+        setError("Gagal memeriksa pembayaran. Pemeriksaan otomatis akan dicoba kembali; Anda juga dapat menekan Cek Status Pembayaran.");
+        setSyncMessage(null);
       } finally {
         isSyncingRef.current = false;
       }
@@ -176,18 +177,32 @@ export default function PaymentCheckout({
   }
 
   function triggerSnapPopup(token: string, fallbackUrl?: string | null) {
+    function rememberTransaction(result: unknown) {
+      if (
+        result && typeof result === "object" &&
+        "transaction_id" in result && typeof result.transaction_id === "string" &&
+        /^[a-zA-Z0-9_-]{1,128}$/.test(result.transaction_id)
+      ) {
+        transactionIdRef.current = result.transaction_id;
+      }
+    }
+
     if (typeof window !== "undefined" && window.snap && typeof window.snap.pay === "function") {
       window.snap.pay(token, {
-        onSuccess: function () {
-          setSyncMessage("Pembayaran berhasil! Sedang memverifikasi data...");
+        onSuccess: function (result) {
+          rememberTransaction(result);
+          setSyncMessage("Midtrans melaporkan pembayaran selesai. Sedang memverifikasi data...");
           performSync(false);
         },
-        onPending: function () {
+        onPending: function (result) {
+          rememberTransaction(result);
           setSyncMessage("Instruksi pembayaran telah dibuat. Silakan selesaikan pembayaran Anda.");
           performSync(false);
         },
-        onError: function () {
-          setError("Pembayaran gagal atau dibatalkan. Silakan coba lagi.");
+        onError: function (result) {
+          rememberTransaction(result);
+          setError("Metode pembayaran belum berhasil. Periksa instruksi Midtrans atau gunakan metode lain yang tersedia.");
+          performSync(true);
         },
         onClose: function () {
           // Pengguna menutup popup; periksa otomatis barangkali pembayaran sudah selesai sesaat sebelum ditutup
@@ -219,6 +234,7 @@ export default function PaymentCheckout({
         return;
       }
       if (result.status) setLocalStatus(result.status);
+      transactionIdRef.current = undefined;
       setActivePayment({
         snapToken: result.snapToken ?? null,
         redirectUrl: result.redirectUrl ?? null,
@@ -232,13 +248,20 @@ export default function PaymentCheckout({
     });
   }
 
-  // 2. Auto-sync on mount jika pengguna dialihkan kembali dari Midtrans (payment=finish)
+  // Check on entry and while this tab is visible. Bank/app payments can take
+  // several minutes, so verification must not stop after the first minute.
   useEffect(() => {
-    if (!paymentFinished && currentStatus !== "PENDING") return;
+    if (!canSync) return;
 
     const timeout = window.setTimeout(() => void performSync(true), 0);
-    return () => window.clearTimeout(timeout);
-  }, [currentStatus, paymentFinished, performSync]);
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") void performSync(true);
+    }, 10_000);
+    return () => {
+      window.clearTimeout(timeout);
+      window.clearInterval(interval);
+    };
+  }, [canSync, paymentFinished, performSync]);
 
   // 3. Auto-sync saat tab aktif kembali (misal setelah membuka m-banking / simulator Midtrans)
   useEffect(() => {
@@ -256,24 +279,6 @@ export default function PaymentCheckout({
       window.removeEventListener("focus", handleVisibilityChange);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [currentStatus, performSync]);
-
-  // 4. Background polling tiap 3.5s selama status PENDING (maksimal 15 kali = ~50 detik)
-  useEffect(() => {
-    if (currentStatus !== "PENDING") return;
-
-    pollCountRef.current = 0;
-
-    const interval = setInterval(() => {
-      pollCountRef.current += 1;
-      if (pollCountRef.current > 15) {
-        clearInterval(interval);
-        return;
-      }
-      performSync(true);
-    }, 3500);
-
-    return () => clearInterval(interval);
   }, [currentStatus, performSync]);
 
   // 5. Jika status sudah HELD, arahkan otomatis dalam 3 detik ke /dashboard/active-projects
@@ -343,7 +348,35 @@ export default function PaymentCheckout({
             </div>
           </div>
 
+          {payment.environment === "sandbox" && (
+            <div className="mt-4 rounded-xl bg-brand-soft p-4 text-sm text-ink">
+              <p className="font-bold">Mode uji coba Sandbox</p>
+              <p className="mt-1 text-ink-muted">
+                Selesaikan pembayaran melalui simulator Midtrans, bukan transfer atau aplikasi pembayaran sungguhan.
+              </p>
+              <a
+                href="https://docs.midtrans.com/docs/testing-payment-on-sandbox"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-block font-semibold text-brand underline"
+              >
+                Panduan dan simulator pembayaran
+              </a>
+            </div>
+          )}
+          {payment.amount > 10_000_000 && (
+            <p className="mt-4 rounded-xl bg-canvas p-4 text-sm text-ink-muted">
+              QRIS mendukung maksimal Rp10.000.000 per transaksi. Untuk nominal proyek ini, pilih transfer bank/virtual account yang tersedia. E-wallet dan gerai juga memiliki batas nominal masing-masing.
+            </p>
+          )}
+
           <dl className="mt-6 divide-y divide-hairline rounded-xl bg-canvas px-5">
+            {payment.orderId && (
+              <div className="flex justify-between gap-4 py-4">
+                <dt className="shrink-0 text-sm text-ink-muted">ID Pesanan</dt>
+                <dd className="break-all text-right text-xs font-mono text-ink">{payment.orderId}</dd>
+              </div>
+            )}
             <div className="flex justify-between gap-4 py-4">
               <dt className="text-sm text-ink-muted">Proyek</dt>
               <dd className="text-right text-sm font-bold text-ink">{payment.projectTitle}</dd>

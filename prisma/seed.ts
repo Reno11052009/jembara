@@ -28,6 +28,10 @@ function requiredEnvironmentValue(name: string) {
 const adminEmail = requiredEnvironmentValue("ADMIN_SEED_EMAIL").toLowerCase();
 const adminName = requiredEnvironmentValue("ADMIN_SEED_NAME");
 const adminPassword = requiredEnvironmentValue("ADMIN_SEED_PASSWORD");
+const demoStudentEmail = process.env.DEMO_STUDENT_EMAIL?.trim().toLowerCase();
+const demoStudentPassword = process.env.DEMO_STUDENT_PASSWORD?.trim();
+const demoUmkmEmail = process.env.DEMO_UMKM_EMAIL?.trim().toLowerCase();
+const demoUmkmPassword = process.env.DEMO_UMKM_PASSWORD?.trim();
 
 if (!adminEmail || !adminEmail.includes("@")) {
   throw new Error("ADMIN_SEED_EMAIL harus berisi alamat email yang valid.");
@@ -161,6 +165,23 @@ async function main() {
       admin: { select: { id: true } },
     },
   });
+
+  if (demoStudentEmail && demoStudentPassword && demoUmkmEmail && demoUmkmPassword) {
+    if (demoStudentPassword.length < 8 || demoUmkmPassword.length < 8) throw new Error("Password akun demo minimal 8 karakter.");
+    const [studentPasswordHash, umkmPasswordHash, demoSkills] = await Promise.all([
+      bcrypt.hash(demoStudentPassword, 10),
+      bcrypt.hash(demoUmkmPassword, 10),
+      prisma.skill.findMany({ where: { name: { in: ["Web Development", "UI/UX Design", "Digital Marketing"] } }, select: { id: true, name: true } }),
+    ]);
+    const studentUser = await prisma.user.upsert({ where: { email: demoStudentEmail }, update: { name: "Talent Demo Jembara", password: studentPasswordHash, role: "STUDENT" }, create: { email: demoStudentEmail, name: "Talent Demo Jembara", password: studentPasswordHash, role: "STUDENT" }, select: { id: true } });
+    const student = await prisma.student.upsert({ where: { userId: studentUser.id }, update: { school: "Sekolah Mitra Jembara", jurusan: "Rekayasa Perangkat Lunak", available: true, isPublicProfile: true, expectedBudgetMin: 500_000, expectedBudgetMax: 3_000_000 }, create: { userId: studentUser.id, school: "Sekolah Mitra Jembara", jurusan: "Rekayasa Perangkat Lunak", available: true, isPublicProfile: true, expectedBudgetMin: 500_000, expectedBudgetMax: 3_000_000 } });
+    for (const [index, skill] of demoSkills.entries()) await prisma.student_skill.upsert({ where: { studentId_skillId: { studentId: student.id, skillId: skill.id } }, update: { level: index === 0 ? "ADVANCED" : "INTERMEDIATE" }, create: { studentId: student.id, skillId: skill.id, level: index === 0 ? "ADVANCED" : "INTERMEDIATE" } });
+    const umkmUser = await prisma.user.upsert({ where: { email: demoUmkmEmail }, update: { name: "Pemilik UMKM Demo", password: umkmPasswordHash, role: "UMKM" }, create: { email: demoUmkmEmail, name: "Pemilik UMKM Demo", password: umkmPasswordHash, role: "UMKM" }, select: { id: true } });
+    const demoUmkm = await prisma.umkm.upsert({ where: { userId: umkmUser.id }, update: { nama_usaha: "UMKM Demo Jembara", kategori_usaha: "Kuliner" }, create: { userId: umkmUser.id, nama_usaha: "UMKM Demo Jembara", kategori_usaha: "Kuliner" } });
+    const existingProject = await prisma.project.findFirst({ where: { umkmId: demoUmkm.id, title: "Website Katalog Produk UMKM" }, select: { id: true } });
+    if (!existingProject && demoSkills.length) await prisma.project.create({ data: { umkmId: demoUmkm.id, title: "Website Katalog Produk UMKM", description: "Membangun website katalog responsif untuk menampilkan produk, profil usaha, dan kontak pemesanan UMKM.", budget: 2_500_000, deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), status: "OPEN", workMode: "REMOTE", skillsNeeded: { create: demoSkills.slice(0, 2).map((skill, index) => ({ skillId: skill.id, required: index === 0 })) } } });
+    console.info("Seeder akun demo selesai tanpa mencetak kredensial.");
+  }
 
   if (existingUser && !passwordAlreadyMatches) {
     await prisma.auth_session.deleteMany({ where: { userId: existingUser.id } });

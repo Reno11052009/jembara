@@ -3,6 +3,16 @@ export interface Talent {
   name: string;
   role: string;
   matchPercent: number;
+  matchEligible?: boolean;
+  matchReasons?: string[];
+  matchFactors?: {
+    skills: number;
+    portfolio: number;
+    rating: number;
+    budget: number;
+    availability: number;
+    location: number;
+  };
   rating: number | null;
   rateLabel?: string;
   ratePerHour?: number;

@@ -3,6 +3,7 @@
 import { FormEvent, useRef, useState, useTransition } from "react";
 import { CreditCard, Plus, Star, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 import {
   createPayoutMethodAction,
   deletePayoutMethodAction,
@@ -38,8 +39,21 @@ export default function PaymentMethodsCard({ methods }: { methods: PaymentMethod
     });
   }
 
-  function mutateMethod(action: "PRIMARY" | "DELETE", methodId: string) {
-    if (action === "DELETE" && !window.confirm("Hapus metode pencairan ini?")) return;
+  async function mutateMethod(action: "PRIMARY" | "DELETE", methodId: string) {
+    if (action === "DELETE") {
+      const confirmation = await Swal.fire({
+        icon: "warning",
+        title: "Hapus metode pencairan?",
+        text: "Rekening atau e-wallet ini akan dihapus dari akun Anda.",
+        showCancelButton: true,
+        confirmButtonText: "Hapus",
+        cancelButtonText: "Batal",
+        confirmButtonColor: "#DC2626",
+        focusCancel: true,
+        reverseButtons: true,
+      });
+      if (!confirmation.isConfirmed) return;
+    }
     setFeedback(null);
     startTransition(async () => {
       const result =
@@ -162,7 +176,7 @@ export default function PaymentMethodsCard({ methods }: { methods: PaymentMethod
                   <button
                     type="button"
                     disabled={isPending}
-                    onClick={() => mutateMethod("PRIMARY", method.id)}
+                    onClick={() => void mutateMethod("PRIMARY", method.id)}
                     aria-label={`Jadikan ${method.name} rekening utama`}
                     className="inline-flex h-9 items-center gap-1.5 rounded-full border border-hairline px-3 text-xs font-semibold text-ink hover:border-brand hover:text-brand disabled:opacity-50"
                   >
@@ -172,7 +186,7 @@ export default function PaymentMethodsCard({ methods }: { methods: PaymentMethod
                 <button
                   type="button"
                   disabled={isPending}
-                  onClick={() => mutateMethod("DELETE", method.id)}
+                  onClick={() => void mutateMethod("DELETE", method.id)}
                   aria-label={`Hapus ${method.name}`}
                   className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-danger hover:border-danger disabled:opacity-50"
                 >

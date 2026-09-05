@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   acceptProposal: vi.fn(),
   rejectProposal: vi.fn(),
   routerPush: vi.fn(),
+  swalFire: vi.fn(),
 }));
 
 vi.mock("@/app/actions/proposals", () => ({
@@ -15,6 +16,9 @@ vi.mock("@/app/actions/proposals", () => ({
 }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mocks.routerPush }),
+}));
+vi.mock("sweetalert2", () => ({
+  default: { fire: mocks.swalFire },
 }));
 
 import ApplicantRow from "@/components/dashboard/umkm/pelamar/ApplicantRow";
@@ -41,7 +45,7 @@ describe("ApplicantRow", () => {
     vi.clearAllMocks();
     mocks.acceptProposal.mockResolvedValue({ success: true });
     mocks.rejectProposal.mockResolvedValue({ success: true });
-    vi.spyOn(window, "confirm").mockReturnValue(true);
+    mocks.swalFire.mockResolvedValue({ isConfirmed: true });
   });
 
   afterEach(() => {
@@ -57,6 +61,24 @@ describe("ApplicantRow", () => {
     await waitFor(() => {
       expect(mocks.acceptProposal).toHaveBeenCalledWith(applicant.id);
     });
+    expect(mocks.swalFire).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Terima Ayu?",
+        showCancelButton: true,
+      }),
+    );
+  });
+
+  it("does not accept an applicant when the dialog is cancelled", async () => {
+    mocks.swalFire.mockResolvedValueOnce({ isConfirmed: false });
+    render(<ApplicantRow applicant={applicant} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Terima" }));
+
+    await waitFor(() => {
+      expect(mocks.swalFire).toHaveBeenCalled();
+    });
+    expect(mocks.acceptProposal).not.toHaveBeenCalled();
   });
 
   it("hides decision controls after a proposal has a decision", () => {

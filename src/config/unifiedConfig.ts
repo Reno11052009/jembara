@@ -31,6 +31,18 @@ export const config = {
           limit: 10,
           windowMs: 10 * 60 * 1000,
         },
+        privacyUpdateByUser: {
+          limit: 10,
+          windowMs: 10 * 60 * 1000,
+        },
+        accountExportByUser: {
+          limit: 3,
+          windowMs: 60 * 60 * 1000,
+        },
+        accountDeleteByUser: {
+          limit: 5,
+          windowMs: 60 * 60 * 1000,
+        },
         messageByProjectAndUser: {
           limit: 20,
           windowMs: 60 * 1000,

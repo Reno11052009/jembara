@@ -27,6 +27,15 @@ const submissionSchema = z.object({
     .min(20, "Catatan hasil minimal 20 karakter.")
     .max(3000, "Catatan hasil maksimal 3000 karakter."),
 });
+const revisionSchema = z.object({
+  projectId: projectIdSchema,
+  reason: z.string().trim().min(20, "Alasan revisi minimal 20 karakter.").max(2000),
+});
+const reviewSchema = z.object({
+  projectId: projectIdSchema,
+  rating: z.coerce.number().int().min(1).max(5),
+  comment: z.string().trim().max(2000),
+});
 
 class ProjectLifecycleError extends Error {}
 
@@ -71,7 +80,7 @@ export async function submitProjectResultAction(
           studentId: true,
           umkm: { select: { userId: true } },
           payment: { select: { status: true } },
-          submission: { select: { id: true, status: true } },
+          submission: { select: { id: true, status: true, revisionCount: true } },
         },
       });
       if (!project || !project.studentId) {
@@ -86,16 +95,28 @@ export async function submitProjectResultAction(
         );
       }
 
-      await transaction.project_submission.create({
-        data: {
-          projectId: project.id,
-          studentId: project.studentId,
-          resultUrl: parsed.data.resultUrl || null,
-          notes: parsed.data.notes,
-          status: "SUBMITTED",
-        },
-        select: { id: true },
-      });
+      if (project.submission?.status === "REVISION_REQUESTED") {
+        await transaction.project_submission.update({
+          where: { id: project.submission.id },
+          data: {
+            resultUrl: parsed.data.resultUrl || null,
+            notes: parsed.data.notes,
+            status: "SUBMITTED",
+            submittedAt: new Date(),
+          },
+        });
+      } else {
+        await transaction.project_submission.create({
+          data: {
+            projectId: project.id,
+            studentId: project.studentId,
+            resultUrl: parsed.data.resultUrl || null,
+            notes: parsed.data.notes,
+            status: "SUBMITTED",
+          },
+          select: { id: true },
+        });
+      }
       const advanced = await transaction.project.updateMany({
         where: { id: project.id, status: "IN_PROGRESS", studentId: project.studentId },
         data: { status: "REVIEW" },
@@ -103,6 +124,12 @@ export async function submitProjectResultAction(
       if (advanced.count !== 1) {
         throw new ProjectLifecycleError("Status proyek berubah. Muat ulang halaman.");
       }
+      await transaction.project_status_history.create({
+        data: { projectId: project.id, fromStatus: "IN_PROGRESS", toStatus: "REVIEW", reason: project.submission ? "Hasil revisi dikirim" : "Hasil dikirim", actorUserId: session.userId },
+      });
+      await transaction.audit_log.create({
+        data: { actorUserId: session.userId, action: "PROJECT_RESULT_SUBMITTED", entityType: "project", entityId: project.id, metadata: { revisionCount: project.submission?.revisionCount ?? 0 } },
+      });
       return { newlySubmitted: true, project };
     });
 
@@ -213,6 +240,12 @@ async function releaseProjectPayment(projectId: string, userId: string) {
             data: { total_project: { increment: 1 } },
             select: { id: true },
           });
+          await transaction.project_status_history.create({
+            data: { projectId: project.id, fromStatus: "REVIEW", toStatus: "COMPLETED", reason: "Hasil disetujui dan dana dilepas", actorUserId: userId },
+          });
+          await transaction.audit_log.create({
+            data: { actorUserId: userId, action: "PROJECT_COMPLETED", entityType: "project", entityId: project.id, metadata: { paymentId: project.payment.id, amount: project.payment.amount } },
+          });
           return { newlyReleased: true, project };
         },
         { isolationLevel: "Serializable" },
@@ -229,6 +262,62 @@ async function releaseProjectPayment(projectId: string, userId: string) {
     }
   }
   throw new ProjectLifecycleError("Pelepasan saldo gagal setelah beberapa percobaan.");
+}
+
+export async function requestProjectRevisionAction(formData: FormData): Promise<ProjectLifecycleResult> {
+  const parsed = revisionSchema.safeParse({ projectId: formData.get("projectId"), reason: formData.get("reason") });
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message };
+  const session = await verifySession();
+  if (!session?.userId || session.userId === "mock-user-id") return { success: false, error: "Sesi tidak valid." };
+
+  try {
+    const outcome = await prisma.$transaction(async (transaction) => {
+      const project = await transaction.project.findFirst({
+        where: { id: parsed.data.projectId, status: "REVIEW", umkm: { userId: session.userId } },
+        select: { id: true, title: true, student: { select: { userId: true } }, payment: { select: { status: true } }, submission: { select: { id: true, status: true, revisionCount: true } } },
+      });
+      if (!project?.student || project.payment?.status !== "HELD" || project.submission?.status !== "SUBMITTED") throw new ProjectLifecycleError("Proyek belum siap diminta revisi.");
+      if (project.submission.revisionCount >= 2) throw new ProjectLifecycleError("Batas maksimal 2 revisi telah tercapai. Setujui hasil atau hubungi admin.");
+      const sequence = project.submission.revisionCount + 1;
+      await transaction.project_revision.create({ data: { projectId: project.id, submissionId: project.submission.id, requestedByUserId: session.userId, sequence, reason: parsed.data.reason } });
+      await transaction.project_submission.update({ where: { id: project.submission.id }, data: { status: "REVISION_REQUESTED", revisionCount: sequence } });
+      const changed = await transaction.project.updateMany({ where: { id: project.id, status: "REVIEW" }, data: { status: "IN_PROGRESS" } });
+      if (changed.count !== 1) throw new ProjectLifecycleError("Status proyek berubah. Muat ulang halaman.");
+      await transaction.project_status_history.create({ data: { projectId: project.id, fromStatus: "REVIEW", toStatus: "IN_PROGRESS", reason: `Revisi ${sequence}/2 diminta`, actorUserId: session.userId } });
+      await transaction.audit_log.create({ data: { actorUserId: session.userId, action: "PROJECT_REVISION_REQUESTED", entityType: "project", entityId: project.id, metadata: { sequence } } });
+      return { ...project, studentUserId: project.student.userId, sequence };
+    });
+    await createUserNotification({ userId: outcome.studentUserId, type: "PROJECT", title: `Revisi ${outcome.sequence}/2 diminta`, message: `UMKM meminta perbaikan hasil untuk ${outcome.title}.`, href: "/dashboard/active-projects", preferenceKey: "updateProyek" }).catch((error) => console.error("Notifikasi revisi gagal:", error));
+    revalidateProjectLifecyclePaths();
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error instanceof ProjectLifecycleError ? error.message : "Permintaan revisi gagal disimpan." };
+  }
+}
+
+export async function createProjectReviewAction(formData: FormData): Promise<ProjectLifecycleResult> {
+  const parsed = reviewSchema.safeParse({ projectId: formData.get("projectId"), rating: formData.get("rating"), comment: formData.get("comment") ?? "" });
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message };
+  const session = await verifySession();
+  if (!session?.userId || session.userId === "mock-user-id") return { success: false, error: "Sesi tidak valid." };
+
+  try {
+    const outcome = await prisma.$transaction(async (transaction) => {
+      const project = await transaction.project.findFirst({ where: { id: parsed.data.projectId, status: "COMPLETED", umkm: { userId: session.userId }, review: null }, select: { id: true, title: true, studentId: true, student: { select: { userId: true } }, umkmId: true, payment: { select: { status: true } } } });
+      if (!project?.studentId || !project.student || project.payment?.status !== "RELEASED") throw new ProjectLifecycleError("Ulasan hanya dapat diberikan sekali setelah proyek selesai.");
+      await transaction.review.create({ data: { projectId: project.id, studentId: project.studentId, umkmId: project.umkmId, rating: parsed.data.rating, comment: parsed.data.comment || null } });
+      const aggregate = await transaction.review.aggregate({ where: { studentId: project.studentId }, _avg: { rating: true } });
+      await transaction.student.update({ where: { id: project.studentId }, data: { rating: aggregate._avg.rating ?? parsed.data.rating } });
+      await transaction.audit_log.create({ data: { actorUserId: session.userId, action: "PROJECT_REVIEW_CREATED", entityType: "project", entityId: project.id, metadata: { rating: parsed.data.rating } } });
+      return { ...project, studentUserId: project.student.userId };
+    });
+    await createUserNotification({ userId: outcome.studentUserId, type: "PROJECT", title: "Ulasan baru diterima", message: `UMKM memberi ulasan untuk ${outcome.title}.`, href: "/dashboard/portfolio", preferenceKey: "updateProyek" }).catch((error) => console.error("Notifikasi ulasan gagal:", error));
+    revalidateProjectLifecyclePaths();
+    return { success: true };
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return { success: false, error: "Ulasan untuk proyek ini sudah ada." };
+    return { success: false, error: error instanceof ProjectLifecycleError ? error.message : "Ulasan gagal disimpan." };
+  }
 }
 
 export async function approveProjectResultAction(

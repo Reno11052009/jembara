@@ -47,6 +47,7 @@ interface SettingsViewProps {
   initialSessions: ActiveSession[];
   businessCategoryOptions: BusinessCategoryOption[];
   initialPaymentSettings: PaymentSettingsData;
+  initialTwoFactorEnabled: boolean;
 }
 
 export default function SettingsView({
@@ -55,6 +56,7 @@ export default function SettingsView({
   initialSessions,
   businessCategoryOptions,
   initialPaymentSettings,
+  initialTwoFactorEnabled,
 }: SettingsViewProps) {
   const [activeTab, setActiveTab] =
     useState<(typeof tabIds)[number]>("profil");
@@ -145,7 +147,7 @@ export default function SettingsView({
           />
         )}
         {activeTab === "keamanan" && (
-          <SecuritySettingsView sessions={initialSessions} />
+          <SecuritySettingsView sessions={initialSessions} twoFactorEnabled={initialTwoFactorEnabled} />
         )}
         {activeTab === "notifikasi" && (
           <NotificationSettingsCard
@@ -155,7 +157,7 @@ export default function SettingsView({
         {activeTab === "pembayaran" && (
           <PaymentSettingsView data={initialPaymentSettings} />
         )}
-        {activeTab === "privasi" && <PrivacySettingsView />}
+        {activeTab === "privasi" && <PrivacySettingsView initialData={initialData} />}
         {activeTab === "bahasa" && <LanguageAppearanceSettings />}
       </div>
     </>

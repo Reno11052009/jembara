@@ -59,6 +59,11 @@ export async function POST(request: Request) {
     }
 
     const outcome = await applyMidtransStatus(payload);
+    revalidatePath(`/dashboard/payments/${outcome.project.id}`);
+    revalidatePath("/dashboard/active-projects");
+    revalidatePath("/dashboard/lowongan-saya");
+    revalidatePath("/dashboard/pelamar");
+    revalidatePath("/dashboard");
     revalidatePath("/dashboard/settings");
     revalidatePath("/dashboard/settings/pembayaran");
     if (outcome.newlyHeld && outcome.project.student) {

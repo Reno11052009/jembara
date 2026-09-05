@@ -25,6 +25,8 @@ export interface ProjectPaymentData {
   snapToken?: string | null;
   clientKey?: string;
   snapScriptUrl?: string;
+  environment?: "sandbox" | "production";
+  orderId?: string | null;
   canPay: boolean;
   canSync: boolean;
 }

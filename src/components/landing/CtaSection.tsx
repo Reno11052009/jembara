@@ -8,7 +8,7 @@ export default function CtaSection() {
         <Reveal as="h2" className="font-display text-4xl font-black text-white">
           Siap Memulai Langkah Anda
           <span className="block">
-            Bersama <span className="text-brand">Jembatan Karya</span>?
+            Bersama <span className="text-brand">Jembara</span>?
           </span>
         </Reveal>
 
