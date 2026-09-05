@@ -19,10 +19,6 @@ export default function AuthShell({
     <div className="flex min-h-screen w-full flex-col lg:flex-row">
       <div className="relative hidden overflow-hidden bg-sidebar bg-hexgrid lg:flex lg:w-[42%] lg:flex-col lg:justify-between lg:p-10">
         <div className="flex items-center gap-2">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-brand" />
-          <span className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
-            Matchmaking Server: Online
-          </span>
         </div>
 
         <div>
@@ -39,8 +35,8 @@ export default function AuthShell({
         </div>
 
         <div className="flex gap-6 text-[11px] uppercase tracking-[0.2em] text-slate-500">
-          <span>Ping: 12ms</span>
-          <span>Region: ID-East</span>
+          <span>© 2026 Jembatan Karya Indonesia.</span>
+          <span></span>
         </div>
       </div>
 

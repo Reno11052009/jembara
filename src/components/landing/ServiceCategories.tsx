@@ -40,7 +40,7 @@ export default function ServiceCategories() {
           dibutuhkan bisnis Anda.
         </Reveal>
 
-        <div className="mt-12 grid grid-cols-3 gap-5 text-left">
+        <div className="mt-12 grid grid-cols-1 gap-5 text-left sm:grid-cols-2 lg:grid-cols-3">
           {serviceCategories.map((category, i) => {
             const Icon = category.icon;
             return (

@@ -1,39 +1,21 @@
+// Sidebar.tsx — tambahkan props isOpen & onClose, ubah class hidden→drawer overlay di mobile
 "use client";
 
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  Search,
-  Briefcase,
-  User,
-  Settings,
-  Users,
-  LayoutGrid,
-  Building2,
-  Handshake,
+  Search, Briefcase, User, Settings, Users, LayoutGrid, Building2, Handshake,
 } from "lucide-react";
 import { Home, ListChecks, FolderOpen, MessageSquare, CreditCard, FileText } from "lucide-react";
 import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface NavItem {
   key:
-    | "dashboard"
-    | "findProjects"
-    | "myProposals"
-    | "activeProjects"
-    | "portfolio"
-    | "messages"
-    | "earnings"
-    | "profile"
-    | "settings"
-    | "cariTalent"
-    | "pelamar"
-    | "daftarUser"
-    | "daftarUmkm"
-    | "relasi"
-    | "lowongan"
-    | "monitorPesan";
+    | "dashboard" | "findProjects" | "myProposals" | "activeProjects"
+    | "portfolio" | "messages" | "earnings" | "profile" | "settings"
+    | "cariTalent" | "pelamar" | "daftarUser" | "daftarUmkm" | "relasi"
+    | "lowongan" | "monitorPesan";
   href: string;
   icon?: React.ElementType;
   iconSrc?: string;
@@ -61,8 +43,6 @@ const umkmNavItems: NavItem[] = [
   { key: "settings", href: "/dashboard/settings", icon: Settings },
 ];
 
-// NOTE: daftarUser / daftarUmkm / relasi / lowongan / monitorPesan pages don't
-// exist yet — hrefs below are placeholders, update once those pages are built.
 const adminNavItems: NavItem[] = [
   { key: "dashboard", href: "/dashboard", icon: LayoutGrid },
   { key: "daftarUser", href: "/dashboard/daftar-user", icon: Users },
@@ -72,7 +52,13 @@ const adminNavItems: NavItem[] = [
   { key: "monitorPesan", href: "/dashboard/monitor-pesan", icon: MessageSquare },
 ];
 
-export default function Sidebar({ role }: { role: string }) {
+interface SidebarProps {
+  role: string;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { dict } = usePreferences();
 
@@ -84,73 +70,92 @@ export default function Sidebar({ role }: { role: string }) {
         : studentNavItems.filter((item) => item.key !== "myProposals" || role === "STUDENT");
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col self-start bg-sidebar lg:flex">
-      <div className="flex h-full flex-col px-4 py-6">
-        <Link href="/" className="mb-8 flex items-center gap-2 px-2">
-          {role === "ADMIN" && <span className="h-6 w-6 rounded-md bg-brand" />}
-          <span className="font-display text-lg font-bold text-white">Jem</span>
-          <span className="font-display text-lg font-bold text-brand">Bara</span>
+    <>
+      {/* Backdrop — cuma render pas mobile drawer kebuka */}
+      {isOpen && (
+        <div
+          onClick={onClose}
+          aria-hidden="true"
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+        />
+      )}
+
+      <aside
+        className={`
+          fixed inset-y-0 left-0 z-50 flex h-screen w-64 max-w-[80%] shrink-0 flex-col
+          self-start bg-sidebar transition-transform duration-300 ease-out
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:sticky lg:top-0 lg:z-auto lg:w-60 lg:translate-x-0 lg:transition-none
+        `}
+      >
+        <div className="flex h-full flex-col overflow-y-auto px-4 py-6">
+          <Link href="/" className="mb-8 flex items-center gap-2 px-2">
+            {role === "ADMIN" && <span className="h-6 w-6 rounded-md bg-brand" />}
+            <span className="font-display text-lg font-bold text-white">Jem</span>
+            <span className="font-display text-lg font-bold text-brand">Bara</span>
+            {role === "ADMIN" && (
+              <span className="font-body text-xs font-semibold tracking-wide text-slate-400">
+                ADMIN
+              </span>
+            )}
+          </Link>
+
+          <nav className="flex flex-col gap-1">
+            {navItems
+              .filter(
+                (item) =>
+                  !["myProposals", "portfolio"].includes(item.key) ||
+                  role === "STUDENT",
+              )
+              .map((item) => {
+              const isUmkmLowongan = role === "UMKM" && item.key === "lowongan";
+              const isActive = isUmkmLowongan
+                ? pathname === "/dashboard/lowongan-saya" ||
+                  pathname === "/dashboard/pasang-lowongan"
+                : pathname === item.href;
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                    isActive
+                      ? "bg-brand font-medium text-white"
+                      : "text-slate-400 hover:bg-white/5 hover:text-white"
+                  }`}
+                >
+                  {isActive && (
+                    <span className="absolute right-6 top-1/2 h-4 w-1 -translate-y-1/2 rounded-full bg-white" />
+                  )}
+
+                  {item.iconSrc ? (
+                    <Image
+                      src={item.iconSrc}
+                      alt=""
+                      width={18}
+                      height={18}
+                      className={`shrink-0 transition-opacity ${
+                        isActive ? "opacity-100" : "opacity-60"
+                      }`}
+                    />
+                  ) : (
+                    Icon && <Icon size={18} className="shrink-0" />
+                  )}
+                  {dict.sidebar[item.key]}
+                </Link>
+              );
+            })}
+          </nav>
+
           {role === "ADMIN" && (
-            <span className="font-body text-xs font-semibold tracking-wide text-slate-400">
-              ADMIN
-            </span>
+            <div className="px-3 pt-4">
+              <p className="font-body text-xs text-slate-500">Logged in as:</p>
+              <p className="font-display text-sm font-bold text-white">Super Admin</p>
+            </div>
           )}
-        </Link>
-
-        <nav className="flex flex-col gap-1">
-          {navItems
-            .filter(
-              (item) =>
-                !["myProposals", "portfolio"].includes(item.key) ||
-                role === "STUDENT",
-            )
-            .map((item) => {
-            const isUmkmLowongan = role === "UMKM" && item.key === "lowongan";
-            const isActive = isUmkmLowongan
-              ? pathname === "/dashboard/lowongan-saya" ||
-                pathname === "/dashboard/pasang-lowongan"
-              : pathname === item.href;
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                  isActive
-                    ? "bg-brand font-medium text-white"
-                    : "text-slate-400 hover:bg-white/5 hover:text-white"
-                }`}
-              >
-                {isActive && (
-                  <span className="absolute right-6 top-1/2 h-4 w-1 -translate-y-1/2 rounded-full bg-white" />
-                )}
-
-                {item.iconSrc ? (
-                  <Image
-                    src={item.iconSrc}
-                    alt=""
-                    width={18}
-                    height={18}
-                    className={`shrink-0 transition-opacity ${
-                      isActive ? "opacity-100" : "opacity-60"
-                    }`}
-                  />
-                ) : (
-                  Icon && <Icon size={18} className="shrink-0" />
-                )}
-                {dict.sidebar[item.key]}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {role === "ADMIN" && (
-          <div className="px-3 pt-4">
-            <p className="font-body text-xs text-slate-500">Logged in as:</p>
-            <p className="font-display text-sm font-bold text-white">Super Admin</p>
-          </div>
-        )}
-      </div>
-    </aside>
+        </div>
+      </aside>
+    </>
   );
 }

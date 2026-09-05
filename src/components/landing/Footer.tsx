@@ -1,4 +1,6 @@
 // import { Instagram, Twitter, Linkedin } from "lucide-react";
+import { Landmark } from "lucide-react";
+import Link from "next/dist/client/link";
 import { FaInstagram, FaTwitter, FaLinkedin, FaFigma } from "react-icons/fa";
 
 const companyLinks = ["Tentang Kami", "Kontak", "Karir", "Blog"];
@@ -10,10 +12,14 @@ export default function Footer() {
       <div className="mx-auto flex max-w-8xl flex-col justify-between gap-10 sm:flex-row">
         <div className="max-w-xs">
           <div className="flex items-center gap-2">
-            <span className="h-6 w-6 rounded-md bg-brand" />
-            <span className="font-display text-lg font-black text-ink">
-              Jembatan <span className="text-brand">Karya</span>
-            </span>
+            <Link href="/" className="flex items-center gap-2">
+              <span className="flex h-10 w-10 items-center justify-center rounded-md bg-brand">
+                <Landmark size={23} className="text-white" />
+              </span>
+              <span className="font-display text-lg font-black text-ink">
+                Jembatan <span className="text-brand">Karya</span>
+              </span>
+            </Link>
           </div>
           <p className="mt-3 text-sm font-body text-ink-muted">
             Pemberdayaan UMKM lokal Indonesia melalui inovasi, edukasi, dan
