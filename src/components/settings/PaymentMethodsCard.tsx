@@ -1,198 +1,208 @@
 "use client";
 
-import { useState } from "react";
-import { CreditCard, Pencil, Trash2, Plus } from "lucide-react";
-import { mockPaymentMethods, mockPaymentMethodsUmkm } from "@/lib/mock-payment-settings";
-import Input from "@/components/ui/Input";
+import { FormEvent, useRef, useState, useTransition } from "react";
+import { CreditCard, Plus, Star, Trash2, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
+import {
+  createPayoutMethodAction,
+  deletePayoutMethodAction,
+  setPrimaryPayoutMethodAction,
+} from "@/app/actions/payout-methods";
+import Button from "@/components/ui/Button";
 import type { PaymentMethod } from "@/types/settings";
 
-export default function PaymentMethodsCard({ isUmkm = false }: { isUmkm?: boolean }) {
-  const [methods, setMethods] = useState<PaymentMethod[]>(
-    isUmkm ? mockPaymentMethodsUmkm : mockPaymentMethods
-  );
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editDraft, setEditDraft] = useState("");
+export default function PaymentMethodsCard({ methods }: { methods: PaymentMethod[] }) {
+  const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const [isAdding, setIsAdding] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newDetail, setNewDetail] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
-  const removeMethod = (id: string) => {
-    setMethods((prev) => prev.filter((method) => method.id !== id));
-  };
+  function submitMethod(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    setFeedback(null);
+    startTransition(async () => {
+      const result = await createPayoutMethodAction(formData);
+      if (!result.success) {
+        setFeedback({ type: "error", message: result.error || "Rekening gagal disimpan." });
+        return;
+      }
+      formRef.current?.reset();
+      setIsAdding(false);
+      setFeedback({ type: "success", message: "Metode pencairan berhasil disimpan." });
+      router.refresh();
+    });
+  }
 
-  const startEdit = (method: PaymentMethod) => {
-    setEditingId(method.id);
-    setEditDraft(method.detailLine);
-  };
-
-  const saveEdit = (id: string) => {
-    setMethods((prev) =>
-      prev.map((method) =>
-        method.id === id ? { ...method, detailLine: editDraft } : method
-      )
-    );
-    setEditingId(null);
-  };
-
-  const addMethod = () => {
-    if (!newName.trim()) return;
-    setMethods((prev) => [
-      ...prev,
-      {
-        id: `payment-method-${Date.now()}`,
-        name: newName.trim(),
-        detailLine: newDetail.trim() || "-",
-        isPrimary: false,
-      },
-    ]);
-    setNewName("");
-    setNewDetail("");
-    setIsAdding(false);
-  };
+  async function mutateMethod(action: "PRIMARY" | "DELETE", methodId: string) {
+    if (action === "DELETE") {
+      const confirmation = await Swal.fire({
+        icon: "warning",
+        title: "Hapus metode pencairan?",
+        text: "Rekening atau e-wallet ini akan dihapus dari akun Anda.",
+        showCancelButton: true,
+        confirmButtonText: "Hapus",
+        cancelButtonText: "Batal",
+        confirmButtonColor: "#DC2626",
+        focusCancel: true,
+        reverseButtons: true,
+      });
+      if (!confirmation.isConfirmed) return;
+    }
+    setFeedback(null);
+    startTransition(async () => {
+      const result =
+        action === "PRIMARY"
+          ? await setPrimaryPayoutMethodAction(methodId)
+          : await deletePayoutMethodAction(methodId);
+      if (!result.success) {
+        setFeedback({ type: "error", message: result.error || "Perubahan gagal disimpan." });
+        return;
+      }
+      setFeedback({
+        type: "success",
+        message: action === "PRIMARY" ? "Rekening utama diperbarui." : "Metode pencairan dihapus.",
+      });
+      router.refresh();
+    });
+  }
 
   return (
-    <section className="rounded-xl border border-[#ECECEC] dark:border-hairline bg-white dark:bg-card p-6">
-      <div className="flex items-center justify-between gap-4 mb-5">
-        <h2 className="font-display text-lg font-bold text-neutral-900 dark:text-ink">
-          Metode Pembayaran
-        </h2>
-        {isUmkm && !isAdding && (
-          <button
-            type="button"
-            onClick={() => setIsAdding(true)}
-            className="inline-flex shrink-0 items-center gap-1.5 font-body text-sm font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/15 rounded-full px-4 py-2 hover:bg-orange-100 dark:hover:bg-orange-500/25 transition-colors"
-          >
-            <Plus size={14} />
-            Tambah Metode
-          </button>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-4 mb-5">
-        {methods.map((method) => (
-          <div
-            key={method.id}
-            className="flex items-center justify-between gap-4 rounded-lg border border-[#ECECEC] dark:border-hairline px-5 py-4"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-md bg-neutral-100 dark:bg-surface flex items-center justify-center shrink-0">
-                <CreditCard size={18} className="text-neutral-700 dark:text-ink-muted" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="font-body text-sm font-semibold text-neutral-900 dark:text-ink">
-                    {method.name}
-                  </p>
-                  {method.isPrimary && (
-                    <span className="font-body text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/15 rounded-full px-2.5 py-0.5">
-                      Utama
-                    </span>
-                  )}
-                </div>
-
-                {editingId === method.id ? (
-                  <div className="flex items-center gap-2 mt-1">
-                    <input
-                      autoFocus
-                      value={editDraft}
-                      onChange={(e) => setEditDraft(e.target.value)}
-                      className="font-body text-xs text-neutral-900 dark:text-ink border border-orange-300 rounded-md px-2 py-1 outline-none focus:border-orange-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => saveEdit(method.id)}
-                      className="font-body text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline"
-                    >
-                      Simpan
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditingId(null)}
-                      className="font-body text-xs text-neutral-400 dark:text-ink-muted hover:underline"
-                    >
-                      Batal
-                    </button>
-                  </div>
-                ) : (
-                  <p className="font-body text-xs text-neutral-500 dark:text-ink-muted">
-                    {method.detailLine}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => startEdit(method)}
-                className="w-8 h-8 rounded-md border border-[#ECECEC] dark:border-hairline flex items-center justify-center text-neutral-600 dark:text-ink-muted hover:bg-neutral-50 dark:hover:bg-void transition-colors"
-              >
-                <Pencil size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={() => removeMethod(method.id)}
-                className="w-8 h-8 rounded-md border border-[#ECECEC] dark:border-hairline flex items-center justify-center text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          </div>
-        ))}
-
-        {methods.length === 0 && (
-          <p className="font-body text-sm text-neutral-400 dark:text-ink-muted text-center py-4">
-            Belum ada metode pembayaran.
-          </p>
-        )}
-      </div>
-
-      {isAdding ? (
-        <div className="flex flex-col gap-3 rounded-lg border border-[#ECECEC] dark:border-hairline p-4 mb-2">
-          <Input
-            label="Nama Metode"
-            placeholder="mis. Bank Mandiri"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-          />
-          <Input
-            label="Detail"
-            placeholder="mis. **** 1234"
-            value={newDetail}
-            onChange={(e) => setNewDetail(e.target.value)}
-          />
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={addMethod}
-              className="font-body text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 transition-colors rounded-full px-5 py-2"
-            >
-              Simpan
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setIsAdding(false);
-                setNewName("");
-                setNewDetail("");
-              }}
-              className="font-body text-sm font-semibold text-neutral-600 dark:text-ink-muted hover:bg-neutral-50 dark:hover:bg-void transition-colors rounded-full px-5 py-2"
-            >
-              Batal
-            </button>
-          </div>
+    <section className="rounded-xl border border-hairline bg-card p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="font-display text-lg font-bold text-ink">Metode Pencairan</h2>
+          <p className="mt-1 text-sm text-ink-muted">Rekening tersimpan akan tersedia saat mengajukan penarikan saldo.</p>
         </div>
-      ) : (
-        !isUmkm && (
-          <button
-            type="button"
-            onClick={() => setIsAdding(true)}
-            className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-neutral-900 dark:text-ink border border-neutral-300 rounded-full px-5 py-2.5 hover:bg-neutral-50 dark:hover:bg-void transition-colors"
-          >
-            <Plus size={14} />
-            Tambah Metode Penarikan
-          </button>
-        )
+        <Button
+          type="button"
+          size="sm"
+          variant={isAdding ? "ghost" : "primary"}
+          onClick={() => {
+            setIsAdding((current) => !current);
+            setFeedback(null);
+          }}
+          disabled={isPending || (!isAdding && methods.length >= 5)}
+        >
+          {isAdding ? <X size={14} /> : <Plus size={14} />}
+          {isAdding ? "Tutup" : "Tambah"}
+        </Button>
+      </div>
+
+      {isAdding && (
+        <form ref={formRef} onSubmit={submitMethod} className="mt-5 grid gap-4 rounded-xl bg-canvas p-4 md:grid-cols-2">
+          <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
+            Bank atau e-wallet
+            <input
+              name="provider"
+              required
+              minLength={2}
+              maxLength={80}
+              list="settings-payout-providers"
+              placeholder="Contoh: BCA atau DANA"
+              className="rounded-lg border border-hairline bg-card px-4 py-2.5 text-sm outline-none focus:border-brand"
+            />
+            <datalist id="settings-payout-providers">
+              <option value="BCA" />
+              <option value="BRI" />
+              <option value="BNI" />
+              <option value="Bank Mandiri" />
+              <option value="DANA" />
+              <option value="GoPay" />
+              <option value="OVO" />
+            </datalist>
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
+            Nama pemilik rekening
+            <input
+              name="accountName"
+              required
+              minLength={2}
+              maxLength={120}
+              autoComplete="name"
+              className="rounded-lg border border-hairline bg-card px-4 py-2.5 text-sm outline-none focus:border-brand"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
+            Nomor rekening/e-wallet
+            <input
+              name="accountNumber"
+              required
+              minLength={6}
+              maxLength={40}
+              inputMode="numeric"
+              className="rounded-lg border border-hairline bg-card px-4 py-2.5 text-sm outline-none focus:border-brand"
+            />
+          </label>
+          <label className="flex items-center gap-2 self-end pb-3 text-sm font-medium text-ink">
+            <input name="isPrimary" type="checkbox" className="h-4 w-4 accent-brand" />
+            Jadikan rekening utama
+          </label>
+          <div className="md:col-span-2">
+            <Button type="submit" isLoading={isPending}>Simpan Metode</Button>
+          </div>
+        </form>
+      )}
+
+      <div className="mt-5 flex flex-col gap-3">
+        {methods.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-hairline p-8 text-center text-sm text-ink-muted">
+            Belum ada metode pencairan. Tambahkan rekening sebelum menarik saldo.
+          </p>
+        ) : (
+          methods.map((method) => (
+            <div key={method.id} className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-hairline px-5 py-4">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-canvas text-brand">
+                  <CreditCard size={19} />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-body text-sm font-semibold text-ink">{method.name}</p>
+                    {method.isPrimary && (
+                      <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-semibold text-brand">Utama</span>
+                    )}
+                  </div>
+                  <p className="mt-1 text-xs text-ink-muted">{method.detailLine}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {!method.isPrimary && (
+                  <button
+                    type="button"
+                    disabled={isPending}
+                    onClick={() => void mutateMethod("PRIMARY", method.id)}
+                    aria-label={`Jadikan ${method.name} rekening utama`}
+                    className="inline-flex h-9 items-center gap-1.5 rounded-full border border-hairline px-3 text-xs font-semibold text-ink hover:border-brand hover:text-brand disabled:opacity-50"
+                  >
+                    <Star size={14} /> Utamakan
+                  </button>
+                )}
+                <button
+                  type="button"
+                  disabled={isPending}
+                  onClick={() => void mutateMethod("DELETE", method.id)}
+                  aria-label={`Hapus ${method.name}`}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-danger hover:border-danger disabled:opacity-50"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {methods.length >= 5 && <p className="mt-3 text-xs text-ink-muted">Maksimal 5 metode pencairan per akun.</p>}
+      {feedback && (
+        <p role={feedback.type === "error" ? "alert" : "status"} className={`mt-4 rounded-lg p-3 text-sm font-semibold ${feedback.type === "error" ? "bg-danger-soft text-danger" : "bg-success/10 text-success"}`}>
+          {feedback.message}
+        </p>
       )}
     </section>
   );

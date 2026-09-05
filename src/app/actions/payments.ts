@@ -12,7 +12,7 @@ import {
 import prisma from "@/lib/prisma";
 import { consumeRateLimit, createRateLimitKey } from "@/lib/rate-limit";
 import { verifySession } from "@/lib/session";
-import { getMidtransTransactionStatus, MidtransError } from "@/lib/midtrans";
+import { getMidtransPaymentStatus, midtransTransactionIdSchema, MidtransError } from "@/lib/midtrans";
 import {
   PROJECT_PAYMENT_STATUSES,
   type PaymentActionResult,
@@ -35,6 +35,13 @@ async function requireUmkmPaymentViewer(projectId: unknown) {
   if (!viewer || viewer.role !== "UMKM" || !viewer.umkm) {
     throw new PaymentFlowError("Hanya pemilik UMKM yang dapat membayar proyek.");
   }
+  const ownedProject = await prisma.project.findFirst({
+    where: { id: parsed.data, umkmId: viewer.umkm.id },
+    select: { id: true },
+  });
+  if (!ownedProject) {
+    throw new PaymentFlowError("Proyek tidak ditemukan atau tidak dapat diakses.");
+  }
   return { projectId: parsed.data, userId: session.userId };
 }
 
@@ -43,6 +50,8 @@ function revalidatePaymentPaths(projectId: string) {
   revalidatePath("/dashboard/pelamar");
   revalidatePath("/dashboard/lowongan-saya");
   revalidatePath("/dashboard/active-projects");
+  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings/pembayaran");
   revalidatePath("/dashboard");
 }
 
@@ -81,9 +90,14 @@ export async function createProjectPaymentAction(
 
 export async function syncProjectPaymentAction(
   projectId: unknown,
+  transactionId?: unknown,
 ): Promise<PaymentActionResult> {
   try {
     const viewer = await requireUmkmPaymentViewer(projectId);
+    const parsedTransactionId = midtransTransactionIdSchema.optional().safeParse(transactionId);
+    if (!parsedTransactionId.success) {
+      throw new PaymentFlowError("ID transaksi Midtrans tidak valid.");
+    }
     const rateLimit = await consumeRateLimit({
       key: createRateLimitKey("payment:sync:project", viewer.projectId),
       ...config.security.auth.rateLimit.paymentSyncByProject,
@@ -96,11 +110,16 @@ export async function syncProjectPaymentAction(
     }
     const payment = await prisma.project_payment.findFirst({
       where: { projectId: viewer.projectId, project: { umkm: { userId: viewer.userId } } },
-      select: { orderId: true },
+      select: { orderId: true, midtransTransactionId: true, snapToken: true },
     });
     if (!payment) throw new PaymentFlowError("Pembayaran proyek belum dibuat.");
 
-    const status = await getMidtransTransactionStatus(payment.orderId);
+    // DANA/BI-SNAP status lookup requires the transaction ID. A callback ID is
+    // only a lookup hint: the server must confirm its order before applying it.
+    const status = await getMidtransPaymentStatus(payment, parsedTransactionId.data);
+    if (status.order_id !== payment.orderId) {
+      throw new PaymentFlowError("ID pesanan Midtrans tidak cocok dengan pembayaran proyek.");
+    }
     const outcome = await applyMidtransStatus(status);
     if (outcome.newlyHeld && outcome.project.student) {
       await Promise.allSettled([
@@ -138,7 +157,7 @@ export async function syncProjectPaymentAction(
     if (error instanceof MidtransError) {
       message =
         error.status === 404
-          ? "Transaksi belum tercatat di Midtrans. Silakan lakukan pembayaran terlebih dahulu."
+          ? "Midtrans belum menemukan transaksi untuk ID pesanan ini. Jika sudah membayar, cocokkan ID pesanan pada bukti pembayaran dan hubungi pengelola sebelum membayar kembali."
           : error.message;
     } else if (error instanceof PaymentFlowError) {
       message = error.message;

@@ -11,6 +11,8 @@ const mocks = vi.hoisted(() => ({
   userUpdate: vi.fn(),
   balanceCreate: vi.fn(),
   studentUpdate: vi.fn(),
+  historyCreate: vi.fn(),
+  auditCreate: vi.fn(),
   notificationCreate: vi.fn(),
   revalidatePath: vi.fn(),
 }));
@@ -45,6 +47,8 @@ function transactionClient() {
     user: { update: mocks.userUpdate },
     balance_transaction: { create: mocks.balanceCreate },
     student: { update: mocks.studentUpdate },
+    project_status_history: { create: mocks.historyCreate },
+    audit_log: { create: mocks.auditCreate },
   };
 }
 

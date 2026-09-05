@@ -22,11 +22,21 @@ export const midtransStatusSchema = z.looseObject({
 
 export type MidtransStatusPayload = z.infer<typeof midtransStatusSchema>;
 
+export const midtransTransactionIdSchema = z.string().min(1).max(128).regex(/^[a-zA-Z0-9_-]+$/);
+
 export class MidtransError extends Error {
   constructor(message: string, readonly status?: number) {
     super(message);
     this.name = "MidtransError";
   }
+}
+
+export function getMidtransEnvironment() {
+  const environment = process.env.MIDTRANS_ENVIRONMENT?.trim().toLowerCase() || "sandbox";
+  if (environment !== "sandbox" && environment !== "production") {
+    throw new MidtransError("MIDTRANS_ENVIRONMENT harus sandbox atau production.");
+  }
+  return environment;
 }
 
 function getMidtransConfig() {
@@ -35,10 +45,7 @@ function getMidtransConfig() {
     throw new MidtransError("MIDTRANS_SERVER_KEY belum dikonfigurasi.");
   }
 
-  const environment =
-    process.env.MIDTRANS_ENVIRONMENT?.toLowerCase() === "production"
-      ? "production"
-      : "sandbox";
+  const environment = getMidtransEnvironment();
 
   return {
     serverKey,
@@ -103,6 +110,7 @@ export async function createSnapTransaction(input: {
         ...(input.customer.phone ? { phone: input.customer.phone } : {}),
       },
       callbacks: { finish: input.finishUrl },
+      credit_card: { secure: true },
     }),
     cache: "no-store",
     signal: AbortSignal.timeout(10_000),
@@ -111,10 +119,10 @@ export async function createSnapTransaction(input: {
   return snapResponseSchema.parse(await parseMidtransResponse(response));
 }
 
-export async function getMidtransTransactionStatus(orderId: string) {
+export async function getMidtransTransactionStatus(transactionReference: string) {
   const config = getMidtransConfig();
   const response = await fetch(
-    `${config.coreBaseUrl}/v2/${encodeURIComponent(orderId)}/status`,
+    `${config.coreBaseUrl}/v2/${encodeURIComponent(transactionReference)}/status`,
     {
       headers: {
         Accept: "application/json",
@@ -125,7 +133,78 @@ export async function getMidtransTransactionStatus(orderId: string) {
     },
   );
 
-  return midtransStatusSchema.parse(await parseMidtransResponse(response));
+  const payload = await parseMidtransResponse(response);
+  // Core API can return HTTP 200 with a 4xx/5xx status_code and no transaction.
+  // A valid transaction may also carry a non-2xx code (e.g. an expired payment).
+  const parsed = midtransStatusSchema.safeParse(payload);
+  if (parsed.success) return parsed.data;
+
+  const apiError = z.object({ status_code: z.string().regex(/^[45]\d{2}$/) }).safeParse(payload);
+  if (apiError.success) {
+    const status = Number(apiError.data.status_code);
+    throw new MidtransError(`Midtrans belum dapat memberikan status transaksi (kode ${status}).`, status);
+  }
+  throw new MidtransError("Respons status transaksi dari Midtrans tidak valid.");
+}
+
+export async function getMidtransPaymentStatus(payment: {
+  orderId: string;
+  midtransTransactionId?: string | null;
+  snapToken?: string | null;
+}, transactionIdHint?: string) {
+  let coreStatus: MidtransStatusPayload | undefined;
+  try {
+    coreStatus = await getMidtransTransactionStatus(
+      transactionIdHint || payment.midtransTransactionId || payment.orderId,
+    );
+  } catch (error) {
+    if (!(error instanceof MidtransError && error.status === 404) || !payment.snapToken) throw error;
+  }
+  if (coreStatus?.order_id === payment.orderId) return coreStatus;
+
+  // DANA can report its provider transaction ID as Core API order_id. A
+  // browser-supplied ID must never establish ownership of that payment.
+  const bindOrder = (status: MidtransStatusPayload): MidtransStatusPayload => ({
+    ...status,
+    order_id: payment.orderId,
+    provider_order_id: status.order_id,
+    // The original signature covers provider_order_id, not our mapped order.
+    signature_key: undefined,
+  });
+  if (
+    coreStatus && payment.midtransTransactionId &&
+    coreStatus.transaction_id === payment.midtransTransactionId &&
+    coreStatus.order_id === payment.midtransTransactionId
+  ) return bindOrder(coreStatus);
+
+  if (!payment.snapToken) {
+    throw new MidtransError("ID pesanan Midtrans tidak cocok dengan pembayaran proyek.");
+  }
+
+  // Snap's own status endpoint provides the original order-to-transaction
+  // binding for old checkouts that never received a callback/webhook. Use only
+  // the token stored by our server. Financial status still comes from Core API.
+  const { snapBaseUrl } = getMidtransConfig();
+  const response = await fetch(
+    `${snapBaseUrl}/snap/v1/transactions/${encodeURIComponent(payment.snapToken)}/status`,
+    { headers: { Accept: "application/json" }, cache: "no-store", signal: AbortSignal.timeout(10_000) },
+  );
+  const snapStatus = midtransStatusSchema.parse(await parseMidtransResponse(response));
+  const transactionId = midtransTransactionIdSchema.parse(snapStatus.transaction_id);
+  if (snapStatus.order_id !== payment.orderId) {
+    throw new MidtransError("ID pesanan Snap tidak cocok dengan pembayaran proyek.");
+  }
+  if (coreStatus?.transaction_id !== transactionId) {
+    coreStatus = await getMidtransTransactionStatus(transactionId);
+  }
+  if (
+    coreStatus.transaction_id !== transactionId ||
+    (coreStatus.order_id !== payment.orderId && coreStatus.order_id !== transactionId) ||
+    Number(coreStatus.gross_amount) !== Number(snapStatus.gross_amount)
+  ) {
+    throw new MidtransError("Data transaksi Core API tidak cocok dengan pesanan Snap.");
+  }
+  return coreStatus.order_id === payment.orderId ? coreStatus : bindOrder(coreStatus);
 }
 
 export function verifyMidtransSignature(payload: MidtransStatusPayload) {

@@ -12,6 +12,8 @@ import type {
 } from "@/types/my-jobs";
 import type { Prisma } from "@/generated/prisma/client";
 import { createPagination, normalizePage } from "./pagination";
+import { notFound } from "next/navigation";
+import { z } from "zod";
 
 const PAGE_SIZE = 8;
 type MyJobsFilter = "Semua" | JobListingStatus;
@@ -103,6 +105,18 @@ export async function getProjectCreationData(): Promise<ProjectCreationData> {
       category: skill.category || "Lainnya",
     })),
   };
+}
+
+export async function getProjectEditData(projectId: unknown) {
+  const parsed = z.string().uuid().safeParse(projectId);
+  if (!parsed.success) notFound();
+  const viewer = await getUmkmViewer();
+  const [project, skills] = await Promise.all([
+    prisma.project.findFirst({ where: { id: parsed.data, umkmId: viewer.umkm.id, status: "OPEN", studentId: null, proposals: { none: {} } }, select: { id: true, title: true, description: true, budget: true, deadline: true, workMode: true, location: true, skillsNeeded: { select: { skillId: true, required: true } } } }),
+    prisma.skill.findMany({ orderBy: [{ category: "asc" }, { name: "asc" }], select: { id: true, name: true, category: true } }),
+  ]);
+  if (!project) notFound();
+  return { ...viewer, project, skills };
 }
 
 function normalizeJobsFilter(value: unknown): MyJobsFilter {

@@ -10,6 +10,7 @@ import {
   createUserNotifications,
 } from "@/lib/notifications";
 import prisma from "@/lib/prisma";
+import { saveMatchingSnapshot } from "@/lib/matching-snapshot";
 import { consumeRateLimit, createRateLimitKey } from "@/lib/rate-limit";
 import { verifySession } from "@/lib/session";
 
@@ -67,7 +68,12 @@ export async function createProposalAction(
     where: { id: session.userId },
     select: {
       role: true,
-      student: { select: { id: true } },
+      student: {
+        select: {
+          id: true,
+          skills: { select: { skillId: true } },
+        },
+      },
     },
   });
   if (!viewer || viewer.role !== "STUDENT" || !viewer.student) {
@@ -92,11 +98,25 @@ export async function createProposalAction(
     select: {
       id: true,
       title: true,
+      skillsNeeded: {
+        where: { required: true },
+        select: { skillId: true, skill: { select: { name: true } } },
+      },
       umkm: { select: { userId: true } },
     },
   });
   if (!project) {
     return { error: "Project tidak ditemukan atau sudah tidak menerima proposal." };
+  }
+
+  const studentSkillIds = new Set(viewer.student.skills.map(({ skillId }) => skillId));
+  const missingRequiredSkills = project.skillsNeeded.filter(
+    ({ skillId }) => !studentSkillIds.has(skillId),
+  );
+  if (missingRequiredSkills.length > 0) {
+    return {
+      error: `Lengkapi skill wajib sebelum melamar: ${missingRequiredSkills.map(({ skill }) => skill.name).join(", ")}.`,
+    };
   }
 
   try {
@@ -119,6 +139,12 @@ export async function createProposalAction(
     }
     console.error("Gagal mengirim proposal:", error);
     return { error: "Proposal gagal dikirim. Silakan coba lagi." };
+  }
+
+  try {
+    await saveMatchingSnapshot(project.id, viewer.student.id);
+  } catch (error) {
+    console.error("Proposal tersimpan, tetapi snapshot matching gagal:", error);
   }
 
   try {
@@ -224,6 +250,7 @@ export async function acceptProposalAction(
           projectId: proposal.project.id,
           projectTitle: proposal.project.title,
           acceptedUserId: proposal.student.userId,
+          acceptedStudentId: proposal.studentId,
           acceptedStudentName: proposal.student.user.name || "Talent Jembara",
           rejectedUserIds: [] as string[],
         };
@@ -288,17 +315,42 @@ export async function acceptProposalAction(
         data: { status: "REJECTED" },
       });
 
+      await transaction.project_status_history.create({
+        data: {
+          projectId: proposal.project.id,
+          fromStatus: proposal.project.status,
+          toStatus: "PROPOSAL",
+          reason: "Kandidat dipilih oleh UMKM",
+          actorUserId: viewer.session.userId,
+        },
+      });
+      await transaction.audit_log.create({
+        data: {
+          actorUserId: viewer.session.userId,
+          action: "PROPOSAL_ACCEPTED",
+          entityType: "proposal",
+          entityId: proposal.id,
+          metadata: { projectId: proposal.project.id },
+        },
+      });
+
       return {
         newlyAccepted: true,
         projectId: proposal.project.id,
         projectTitle: proposal.project.title,
         acceptedUserId: proposal.student.userId,
+        acceptedStudentId: proposal.studentId,
         acceptedStudentName: proposal.student.user.name || "Talent Jembara",
         rejectedUserIds: proposalsToReject.map(({ student }) => student.userId),
       };
     });
 
     if (outcome.newlyAccepted) {
+      try {
+        await saveMatchingSnapshot(outcome.projectId, outcome.acceptedStudentId);
+      } catch (error) {
+        console.error("Kandidat terpilih, tetapi snapshot matching gagal:", error);
+      }
       try {
         await createUserNotifications([
           {

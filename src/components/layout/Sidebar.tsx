@@ -4,18 +4,39 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  Search, Briefcase, User, Settings, Users, LayoutGrid, Building2, Handshake,
+  Search, Briefcase, User, Settings, Users, LayoutGrid, Building2, Handshake, LogOut,
 } from "lucide-react";
-import { Home, ListChecks, FolderOpen, MessageSquare, CreditCard, FileText, LogOut } from "lucide-react";
+import {
+  Home,
+  ListChecks,
+  FolderOpen,
+  MessageSquare,
+  CreditCard,
+  FileText,
+  BanknoteArrowDown,
+} from "lucide-react";
 import { usePreferences } from "@/contexts/PreferencesContext";
 import { logoutAction } from "@/app/actions/auth";
 
 interface NavItem {
   key:
-    | "dashboard" | "findProjects" | "myProposals" | "activeProjects"
-    | "portfolio" | "messages" | "earnings" | "profile" | "settings"
-    | "cariTalent" | "pelamar" | "daftarUser" | "daftarUmkm" | "relasi"
-    | "lowongan" | "monitorPesan";
+    | "dashboard"
+    | "findProjects"
+    | "myProposals"
+    | "activeProjects"
+    | "portfolio"
+    | "messages"
+    | "earnings"
+    | "withdrawals"
+    | "profile"
+    | "settings"
+    | "cariTalent"
+    | "pelamar"
+    | "daftarUser"
+    | "daftarUmkm"
+    | "relasi"
+    | "lowongan"
+    | "monitorPesan";
   href: string;
   icon?: React.ElementType;
   iconSrc?: string;
@@ -29,6 +50,7 @@ const studentNavItems: NavItem[] = [
   { key: "portfolio", href: "/dashboard/portfolio", icon: FolderOpen },
   { key: "messages", href: "/dashboard/messages", icon: MessageSquare },
   { key: "earnings", href: "/dashboard/earnings", icon: CreditCard },
+  { key: "withdrawals", href: "/dashboard/withdrawals", icon: BanknoteArrowDown },
   { key: "profile", href: "/dashboard/profile", icon: User },
   { key: "settings", href: "/dashboard/settings", icon: Settings },
 ];
@@ -50,6 +72,7 @@ const adminNavItems: NavItem[] = [
   { key: "relasi", href: "/dashboard/relasi", icon: Handshake },
   { key: "lowongan", href: "/dashboard/lowongan", icon: Briefcase },
   { key: "monitorPesan", href: "/dashboard/monitor-pesan", icon: MessageSquare },
+  { key: "withdrawals", href: "/dashboard/withdrawals", icon: BanknoteArrowDown },
 ];
 
 interface SidebarProps {

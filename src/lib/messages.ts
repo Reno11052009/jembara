@@ -5,15 +5,21 @@ import { z } from "zod";
 import prisma from "./prisma";
 import { requireAuthenticatedSession } from "./auth-guard";
 import { createUserNotification } from "./notifications";
-import { consumeRateLimit, createRateLimitKey } from "./rate-limit";
+import {
+  consumeRateLimit,
+  consumeRateLimits,
+  createRateLimitKey,
+} from "./rate-limit";
 import {
   getMessageAttachmentValidationError,
+  hasExpectedMessageAttachmentSignature,
   MAX_MESSAGE_ATTACHMENT_BYTES,
 } from "./message-attachment-policy";
 import {
   getMessageAttachmentBucketName,
   getSupabaseResumableUploadEndpoint,
   getSupabaseStorageAdmin,
+  isMessageAttachmentStorageConfigured,
 } from "./supabase-storage";
 import { config } from "@/config/unifiedConfig";
 import type {
@@ -31,6 +37,98 @@ const MAX_MESSAGES_PER_PROJECT = 100;
 const MAX_PENDING_UPLOADS_PER_USER = 5;
 const ATTACHMENT_UPLOAD_TTL_MS = 2 * 60 * 60 * 1000;
 const ATTACHMENT_DOWNLOAD_TTL_SECONDS = 60;
+const ATTACHMENT_SIGNATURE_BYTES = 4096;
+
+type StorageAdmin = ReturnType<typeof getSupabaseStorageAdmin>;
+
+async function readStoredAttachmentHeader(
+  storage: StorageAdmin,
+  bucketName: string,
+  storagePath: string,
+) {
+  const signed = await storage.storage
+    .from(bucketName)
+    .createSignedUrl(storagePath, 60);
+  if (signed.error || !signed.data?.signedUrl) throw new Error("SIGNED_URL_FAILED");
+
+  const response = await fetch(signed.data.signedUrl, {
+    headers: { Range: `bytes=0-${ATTACHMENT_SIGNATURE_BYTES - 1}` },
+    cache: "no-store",
+    redirect: "error",
+    signal: AbortSignal.timeout(5_000),
+  });
+  if (!response.ok || !response.body) throw new Error("FILE_HEADER_UNAVAILABLE");
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (total < ATTACHMENT_SIGNATURE_BYTES) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const remaining = ATTACHMENT_SIGNATURE_BYTES - total;
+      const chunk = value.slice(0, remaining);
+      chunks.push(chunk);
+      total += chunk.byteLength;
+      if (value.byteLength > remaining) break;
+    }
+  } finally {
+    await reader.cancel().catch(() => undefined);
+  }
+
+  const result = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return result;
+}
+
+async function removeStoredAttachments(
+  storage: StorageAdmin,
+  bucketName: string,
+  storagePaths: string[],
+) {
+  if (storagePaths.length === 0) return true;
+  const removal = await storage.storage.from(bucketName).remove(storagePaths);
+  if (removal.error) {
+    console.error("Gagal menghapus objek lampiran dari Storage:", removal.error);
+    return false;
+  }
+  return true;
+}
+
+export async function cleanupExpiredMessageAttachmentUploads(options?: {
+  uploaderId?: string;
+  limit?: number;
+}) {
+  const limit = Math.min(Math.max(options?.limit ?? 500, 1), 500);
+  const expiredUploads = await prisma.message_attachment_upload.findMany({
+    where: {
+      ...(options?.uploaderId ? { uploaderId: options.uploaderId } : {}),
+      expiresAt: { lte: new Date() },
+    },
+    orderBy: { expiresAt: "asc" },
+    take: limit,
+    select: { id: true, storagePath: true },
+  });
+  if (expiredUploads.length === 0) return 0;
+
+  const storage = getSupabaseStorageAdmin();
+  const bucketName = getMessageAttachmentBucketName();
+  const removed = await removeStoredAttachments(
+    storage,
+    bucketName,
+    expiredUploads.map(({ storagePath }) => storagePath),
+  );
+  if (!removed) throw new Error("STORAGE_CLEANUP_FAILED");
+
+  const deleted = await prisma.message_attachment_upload.deleteMany({
+    where: { id: { in: expiredUploads.map(({ id }) => id) } },
+  });
+  return deleted.count;
+}
 
 const projectIdSchema = z.string().uuid("ID proyek tidak valid.");
 const sendMessageSchema = z.object({
@@ -123,6 +221,7 @@ export async function getMessagesData(
   requestedProjectId?: unknown,
 ): Promise<MessagesData> {
   const session = await requireAuthenticatedSession();
+  const attachmentsEnabled = isMessageAttachmentStorageConfigured();
   const now = new Date();
   const projects = await prisma.project.findMany({
     where: {
@@ -216,6 +315,7 @@ export async function getMessagesData(
       conversations,
       conversationMessages: {},
       selectedConversationId: "",
+      attachmentsEnabled,
     };
   }
 
@@ -273,6 +373,7 @@ export async function getMessagesData(
     conversations,
     conversationMessages: { [selectedConversationId]: messages },
     selectedConversationId,
+    attachmentsEnabled,
   };
 }
 
@@ -416,6 +517,7 @@ export async function prepareMessageAttachmentUpload(
   const validationError = getMessageAttachmentValidationError({
     name: parsed.data.fileName,
     size: parsed.data.sizeBytes,
+    type: parsed.data.contentType,
   });
   if (validationError) return { success: false, error: validationError };
 
@@ -431,9 +533,39 @@ export async function prepareMessageAttachmentUpload(
     };
   }
 
-  await prisma.message_attachment_upload.deleteMany({
-    where: { uploaderId: session.userId, expiresAt: { lte: new Date() } },
-  });
+  if (!isMessageAttachmentStorageConfigured()) {
+    return { success: false, error: "Penyimpanan lampiran belum dikonfigurasi." };
+  }
+
+  const uploadRateLimits = await consumeRateLimits([
+    {
+      key: createRateLimitKey("attachment:upload:user-hour", session.userId),
+      ...config.security.auth.rateLimit.attachmentUploadByUserHour,
+    },
+    {
+      key: createRateLimitKey("attachment:upload:user-day", session.userId),
+      ...config.security.auth.rateLimit.attachmentUploadByUserDay,
+    },
+  ]);
+  if (uploadRateLimits.some(({ allowed }) => !allowed)) {
+    return {
+      success: false,
+      error: "Batas upload lampiran tercapai. Silakan coba lagi nanti.",
+    };
+  }
+
+  try {
+    await cleanupExpiredMessageAttachmentUploads({
+      uploaderId: session.userId,
+      limit: 25,
+    });
+  } catch (error) {
+    console.error("Lampiran kedaluwarsa belum dapat dibersihkan:", error);
+    return {
+      success: false,
+      error: "Penyimpanan lampiran sedang tidak tersedia. Coba lagi nanti.",
+    };
+  }
   const pendingUploadCount = await prisma.message_attachment_upload.count({
     where: { uploaderId: session.userId, expiresAt: { gt: new Date() } },
   });
@@ -510,6 +642,7 @@ export async function finalizeMessageAttachmentUpload(
     where: {
       id: parsedUploadId.data,
       uploaderId: session.userId,
+      cancelledAt: null,
       expiresAt: { gt: new Date() },
       project: {
         is: {
@@ -569,15 +702,55 @@ export async function finalizeMessageAttachmentUpload(
   }
 
   const expectedSize = Number(pendingUpload.sizeBytes);
-  if (storedObject.data.size !== expectedSize) {
+  const storedSize = storedObject.data.size ?? 0;
+  const storedValidationError = getMessageAttachmentValidationError({
+    name: pendingUpload.fileName,
+    size: storedSize,
+    type: storedObject.data.contentType || pendingUpload.contentType,
+  });
+  if (storedSize !== expectedSize || storedValidationError) {
     console.error("Ukuran lampiran di storage tidak cocok dengan reservasi.", {
       uploadId: pendingUpload.id,
       expectedSize,
-      storedSize: storedObject.data.size,
+      storedSize,
+      validationError: storedValidationError,
+    });
+    await removeStoredAttachments(storage, bucketName, [pendingUpload.storagePath]);
+    await prisma.message_attachment_upload.updateMany({
+      where: { id: pendingUpload.id, uploaderId: session.userId },
+      data: { cancelledAt: new Date() },
     });
     return {
       success: false,
       error: "Verifikasi ukuran file gagal. Silakan unggah ulang.",
+    };
+  }
+
+  try {
+    const header = await readStoredAttachmentHeader(
+      storage,
+      bucketName,
+      pendingUpload.storagePath,
+    );
+    if (
+      !hasExpectedMessageAttachmentSignature({
+        name: pendingUpload.fileName,
+        type: storedObject.data.contentType || pendingUpload.contentType,
+        bytes: header,
+      })
+    ) {
+      throw new Error("SIGNATURE_MISMATCH");
+    }
+  } catch (error) {
+    console.error("Isi lampiran tidak cocok dengan format yang dinyatakan:", error);
+    await removeStoredAttachments(storage, bucketName, [pendingUpload.storagePath]);
+    await prisma.message_attachment_upload.updateMany({
+      where: { id: pendingUpload.id, uploaderId: session.userId },
+      data: { cancelledAt: new Date() },
+    });
+    return {
+      success: false,
+      error: "Verifikasi isi file gagal. Silakan pilih file lain.",
     };
   }
 
@@ -668,10 +841,38 @@ export async function cancelMessageAttachmentUpload(rawUploadId: unknown) {
   if (!parsedUploadId.success) return false;
 
   const session = await requireAuthenticatedSession();
-  const deleted = await prisma.message_attachment_upload.deleteMany({
-    where: { id: parsedUploadId.data, uploaderId: session.userId },
+  const pendingUpload = await prisma.message_attachment_upload.findFirst({
+    where: {
+      id: parsedUploadId.data,
+      uploaderId: session.userId,
+      expiresAt: { gt: new Date() },
+      cancelledAt: null,
+    },
+    select: { id: true, storagePath: true },
   });
-  return deleted.count > 0;
+  if (!pendingUpload) return false;
+
+  try {
+    const removed = await removeStoredAttachments(
+      getSupabaseStorageAdmin(),
+      getMessageAttachmentBucketName(),
+      [pendingUpload.storagePath],
+    );
+    if (!removed) return false;
+  } catch (error) {
+    console.error("Upload lampiran belum dapat dibatalkan:", error);
+    return false;
+  }
+
+  const cancelled = await prisma.message_attachment_upload.updateMany({
+    where: {
+      id: pendingUpload.id,
+      uploaderId: session.userId,
+      cancelledAt: null,
+    },
+    data: { cancelledAt: new Date() },
+  });
+  return cancelled.count > 0;
 }
 
 export async function getMessageAttachmentDownloadUrl(

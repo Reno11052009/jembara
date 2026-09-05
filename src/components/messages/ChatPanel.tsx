@@ -11,9 +11,15 @@ interface ChatPanelProps {
   conversation: Conversation;
   messages: ChatMessage[];
   onBack?: () => void;
+  attachmentsEnabled?: boolean;
 }
 
-export default function ChatPanel({ conversation, messages, onBack }: ChatPanelProps) {
+export default function ChatPanel({
+  conversation,
+  messages,
+  onBack,
+  attachmentsEnabled = true,
+}: ChatPanelProps) {
   const [displayMessages, setDisplayMessages] = useState(messages);
   const [isBlocked, setIsBlocked] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -91,7 +97,8 @@ export default function ChatPanel({ conversation, messages, onBack }: ChatPanelP
       )}
       <ChatComposer
         conversationId={conversation.id}
-        canSend={conversation.canSend && !isBlocked}
+        canSend={conversation.canSend}
+        attachmentsEnabled={attachmentsEnabled}
         onOptimisticSend={addOptimisticMessage}
         onSendSuccess={confirmOptimisticMessage}
         onSendError={removeOptimisticMessage}

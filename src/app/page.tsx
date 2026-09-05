@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { connection } from "next/server";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import ProcessSteps from "@/components/landing/ProcessSteps";
@@ -11,6 +12,7 @@ import CtaSection from "@/components/landing/CtaSection";
 import Footer from "@/components/landing/Footer";
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import { verifySession } from "@/lib/session";
+import { getLandingData } from "@/lib/landing";
 
 async function AuthenticatedNavbar() {
   const session = await verifySession();
@@ -18,7 +20,10 @@ async function AuthenticatedNavbar() {
   return <Navbar sessionName={session?.name ?? null} />;
 }
 
-export default function LandingPage() {
+export const instant = false;
+export default async function LandingPage() {
+  await connection();
+  const data = await getLandingData();
   return (
     <SmoothScroll>
       <Suspense fallback={<Navbar sessionName={null} />}>
@@ -27,10 +32,10 @@ export default function LandingPage() {
       <Hero />
       <ProcessSteps />
       <ServiceCategories />
-      <TopTalent />
-      <LatestProjects />
-      <StatsBar />
-      <Testimonials />
+      <TopTalent talents={data.talents} />
+      <LatestProjects projects={data.projects} />
+      <StatsBar stats={data.stats} />
+      <Testimonials testimonials={data.testimonials} />
       <CtaSection />
       <Footer />
     </SmoothScroll>

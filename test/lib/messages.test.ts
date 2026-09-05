@@ -9,17 +9,22 @@ const mocks = vi.hoisted(() => ({
   messageCreate: vi.fn(),
   messageUpdateMany: vi.fn(),
   attachmentUploadDeleteMany: vi.fn(),
+  attachmentUploadFindMany: vi.fn(),
   attachmentUploadCount: vi.fn(),
   attachmentUploadCreate: vi.fn(),
   attachmentUploadFindFirst: vi.fn(),
   attachmentUploadDelete: vi.fn(),
+  attachmentUploadUpdateMany: vi.fn(),
   attachmentFindFirst: vi.fn(),
   storageFrom: vi.fn(),
   createSignedUploadUrl: vi.fn(),
   storageInfo: vi.fn(),
   createSignedUrl: vi.fn(),
+  storageRemove: vi.fn(),
   createUserNotification: vi.fn(),
+  fetch: vi.fn(),
   consumeRateLimit: vi.fn(),
+  consumeRateLimits: vi.fn(),
   transaction: vi.fn(),
   after: vi.fn(),
   afterCallbacks: [] as Array<() => unknown>,
@@ -35,9 +40,11 @@ vi.mock("@/lib/notifications", () => ({
 }));
 vi.mock("@/lib/rate-limit", () => ({
   consumeRateLimit: mocks.consumeRateLimit,
+  consumeRateLimits: mocks.consumeRateLimits,
   createRateLimitKey: vi.fn(() => "message:test"),
 }));
 vi.mock("@/lib/supabase-storage", () => ({
+  isMessageAttachmentStorageConfigured: () => true,
   getSupabaseStorageAdmin: () => ({
     storage: { from: mocks.storageFrom },
   }),
@@ -52,6 +59,8 @@ vi.mock("@/config/unifiedConfig", () => ({
         rateLimit: {
           messageByUser: { limit: 60, windowMs: 60_000 },
           messageByProjectAndUser: { limit: 20, windowMs: 60_000 },
+          attachmentUploadByUserHour: { limit: 10, windowMs: 3_600_000 },
+          attachmentUploadByUserDay: { limit: 20, windowMs: 86_400_000 },
         },
       },
     },
@@ -70,11 +79,13 @@ vi.mock("@/lib/prisma", () => ({
       updateMany: mocks.messageUpdateMany,
     },
     message_attachment_upload: {
+      findMany: mocks.attachmentUploadFindMany,
       deleteMany: mocks.attachmentUploadDeleteMany,
       count: mocks.attachmentUploadCount,
       create: mocks.attachmentUploadCreate,
       findFirst: mocks.attachmentUploadFindFirst,
       delete: mocks.attachmentUploadDelete,
+      updateMany: mocks.attachmentUploadUpdateMany,
     },
     message_attachment: {
       findFirst: mocks.attachmentFindFirst,
@@ -84,6 +95,8 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 import {
+  cancelMessageAttachmentUpload,
+  cleanupExpiredMessageAttachmentUploads,
   finalizeMessageAttachmentUpload,
   getMessageAttachmentDownloadUrl,
   getMessagesData,
@@ -114,13 +127,27 @@ describe("messages", () => {
       remaining: 19,
       retryAfterSeconds: 0,
     });
+    mocks.consumeRateLimits.mockResolvedValue([
+      { allowed: true, remaining: 9, retryAfterSeconds: 0 },
+      { allowed: true, remaining: 19, retryAfterSeconds: 0 },
+    ]);
     mocks.attachmentUploadDeleteMany.mockResolvedValue({ count: 0 });
+    mocks.attachmentUploadFindMany.mockResolvedValue([]);
+    mocks.attachmentUploadUpdateMany.mockResolvedValue({ count: 1 });
     mocks.attachmentUploadCount.mockResolvedValue(0);
     mocks.storageFrom.mockReturnValue({
       createSignedUploadUrl: mocks.createSignedUploadUrl,
       info: mocks.storageInfo,
       createSignedUrl: mocks.createSignedUrl,
+      remove: mocks.storageRemove,
     });
+    mocks.storageRemove.mockResolvedValue({ data: [], error: null });
+    mocks.createSignedUrl.mockResolvedValue({
+      data: { signedUrl: "https://storage.example.test/file" },
+      error: null,
+    });
+    mocks.fetch.mockResolvedValue(new Response("%PDF-1.7\n"));
+    vi.stubGlobal("fetch", mocks.fetch);
     mocks.transaction.mockImplementation(async (callback) =>
       callback({
         message: { create: mocks.messageCreate },
@@ -255,6 +282,7 @@ describe("messages", () => {
       conversations: [],
       conversationMessages: {},
       selectedConversationId: "",
+      attachmentsEnabled: true,
     });
     expect(mocks.messageFindMany).not.toHaveBeenCalled();
   });
@@ -393,17 +421,54 @@ describe("messages", () => {
     );
   });
 
-  it("rejects files larger than 512 MB before accessing the session", async () => {
+  it("rejects files larger than 25 MB before accessing the session", async () => {
     const result = await prepareMessageAttachmentUpload(
       projectId,
       "video.mp4",
       "video/mp4",
-      512 * 1024 * 1024 + 1,
+      25 * 1024 * 1024 + 1,
     );
 
     expect(result.success).toBe(false);
     expect(mocks.requireAuthenticatedSession).not.toHaveBeenCalled();
     expect(mocks.attachmentUploadCreate).not.toHaveBeenCalled();
+  });
+
+  it("removes expired objects before deleting their reservations", async () => {
+    mocks.attachmentUploadFindMany.mockResolvedValue([
+      { id: "upload-1", storagePath: "projects/expired-1.pdf" },
+      { id: "upload-2", storagePath: "projects/expired-2.pdf" },
+    ]);
+    mocks.attachmentUploadDeleteMany.mockResolvedValue({ count: 2 });
+
+    await expect(
+      cleanupExpiredMessageAttachmentUploads({ uploaderId: viewerId }),
+    ).resolves.toBe(2);
+
+    expect(mocks.storageRemove).toHaveBeenCalledWith([
+      "projects/expired-1.pdf",
+      "projects/expired-2.pdf",
+    ]);
+    expect(mocks.attachmentUploadDeleteMany).toHaveBeenCalledWith({
+      where: { id: { in: ["upload-1", "upload-2"] } },
+    });
+  });
+
+  it("cancels an upload without discarding the cleanup reservation", async () => {
+    const uploadId = "77777777-7777-4777-8777-777777777777";
+    mocks.attachmentUploadFindFirst.mockResolvedValue({
+      id: uploadId,
+      storagePath: "projects/pending.pdf",
+    });
+
+    await expect(cancelMessageAttachmentUpload(uploadId)).resolves.toBe(true);
+
+    expect(mocks.storageRemove).toHaveBeenCalledWith(["projects/pending.pdf"]);
+    expect(mocks.attachmentUploadUpdateMany).toHaveBeenCalledWith({
+      where: { id: uploadId, uploaderId: viewerId, cancelledAt: null },
+      data: { cancelledAt: expect.any(Date) },
+    });
+    expect(mocks.attachmentUploadDelete).not.toHaveBeenCalled();
   });
 
   it("verifies storage size before creating an attachment message", async () => {
@@ -496,6 +561,11 @@ describe("messages", () => {
       error: "Verifikasi ukuran file gagal. Silakan unggah ulang.",
     });
     expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.storageRemove).toHaveBeenCalledWith(["projects/file.pdf"]);
+    expect(mocks.attachmentUploadUpdateMany).toHaveBeenCalledWith({
+      where: { id: uploadId, uploaderId: viewerId },
+      data: { cancelledAt: expect.any(Date) },
+    });
   });
 
   it("does not sign a download URL for an unauthorized attachment", async () => {

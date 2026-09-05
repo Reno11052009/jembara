@@ -34,6 +34,7 @@ export interface MessagesData {
   conversations: Conversation[];
   conversationMessages: Record<string, ChatMessage[]>;
   selectedConversationId: string;
+  attachmentsEnabled: boolean;
 }
 
 export interface MessageActionResult {

@@ -11,12 +11,14 @@ interface MessagesViewProps {
   conversations: Conversation[];
   conversationMessages: Record<string, ChatMessage[]>;
   selectedConversationId: string;
+  attachmentsEnabled?: boolean;
 }
 
 export default function MessagesView({
   conversations,
   conversationMessages,
   selectedConversationId: initialSelectedConversationId,
+  attachmentsEnabled = true,
 }: MessagesViewProps) {
   const router = useRouter();
   const selectedConversation = conversations.find(
@@ -46,9 +48,9 @@ export default function MessagesView({
     <div className="flex h-full w-full overflow-hidden">
       {/* 
         Di layar mobile (< lg):
-        - Jika belum ada obrolan dipilih (!hasSelected), tampilkan daftar percakapan (ConversationListPanel).
-        - Jika obrolan dipilih (hasSelected), tampilkan ChatPanel saja dengan tombol kembali ke daftar.
-        Di layar desktop (>= lg): Tampilkan kedua panel bersisian (2 kolom).
+        - Jika belum ada obrolan dipilih (!hasSelected), tampilkan daftar percakapan.
+        - Jika obrolan dipilih (hasSelected), tampilkan ChatPanel saja dengan tombol kembali.
+        Di layar desktop (>= lg): Tampilkan kedua panel bersisian.
       */}
       <div
         className={`h-full w-full lg:w-90 shrink-0 ${
@@ -78,6 +80,7 @@ export default function MessagesView({
             conversation={selectedConversation}
             messages={conversationMessages[selectedConversation.id] ?? []}
             onBack={handleBackToList}
+            attachmentsEnabled={attachmentsEnabled}
           />
         ) : (
           <div className="flex h-full flex-1 items-center justify-center bg-card p-6 text-center">

@@ -100,6 +100,7 @@ async function PublicProjectContent({ params }: PublicProjectPageProps) {
                 {project.description}
               </p>
             </section>
+            {project.optionalSkills.length > 0 && <section className="mt-6"><h2 className="font-display text-lg font-black text-ink">Skill Opsional</h2><div className="mt-3 flex flex-wrap gap-2">{project.optionalSkills.map((skill) => <span key={skill} className="rounded-full border border-hairline px-3 py-1.5 text-sm font-semibold text-ink-muted">{skill}</span>)}</div></section>}
 
             <section className="mt-8">
               <h2 className="font-display text-lg font-black text-ink">

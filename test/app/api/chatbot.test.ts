@@ -16,9 +16,6 @@ vi.mock("@/lib/rate-limit", () => ({
 vi.mock("@/lib/chatbot-recommendations", () => ({
   getSafeChatbotRecommendation: mocks.recommendation,
 }));
-vi.mock("@/lib/chatbot-context", () => ({
-  getChatbotContext: vi.fn().mockResolvedValue(""),
-}));
 vi.mock("@/config/unifiedConfig", () => ({
   config: {
     security: {
@@ -161,6 +158,7 @@ describe("chatbot API", () => {
     expect(providerBody.messages[0].role).toBe("system");
     expect(providerBody.messages[0].content).toContain("Pelajar/Talent");
     expect(providerBody.messages[0].content).not.toContain("Nama Rahasia");
+    expect(providerBody.messages[0].content).not.toContain("real-time dari database");
     expect(JSON.stringify(providerBody)).not.toContain(
       "DATA DATABASE DARI RESPONS SEBELUMNYA",
     );

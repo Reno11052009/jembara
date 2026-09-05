@@ -1,6 +1,6 @@
 "use client";
 
-import { serviceCategories } from "@/lib/mock-landing";
+import { serviceCategories } from "@/lib/landing-content";
 import { useReveal } from "@/hooks/useReveal";
 import { Reveal } from "@/components/ui/Reveal";
 

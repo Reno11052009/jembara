@@ -26,11 +26,12 @@ import {
   RegionServiceError,
   validateRegionSelection,
 } from "@/lib/regions";
+import { decryptTotpSecret, hashRecoveryCode, verifyTotp } from "@/lib/totp";
 
 const INVALID_CREDENTIALS_MESSAGE = "Email atau password salah";
 const RATE_LIMIT_MESSAGE = "Terlalu banyak percobaan. Silakan coba lagi nanti";
-const EMAIL_ALREADY_REGISTERED_MESSAGE =
-  "Email sudah terdaftar. Silakan masuk atau gunakan email lain.";
+const REGISTRATION_REJECTED_MESSAGE =
+  "Pendaftaran belum dapat diproses. Periksa data atau masuk jika sudah memiliki akun.";
 const DUMMY_PASSWORD_HASH = "$2b$10$4VcIQIWwB9giOWgG9HFHbOlk5D5ut/ZfJf7gD3yhMgEzKAxcTcraS";
 
 async function checkLoginRateLimit(email: string) {
@@ -66,13 +67,13 @@ async function checkRegistrationRateLimit() {
   return result.allowed;
 }
 
-export async function loginAction(formData: LoginFormData): Promise<{ error?: string } | never> {
+export async function loginAction(formData: LoginFormData): Promise<{ error?: string; requiresTwoFactor?: boolean } | never> {
   const parsed = loginSchema.safeParse(formData);
   if (!parsed.success) {
     return { error: getValidationMessage(parsed.error) };
   }
 
-  const { email, password } = parsed.data;
+  const { email, password, twoFactorCode } = parsed.data;
   const rateLimit = await checkLoginRateLimit(email);
   if (!rateLimit.allowed) {
     return { error: RATE_LIMIT_MESSAGE };
@@ -91,6 +92,29 @@ export async function loginAction(formData: LoginFormData): Promise<{ error?: st
     return { error: INVALID_CREDENTIALS_MESSAGE };
   }
 
+  if (user.twoFactorEnabledAt && user.twoFactorSecret) {
+    if (!twoFactorCode) return { requiresTwoFactor: true };
+    let validSecondFactor = false;
+    try {
+      validSecondFactor = verifyTotp(decryptTotpSecret(user.twoFactorSecret), twoFactorCode);
+    } catch {
+      return { error: "Konfigurasi 2FA bermasalah. Gunakan kode pemulihan atau hubungi admin.", requiresTwoFactor: true };
+    }
+    if (!validSecondFactor) {
+      const recoveryCodes = Array.isArray(user.twoFactorRecoveryCodes)
+        ? user.twoFactorRecoveryCodes.filter((value): value is string => typeof value === "string")
+        : [];
+      const recoveryHash = hashRecoveryCode(twoFactorCode);
+      const recoveryIndex = recoveryCodes.indexOf(recoveryHash);
+      if (recoveryIndex >= 0) {
+        validSecondFactor = true;
+        recoveryCodes.splice(recoveryIndex, 1);
+        await prisma.user.update({ where: { id: user.id }, data: { twoFactorRecoveryCodes: recoveryCodes } });
+      }
+    }
+    if (!validSecondFactor) return { error: "Kode autentikator atau kode pemulihan salah.", requiresTwoFactor: true };
+  }
+
   await clearRateLimit(rateLimit.identityKey);
   await createSession(user.id, user.role, user.name || "Pengguna");
   redirect("/dashboard");
@@ -100,7 +124,6 @@ export async function registerAction(
   formData: RegisterFormData,
 ): Promise<{
   error?: string;
-  code?: "EMAIL_ALREADY_REGISTERED";
 } | never> {
   const parsed = registerSchema.safeParse(formData);
   if (!parsed.success) {
@@ -112,18 +135,17 @@ export async function registerAction(
   }
 
   const { fullName, email, password, address } = parsed.data;
+  // Kerjakan hash pada jalur email baru maupun duplikat agar waktu respons tidak
+  // menjadi oracle murah untuk menebak akun yang sudah terdaftar.
+  const hashedPassword = await bcrypt.hash(password, 10);
   const existingUser = await prisma.user.findFirst({
     where: { email: { equals: email, mode: "insensitive" } },
     select: { id: true },
   });
   if (existingUser) {
-    return {
-      error: EMAIL_ALREADY_REGISTERED_MESSAGE,
-      code: "EMAIL_ALREADY_REGISTERED",
-    };
+    return { error: REGISTRATION_REJECTED_MESSAGE };
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
   let user;
   try {
     user = await prisma.user.create({
@@ -150,10 +172,7 @@ export async function registerAction(
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
     ) {
-      return {
-        error: EMAIL_ALREADY_REGISTERED_MESSAGE,
-        code: "EMAIL_ALREADY_REGISTERED",
-      };
+      return { error: REGISTRATION_REJECTED_MESSAGE };
     }
     console.error("Registrasi pengguna gagal:", error);
     return { error: "Pendaftaran belum dapat diproses. Silakan coba lagi." };

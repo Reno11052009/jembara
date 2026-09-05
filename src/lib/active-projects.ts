@@ -33,7 +33,16 @@ const projectSelect = {
   skillsNeeded: { select: { skill: { select: { name: true } } } },
   _count: { select: { proposals: true } },
   payment: { select: { status: true } },
-  submission: { select: { notes: true, resultUrl: true, status: true } },
+  submission: {
+    select: {
+      notes: true,
+      resultUrl: true,
+      status: true,
+      revisionCount: true,
+      revisions: { orderBy: { sequence: "desc" }, take: 1, select: { reason: true } },
+    },
+  },
+  review: { select: { id: true } },
 } satisfies Prisma.projectSelect;
 
 type ActiveProjectRecord = Prisma.projectGetPayload<{
@@ -116,14 +125,19 @@ function mapProject(
             project.payment?.status === "HELD" &&
             project.submission?.status === "SUBMITTED"
           ? "APPROVE_RESULT"
+          : role === "UMKM" && project.status === "COMPLETED" && !project.review
+            ? "LEAVE_REVIEW"
           : null,
     submission:
-      role !== "STUDENT" && project.submission
+      project.submission
         ? {
             notes: project.submission.notes,
             resultUrl: project.submission.resultUrl,
+            revisionCount: project.submission.revisionCount,
+            latestRevisionReason: project.submission.revisions[0]?.reason ?? null,
           }
         : null,
+    hasReview: Boolean(project.review),
   };
 }
 

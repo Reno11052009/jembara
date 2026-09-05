@@ -2,7 +2,7 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 import { requireAuthenticatedSession } from "./auth-guard";
-import { calculateSkillMatch } from "./dashboard-utils";
+import { calculateSmartMatch } from "./matching";
 import prisma from "./prisma";
 import type {
   Talent,
@@ -15,25 +15,6 @@ const MAX_TALENTS = 60;
 
 const createAvatarUrl = (name: string) =>
   `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
-
-function normalizeExternalUrl(value: string | null | undefined) {
-  const normalizedValue = value?.trim();
-  if (!normalizedValue) return null;
-
-  try {
-    const url = new URL(
-      /^https?:\/\//i.test(normalizedValue)
-        ? normalizedValue
-        : `https://${normalizedValue}`,
-    );
-
-    return url.protocol === "http:" || url.protocol === "https:"
-      ? url.toString()
-      : null;
-  } catch {
-    return null;
-  }
-}
 
 function createOptions(values: string[]): TalentFilterOption[] {
   return [...new Set(values.filter(Boolean))]
@@ -70,7 +51,15 @@ export async function getTalentSearchData(
       select: {
         id: true,
         title: true,
-        skillsNeeded: { select: { skill: { select: { name: true } } } },
+        budget: true,
+        workMode: true,
+        location: true,
+        skillsNeeded: {
+          select: {
+            required: true,
+            skill: { select: { id: true, name: true, category: true } },
+          },
+        },
       },
     }),
     prisma.student.findMany({
@@ -82,23 +71,28 @@ export async function getTalentSearchData(
         jurusan: true,
         rating: true,
         total_project: true,
+        available: true,
+        expectedBudgetMin: true,
+        expectedBudgetMax: true,
+        provinsi_nama: true,
+        kabupaten_nama: true,
         user: {
           select: {
             name: true,
             location: true,
-            portfolioUrl: true,
-            github: true,
-            linkedin: true,
-            behance: true,
           },
         },
         skills: {
-          select: { skill: { select: { name: true, category: true } } },
+          select: { skill: { select: { id: true, name: true, category: true } } },
         },
         portfolios: {
           orderBy: { createdAt: "desc" },
-          take: 1,
-          select: { link: true },
+          take: 8,
+          select: {
+            title: true,
+            description: true,
+            skillEvidence: { select: { skillId: true } },
+          },
         },
         _count: { select: { portfolios: true, reviews: true } },
       },
@@ -110,9 +104,6 @@ export async function getTalentSearchData(
       ? projects.find((project) => project.id === requestedProjectId)
       : undefined;
   const selectedProject = requestedProject ?? projects[0] ?? null;
-  const requiredSkills =
-    selectedProject?.skillsNeeded.map(({ skill }) => skill.name) ?? [];
-
   const talents = students
     .map<Talent>((student) => {
       const skills = student.skills.map(({ skill }) => skill.name);
@@ -120,29 +111,55 @@ export async function getTalentSearchData(
         ({ skill }) => skill.category,
       )?.skill.category;
       const name = student.user.name || "Talent Jembara";
-      const profileUrl =
-        normalizeExternalUrl(student.portfolios[0]?.link) ??
-        normalizeExternalUrl(student.user.portfolioUrl) ??
-        normalizeExternalUrl(student.user.github) ??
-        normalizeExternalUrl(student.user.linkedin) ??
-        normalizeExternalUrl(student.user.behance);
+      const match = selectedProject
+        ? calculateSmartMatch({
+            project: {
+              budget: selectedProject.budget,
+              workMode: selectedProject.workMode,
+              location: selectedProject.location,
+              skills: selectedProject.skillsNeeded.map(({ skill, required }) => ({
+                ...skill,
+                required,
+              })),
+            },
+            student: {
+              skills: student.skills.map(({ skill }) => skill),
+              portfolios: student.portfolios.map((portfolio) => ({
+                title: portfolio.title,
+                description: portfolio.description,
+                evidenceSkillIds: portfolio.skillEvidence.map(({ skillId }) => skillId),
+              })),
+              rating: student.rating,
+              reviewCount: student._count.reviews,
+              available: student.available,
+              expectedBudgetMin: student.expectedBudgetMin,
+              expectedBudgetMax: student.expectedBudgetMax,
+              provinceName: student.provinsi_nama,
+              regencyName: student.kabupaten_nama,
+            },
+          })
+        : null;
 
       return {
         id: student.id,
         name,
         role: student.jurusan || primaryCategory || skills[0] || "Talent Jembara",
-        matchPercent: selectedProject
-          ? calculateSkillMatch(skills, requiredSkills)
-          : 0,
+        matchPercent: match?.totalScore ?? 0,
+        matchEligible: match?.eligible ?? true,
+        matchReasons: match?.reasons ?? [],
+        matchFactors: match?.factors,
         rating: student._count.reviews > 0 ? student.rating : null,
         location: student.user.location || "Lokasi belum diisi",
         skills,
         completedProjectCount: student.total_project,
         portfolioCount: student._count.portfolios,
-        profileUrl,
+        profileUrl: `/talent/${student.id}`,
       };
     })
     .sort((first, second) => {
+      if (selectedProject && first.matchEligible !== second.matchEligible) {
+        return first.matchEligible ? -1 : 1;
+      }
       if (selectedProject && second.matchPercent !== first.matchPercent) {
         return second.matchPercent - first.matchPercent;
       }

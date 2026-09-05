@@ -84,9 +84,14 @@ function buildChartData(
   return points;
 }
 
-function createEmptyData(now: Date, page: unknown): EarningsData {
+function createEmptyData(
+  now: Date,
+  page: unknown,
+  canWithdraw: boolean,
+): EarningsData {
   return {
     walletBalanceLabel: formatRupiah(0),
+    canWithdraw,
     stats: [
       { id: "total", label: "Total Nilai Proyek Selesai", value: formatRupiah(0), icon: Wallet },
       { id: "month", label: "Nilai Selesai Bulan Ini", value: formatRupiah(0), icon: Calendar },
@@ -131,7 +136,7 @@ export async function getEarningsData(
           : redirect("/forbidden");
 
   if (ownershipFilter === null) {
-    return createEmptyData(now, options.page);
+    return createEmptyData(now, options.page, viewer.role === "STUDENT");
   }
 
   const projectsWhere: Prisma.projectWhereInput = {
@@ -227,6 +232,7 @@ export async function getEarningsData(
 
   return {
     walletBalanceLabel: formatRupiah(viewer.saldo ?? 0),
+    canWithdraw: viewer.role === "STUDENT",
     stats: [
       {
         id: "total",

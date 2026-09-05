@@ -21,11 +21,14 @@ export interface ActiveProject {
   proposalCount?: number;
   updatedLabel?: string;
   paymentStatus?: string | null;
-  workflowAction?: "SUBMIT_RESULT" | "APPROVE_RESULT" | null;
+  workflowAction?: "SUBMIT_RESULT" | "APPROVE_RESULT" | "LEAVE_REVIEW" | null;
   submission?: {
     notes: string;
     resultUrl: string | null;
+    revisionCount: number;
+    latestRevisionReason: string | null;
   } | null;
+  hasReview?: boolean;
 }
 
 export interface MonthlyActivityStats {

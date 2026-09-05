@@ -422,9 +422,10 @@ function startOfJakartaDay(now = new Date()) {
 
 export async function getAdminChatMonitoringData(): Promise<AdminChatMonitoringData> {
   const viewer = await requireAdminViewer();
-  const [conversationCount, todayMessageCount] = await Promise.all([
+  const [conversationCount, todayMessageCount, openReportCount] = await Promise.all([
     prisma.project.count({ where: { messages: { some: {} } } }),
     prisma.message.count({ where: { createdAt: { gte: startOfJakartaDay() } } }),
+    prisma.content_report?.count({ where: { status: { in: ["OPEN", "REVIEWING"] } } }) ?? Promise.resolve(0),
   ]);
 
   return {
@@ -443,8 +444,8 @@ export async function getAdminChatMonitoringData(): Promise<AdminChatMonitoringD
       {
         id: "laporan",
         label: "Laporan Pelanggaran",
-        value: "Belum tersedia",
-        subLabel: "Model laporan belum diimplementasikan",
+        value: formatNumber(openReportCount),
+        subLabel: "Laporan terbuka atau sedang ditinjau",
       },
     ],
     conversations: [],

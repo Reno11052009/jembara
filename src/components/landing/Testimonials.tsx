@@ -1,6 +1,6 @@
 "use client";
 
-import { testimonials } from "@/lib/mock-landing";
+import type { Testimonial } from "@/types/landing";
 import { useReveal } from "@/hooks/useReveal";
 import { Reveal } from "@/components/ui/Reveal";
 
@@ -13,7 +13,7 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-export default function Testimonials() {
+export default function Testimonials({ testimonials }: { testimonials: Testimonial[] }) {
   const { ref, isVisible } = useReveal<HTMLElement>();
 
   return (
@@ -77,6 +77,7 @@ export default function Testimonials() {
               </div>
             </Reveal>
           ))}
+          {testimonials.length === 0 && <p className="col-span-full rounded-xl border border-dashed border-hairline p-8 text-center text-ink-muted">Cerita sukses akan tampil setelah proyek pertama selesai dan diberi ulasan.</p>}
         </div>
       </div>
     </section>

@@ -1,7 +1,7 @@
 <div align="center">
   
   # Jembara
-  ### Jembatani skillmu untuk kesempatan nyata
+  ### Jembatani Keterampilan, Wujudkan Peluang
   
   [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Visit_Site-success?style=for-the-badge)](https://jembara.web.id)
   [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/Reno11052009/jembara)
@@ -20,6 +20,7 @@
 - [Tentang Proyek](#-tentang-proyek)
 - [Fitur Unggulan](#-fitur-unggulan)
 - [Demo & Screenshot](#-demo--screenshot)
+- [Akun Demo Pengujian](#-akun-demo)
 - [Teknologi](#-teknologi)
 - [Arsitektur Sistem](#-arsitektur-sistem)
 - [Instalasi & Setup](#-instalasi--setup)
@@ -84,6 +85,18 @@ Dengan website Jembara ini kita dapat mengurangi jumlah pengangguran di Indonesi
 
 🔗 **[Kunjungi Website](https://jembara.web.id)**
 
+### 🔑 Akun Demo
+
+Untuk kemudahan pengujian dan evaluasi alur kerja end-to-end tanpa perlu mendaftar akun baru, silakan gunakan kredensial akun demo berikut:
+
+| Peran | Nama Akun | Email | Kata Sandi | Cakupan Pengujian |
+|:---|:---|:---|:---|:---|
+| **Student (Pelajar/Talenta)** | Dikonfigurasi saat seed demo | `DEMO_STUDENT_EMAIL` | `DEMO_STUDENT_PASSWORD` | Marketplace, proposal, portofolio, Skill Passport, dan pengiriman hasil. |
+| **UMKM (Pemilik Usaha)** | Dikonfigurasi saat seed demo | `DEMO_UMKM_EMAIL` | `DEMO_UMKM_PASSWORD` | Lowongan, Smart Matching, pembayaran, revisi, dan approval. |
+| **Admin** | Dikonfigurasi melalui environment | `ADMIN_SEED_EMAIL` | `ADMIN_SEED_PASSWORD` | Moderasi laporan, verifikasi skill, audit, dan penarikan saldo. |
+
+Kredensial asli tidak disimpan di repository. Gunakan environment lokal yang kuat dan berbeda dari produksi.
+
 ### Screenshot Aplikasi
 
 <div align="center">
@@ -97,11 +110,6 @@ Dengan website Jembara ini kita dapat mengurangi jumlah pengangguran di Indonesi
   <p><em>[Nama Fitur] - [Deskripsi screenshot]</em></p>
 </div>
 
-### Video Demo
-
-📹 **[Link Video Demo](https://[URL_VIDEO])** _(opsional)_
-
----
 
 ## 🛠️ Teknologi
 
@@ -121,15 +129,15 @@ Runtime      : Node.js
 Framework    : Next.js Server Actions
 Database     : PostgreSQL
 ORM          : Prisma ORM v7
-Auth         : Supabase Auth & Custom JWT (jose)
+Auth         : Custom JWT session dengan jose (satu identity authority)
 ```
 
 #### DevOps & Tools
 ```
 Deployment   : Vercel
 CI/CD        : Vercel
-Testing      : Vitest
-Monitoring   : -
+Testing      : Vitest dan Playwright
+Monitoring   : Audit log database dan structured server log
 ```
 
 ### Alasan Pemilihan Teknologi
@@ -153,7 +161,12 @@ Monitoring   : -
     "lucide-react": "^1.31.0",
     "lenis": "^1.3.26",
     "pg": "^8.23.0",
-    "pgsql": "^1.0.0"
+    "pgsql": "^1.0.0",
+    "midtrans-client": "^1.4.3",
+    "tus-js-client": "^4.3.1",
+    "bcryptjs": "^3.0.3",
+    "jose": "^6.2.8",
+    "zod": "^4.4.3"
   }
 }
 ```
@@ -232,19 +245,41 @@ graph TD
 
 ### Folder Structure
 
-```
-project-root/
+```text
+jembara/
+|-- .github/workflows/       # Quality gate CI
+|-- e2e/                     # Journey test Playwright
+|-- playwright.config.ts     # Konfigurasi E2E
+├── prisma/
+│   ├── migrations/          # Riwayat migrasi PostgreSQL
+│   ├── schema.prisma        # Model dan relasi database
+│   └── seed.ts              # Data awal dan akun demo
+├── public/                  # Aset statis, ikon, dan gambar
 ├── src/
-│   ├── components/     # Reusable components
-│   ├── pages/          # Page components
-│   ├── hooks/          # Custom hooks
-│   ├── utils/          # Utility functions
-│   ├── services/       # API services
-│   ├── store/          # State management
-│   └── types/          # TypeScript types
-├── public/             # Static assets
-├── tests/              # Test files
-└── docs/               # Documentation
+│   ├── app/                 # Next.js App Router
+│   │   ├── actions/         # Server Actions dan aturan bisnis
+│   │   ├── api/             # Route Handlers, webhook, dan cron
+│   │   └── dashboard/       # Halaman dashboard berbasis peran
+│   ├── components/          # Komponen UI dan komponen per fitur
+│   ├── config/              # Konfigurasi aplikasi dan chatbot
+│   ├── contexts/            # React Context dan preferences
+│   ├── fonts/               # Font lokal
+│   ├── generated/prisma/    # Prisma Client hasil generate
+│   ├── hooks/               # Custom React hooks
+│   ├── lib/                 # Data access, auth, payment, dan utilitas domain
+│   ├── types/               # Tipe TypeScript
+│   ├── validators/          # Schema validasi input
+│   └── proxy.ts             # Proteksi dan pengalihan route
+├── test/
+│   ├── app/                 # Test Server Actions dan Route Handlers
+│   ├── components/          # Test komponen React
+│   ├── lib/                 # Test logika domain
+│   └── validators/          # Test schema validasi
+├── docs/                    # Dokumentasi dan diagram ERD
+├── next.config.ts           # Konfigurasi Next.js
+├── prisma.config.ts         # Konfigurasi Prisma
+├── vitest.config.mts        # Konfigurasi test
+└── package.json             # Scripts dan dependencies
 ```
 
 ---
@@ -254,9 +289,9 @@ project-root/
 ### Prerequisites
 
 Pastikan Anda telah menginstall:
-- **Node.js** (v18.x atau lebih tinggi)
+- **Node.js** (v20.9.0 atau lebih tinggi)
 - **npm** / **yarn** / **pnpm**
-- **[Database]** (jika diperlukan)
+- **Supabase**
 - **Git**
 
 ### Langkah Instalasi
@@ -287,20 +322,37 @@ Buat file `.env` di root directory:
 
 ```env
 # Database
-DIRECT_URL="[connection string]"
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+DATABASE_URL=
+DIRECT_URL=
+DATABASE_SSL_CA_BASE64=
 
 # Authentication
-JWT_SECRET="[your_jwt_secret]"
-NEXTAUTH_SECRET="[your_nextauth_secret]"
+SESSION_SECRET=
 
 # API Keys
-API_KEY="[your_api_key]"
+CHATBOT_AI=
+CHATBOT_AI_BACKUP=
+
+MIDTRANS_SERVER_KEY=
+MIDTRANS_CLIENT_KEY=
+MIDTRANS_ENVIRONMENT="sandbox"
+
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_STORAGE_BUCKET="message-attachments"
 
 # Other configs
-NODE_ENV="development"
-PORT=3000
+CRON_SECRET=
+
+ADMIN_SEED_NAME="Admin Jembara"
+ADMIN_SEED_EMAIL="admin@jembara.web.id"
+ADMIN_SEED_PASSWORD=[PASSWORD]
+
+# Optional demo accounts (seeded only when all four are present)
+DEMO_STUDENT_EMAIL=
+DEMO_STUDENT_PASSWORD=
+DEMO_UMKM_EMAIL=
+DEMO_UMKM_PASSWORD=
 ```
 
 #### 4️⃣ Setup Database
@@ -312,7 +364,7 @@ npm db:migrate
 # atau
 npm db:push
 
-# Seed data (opsional)
+# Seed taxonomy dan akun admin dari environment
 npm db:seed
 ```
 
@@ -341,6 +393,13 @@ npm run start
 # Run tests
 npm test --run
 
+# Verifikasi tipe
+npx tsc --noEmit
+
+# Install browser lalu jalankan E2E
+npx playwright install chromium
+npm run test:e2e
+
 # Linting
 npm run lint
 ```
@@ -350,8 +409,8 @@ npm run lint
 #### Memulai
 
 1. Buka aplikasi melalui [jembara.web.id](https://jembara.web.id) atau `http://localhost:3000` jika dijalankan secara lokal.
-2. Pilih **Daftar** untuk membuat akun baru, lalu masukkan nama, email, dan kata sandi.
-3. Tentukan peran akun sebagai **Student** atau **UMKM**. Peran ini menjadi identitas utama akun selama menggunakan Jembara.
+2. Untuk kemudahan pengujian, Anda dapat langsung masuk menggunakan **Akun Demo** yang telah disediakan (Student: `test-student@jembara.web.id`, UMKM: `test-umkm@jembara.web.id` dengan kata sandi `12345678`), atau membuat akun baru melalui tombol **Daftar**.
+3. Jika membuat akun baru, tentukan peran akun sebagai **Student** atau **UMKM**. Peran ini menjadi identitas utama akun selama menggunakan Jembara.
 4. Lengkapi profil sesuai peran agar rekomendasi project dan informasi yang ditampilkan lebih relevan.
 5. Jika sudah memiliki akun, pilih **Masuk** dan gunakan email serta kata sandi yang telah didaftarkan.
 
@@ -364,6 +423,7 @@ npm run lint
 5. Isi proposal minimal 50 karakter, setujui budget project, kemudian tekan **Kirim Proposal**.
 6. Pantau status pengajuan melalui **Proposal Saya**, aktivitas kerja melalui **Proyek Aktif**, dan komunikasi project melalui **Pesan**.
 7. Periksa notifikasi pada bagian kanan atas dashboard agar tidak melewatkan pembaruan penting.
+8. Simpan rekening atau e-wallet pada **Pengaturan → Pembayaran**. Setelah saldo tersedia mencapai minimal Rp10.000, buka **Penarikan Saldo**, pilih rekening tujuan, lalu kirim permintaan untuk diproses Admin.
 
 #### Sebagai UMKM
 
@@ -381,6 +441,7 @@ npm run lint
 1. Untuk lingkungan lokal, jalankan seed database dan masuk menggunakan kredensial `ADMIN_SEED_EMAIL` serta `ADMIN_SEED_PASSWORD` yang dikonfigurasi pada file `.env`.
 2. Gunakan dashboard admin untuk memantau ringkasan pengguna, UMKM, project, dan aktivitas platform.
 3. Buka menu **Daftar User**, **Daftar UMKM**, **Relasi**, **Lowongan**, atau **Monitor Pesan** sesuai data yang ingin ditinjau.
+4. Buka **Penarikan Saldo** untuk memeriksa tujuan transfer, memproses pembayaran manual, atau menolak permintaan. Penolakan otomatis mengembalikan saldo Student.
 
 > **Catatan:** Setiap pengguna hanya dapat mengakses halaman dan tindakan yang sesuai dengan perannya. Jangan membagikan kata sandi atau kredensial admin kepada pihak lain.
 
@@ -388,7 +449,7 @@ npm run lint
 
 ## Integrasi Pembayaran Midtrans
 
-Jembara memakai **Snap Redirect**. Pembayaran masuk ke akun merchant platform dan dicatat sebagai dana `HELD` pada ledger internal. Dana tidak langsung menjadi saldo Student. Setelah Student mengirim hasil dan UMKM menyetujuinya, pelepasan dana dan penambahan `user.saldo` dilakukan dalam satu transaksi database yang idempoten.
+Jembara memakai **Snap Popup** dengan alternatif halaman pembayaran Midtrans melalui redirect. Pembayaran masuk ke akun merchant platform dan dicatat sebagai dana `HELD` pada ledger internal. Dana tidak langsung menjadi saldo Student. Setelah Student mengirim hasil dan UMKM menyetujuinya, pelepasan dana dan penambahan `user.saldo` dilakukan dalam satu transaksi database yang idempoten.
 
 Tambahkan konfigurasi berikut ke `.env`:
 
@@ -413,6 +474,7 @@ Alur status:
 Proposal diterima (PROPOSAL)
   -> pembayaran Midtrans terverifikasi (HELD, IN_PROGRESS)
   -> Student kirim hasil (REVIEW)
+  -> UMKM setujui atau minta revisi maksimal 2 kali (IN_PROGRESS)
   -> UMKM menyetujui (RELEASED, COMPLETED, saldo Student bertambah)
 ```
 
@@ -454,9 +516,6 @@ Proxy internal tersebut memvalidasi parameter dan format respons, membatasi wakt
 # Unit tests
 npm run test
 
-# Integration tests
-npm run test:integration
-
 # E2E tests
 npm run test:e2e
 
@@ -466,16 +525,7 @@ npm run test:coverage
 
 ### Test Coverage
 
-Hasil terakhir `npm run test:coverage` dengan **31 test suite** dan **134 test** yang seluruhnya lulus:
-
-| Metrik | Coverage | Tercakup/Total |
-| --- | ---: | ---: |
-| Statements | **79.65%** | 1.139/1.430 |
-| Branches | **58.67%** | 710/1.210 |
-| Functions | **90.10%** | 255/283 |
-| Lines | **82.66%** | 1.078/1.304 |
-
-Coverage dihitung menggunakan provider V8 pada file produksi yang dimuat oleh test suite. Jalankan kembali perintah coverage setelah menambah atau mengubah test agar angka tetap mutakhir. Laporan HTML lengkap tersedia di `coverage/index.html` setelah perintah selesai dijalankan.
+Quality gate ada di `.github/workflows/quality.yml`: Prisma generate, lint, typecheck, unit/integration test, build, dan Playwright jika secret database CI tersedia. Angka coverage tidak dibekukan di README agar tidak menyesatkan; gunakan `npm run test:coverage` untuk hasil terbaru.
 
 ---
 

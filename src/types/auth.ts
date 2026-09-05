@@ -1,6 +1,7 @@
 export interface LoginFormData {
   email: string;
   password: string;
+  twoFactorCode?: string;
 }
 
 export interface RegisterFormData {

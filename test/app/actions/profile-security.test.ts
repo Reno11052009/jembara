@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   studentSkillFindMany: vi.fn(),
   studentSkillDeleteMany: vi.fn(),
   studentSkillCreate: vi.fn(),
+  studentSkillUpsert: vi.fn(),
   skillFindFirst: vi.fn(),
   umkmUpsert: vi.fn(),
   validateRegionSelection: vi.fn(),
@@ -105,6 +106,7 @@ describe("profile action security", () => {
           findMany: mocks.studentSkillFindMany,
           deleteMany: mocks.studentSkillDeleteMany,
           create: mocks.studentSkillCreate,
+          upsert: mocks.studentSkillUpsert,
         },
         skill: { findFirst: mocks.skillFindFirst },
         umkm: { upsert: mocks.umkmUpsert },
@@ -171,10 +173,40 @@ describe("profile action security", () => {
       where: { name: { equals: "Web Development", mode: "insensitive" } },
       select: { id: true },
     });
-    expect(mocks.studentSkillCreate).toHaveBeenCalledWith({
-      data: { studentId: "student-1", skillId: "skill-1" },
+    expect(mocks.studentSkillUpsert).toHaveBeenCalledWith({
+      where: { studentId_skillId: { studentId: "student-1", skillId: "skill-1" } },
+      update: { level: "BEGINNER" },
+      create: { studentId: "student-1", skillId: "skill-1", level: "BEGINNER" },
       select: { id: true },
     });
+  });
+
+  it("publishes a student profile only after explicit opt-in", async () => {
+    const formData = profileForm();
+    formData.set("publicProfileSubmitted", "1");
+    formData.set("isPublicProfile", "on");
+
+    await expect(updateProfileAction(formData)).resolves.toEqual({ success: true });
+
+    expect(mocks.studentUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: expect.objectContaining({ isPublicProfile: true }),
+      }),
+    );
+  });
+
+  it("stores whether a student is available for matching", async () => {
+    const formData = profileForm();
+    formData.set("availabilitySubmitted", "1");
+    formData.set("available", "on");
+
+    await expect(updateProfileAction(formData)).resolves.toEqual({ success: true });
+
+    expect(mocks.studentUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: expect.objectContaining({ available: true }),
+      }),
+    );
   });
 
   it("stores a verified structured address for a student", async () => {

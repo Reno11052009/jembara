@@ -42,8 +42,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Jembatan Karya",
-  description: "Temukan talenta. Selesaikan project.",
+  title: "Jembara — Jembatani Keterampilan, Wujudkan Peluang",
+  description: "Jembara mempertemukan pelajar bertalenta dengan UMKM melalui Smart Matching yang transparan.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

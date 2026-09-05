@@ -92,7 +92,14 @@ const profileSchema = z.object({
   linkedin: optionalText(2048),
   behance: optionalText(2048),
   skills: optionalText(1200),
+  skillLevels: optionalText(4000),
+  expectedBudgetMin: optionalText(20),
+  expectedBudgetMax: optionalText(20),
   avatarBase64: optionalText(360_000),
+  publicProfileSubmitted: z.literal("1").optional(),
+  isPublicProfile: z.literal("on").optional(),
+  availabilitySubmitted: z.literal("1").optional(),
+  available: z.literal("on").optional(),
 });
 
 const skillNameSchema = z
@@ -224,7 +231,14 @@ export async function updateProfileAction(formData: FormData) {
     linkedin: formEntry(formData, "linkedin"),
     behance: formEntry(formData, "behance"),
     skills: formEntry(formData, "skills"),
+    skillLevels: formEntry(formData, "skillLevels"),
+    expectedBudgetMin: formEntry(formData, "expectedBudgetMin"),
+    expectedBudgetMax: formEntry(formData, "expectedBudgetMax"),
     avatarBase64: formEntry(formData, "avatarBase64"),
+    publicProfileSubmitted: formEntry(formData, "publicProfileSubmitted"),
+    isPublicProfile: formEntry(formData, "isPublicProfile"),
+    availabilitySubmitted: formEntry(formData, "availabilitySubmitted"),
+    available: formEntry(formData, "available"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message || "Data profil tidak valid" };
@@ -345,6 +359,24 @@ export async function updateProfileAction(formData: FormData) {
 
   const parsedSkills = parseSkills(parsed.data.skills);
   if (parsedSkills?.error) return { error: parsedSkills.error };
+  const skillLevels: Record<string, "BEGINNER" | "INTERMEDIATE" | "ADVANCED"> = {};
+  if (parsed.data.skillLevels) {
+    try {
+      const raw = JSON.parse(parsed.data.skillLevels) as unknown;
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error();
+      for (const [name, level] of Object.entries(raw)) {
+        if (!["BEGINNER", "INTERMEDIATE", "ADVANCED"].includes(String(level))) throw new Error();
+        skillLevels[name.toLocaleLowerCase("id-ID")] = level as "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
+      }
+    } catch {
+      return { error: "Level skill tidak valid" };
+    }
+  }
+  const parseBudget = (value: string | undefined) => value === undefined ? undefined : value === "" ? null : Number(value);
+  const expectedBudgetMin = parseBudget(parsed.data.expectedBudgetMin);
+  const expectedBudgetMax = parseBudget(parsed.data.expectedBudgetMax);
+  if ((expectedBudgetMin !== undefined && expectedBudgetMin !== null && (!Number.isInteger(expectedBudgetMin) || expectedBudgetMin < 50_000)) || (expectedBudgetMax !== undefined && expectedBudgetMax !== null && (!Number.isInteger(expectedBudgetMax) || expectedBudgetMax < 50_000))) return { error: "Ekspektasi budget minimal Rp50.000" };
+  if ((expectedBudgetMin === null) !== (expectedBudgetMax === null) || (typeof expectedBudgetMin === "number" && typeof expectedBudgetMax === "number" && expectedBudgetMin > expectedBudgetMax)) return { error: "Rentang ekspektasi budget tidak valid" };
   const avatar = validateAvatar(parsed.data.avatarBase64);
   if (avatar.error) return { error: avatar.error };
 
@@ -382,6 +414,15 @@ export async function updateProfileAction(formData: FormData) {
     }
   }
 
+  const isPublicProfile =
+    parsed.data.publicProfileSubmitted === "1"
+      ? parsed.data.isPublicProfile === "on"
+      : undefined;
+  const available =
+    parsed.data.availabilitySubmitted === "1"
+      ? parsed.data.available === "on"
+      : undefined;
+
   try {
     await prisma.$transaction(async (transaction) => {
       await transaction.user.update({
@@ -411,6 +452,10 @@ export async function updateProfileAction(formData: FormData) {
         const student = await transaction.student.upsert({
           where: { userId: session.userId },
           update: {
+            ...(isPublicProfile !== undefined ? { isPublicProfile } : {}),
+            ...(available !== undefined ? { available } : {}),
+            ...(expectedBudgetMin !== undefined ? { expectedBudgetMin } : {}),
+            ...(expectedBudgetMax !== undefined ? { expectedBudgetMax } : {}),
             ...(parsed.data.headline !== undefined
               ? { jurusan: parsed.data.headline || null }
               : {}),
@@ -437,6 +482,10 @@ export async function updateProfileAction(formData: FormData) {
           },
           create: {
             userId: session.userId,
+            isPublicProfile: isPublicProfile ?? false,
+            available: available ?? false,
+            expectedBudgetMin: expectedBudgetMin ?? null,
+            expectedBudgetMax: expectedBudgetMax ?? null,
             jurusan: parsed.data.headline || null,
             school: parsed.data.school || null,
             tingkat_pendidikan: parsed.data.tingkat_pendidikan || null,
@@ -494,12 +543,17 @@ export async function updateProfileAction(formData: FormData) {
             selectedSkills.push(skill);
           }
 
+          const selectedSkillIds = selectedSkills.map(({ id }) => id);
           await transaction.student_skill.deleteMany({
-            where: { studentId: student.id },
+            where: { studentId: student.id, skillId: { notIn: selectedSkillIds } },
           });
           for (const skill of selectedSkills) {
-            await transaction.student_skill.create({
-              data: { studentId: student.id, skillId: skill.id },
+            const skillName = allowedSkillNames[selectedSkills.indexOf(skill)];
+            const level = skillLevels[skillName.toLocaleLowerCase("id-ID")] ?? "BEGINNER";
+            await transaction.student_skill.upsert({
+              where: { studentId_skillId: { studentId: student.id, skillId: skill.id } },
+              update: { level },
+              create: { studentId: student.id, skillId: skill.id, level },
               select: { id: true },
             });
           }
@@ -562,5 +616,6 @@ export async function updateProfileAction(formData: FormData) {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/profile");
   revalidatePath("/dashboard/settings");
+  revalidatePath("/");
   return { success: true };
 }

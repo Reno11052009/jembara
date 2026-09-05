@@ -26,6 +26,7 @@ import type { ChatMessage } from "@/types/messages";
 interface ChatComposerProps {
   conversationId: string;
   canSend: boolean;
+  attachmentsEnabled: boolean;
   onOptimisticSend: (message: ChatMessage) => void;
   onSendSuccess: (messageId: string) => void;
   onSendError: (messageId: string) => void;
@@ -48,6 +49,7 @@ const jakartaClockFormatter = new Intl.DateTimeFormat("id-ID", {
 export default function ChatComposer({
   conversationId,
   canSend,
+  attachmentsEnabled,
   onOptimisticSend,
   onSendSuccess,
   onSendError,
@@ -253,7 +255,7 @@ export default function ChatComposer({
                 />
               </div>
               <p className="mt-1 text-[11px] text-ink-muted">
-                {formatMessageAttachmentSize(uploadState.sizeBytes)} · maks. 512 MB
+                {formatMessageAttachmentSize(uploadState.sizeBytes)} · maks. 25 MB
               </p>
             </div>
             <div className="flex shrink-0 items-center">
@@ -293,14 +295,14 @@ export default function ChatComposer({
           className="sr-only"
           tabIndex={-1}
           onChange={(event) => void handleFileChange(event)}
-          disabled={!canSend || isBusy}
+          disabled={!canSend || !attachmentsEnabled || isBusy}
         />
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          aria-label="Lampirkan file, maksimal 512 MB"
-          title="Lampirkan file (maks. 512 MB)"
-          disabled={!canSend || isBusy}
+          aria-label="Lampirkan file, maksimal 25 MB"
+          title="Lampirkan file (maks. 25 MB)"
+          disabled={!canSend || !attachmentsEnabled || isBusy}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-canvas hover:text-brand disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Paperclip size={18} />
@@ -330,6 +332,11 @@ export default function ChatComposer({
           {error}
         </p>
       )}
+      {!attachmentsEnabled && canSend ? (
+        <p className="mt-2 pl-14 font-body text-xs text-ink-muted">
+          Lampiran belum tersedia pada konfigurasi server ini. Pesan teks tetap dapat digunakan.
+        </p>
+      ) : null}
     </div>
   );
 }

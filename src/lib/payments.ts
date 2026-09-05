@@ -8,7 +8,7 @@ import prisma from "./prisma";
 import { requireAuthenticatedSession } from "./auth-guard";
 import {
   createSnapTransaction,
-  getMidtransTransactionStatus,
+  getMidtransEnvironment,
   type MidtransStatusPayload,
 } from "./midtrans";
 import type {
@@ -153,6 +153,7 @@ async function findOwnedPayableProject(projectId: string, userId: string) {
         select: {
           id: true,
           orderId: true,
+          midtransTransactionId: true,
           status: true,
           redirectUrl: true,
           snapToken: true,
@@ -185,52 +186,7 @@ export async function getProjectPaymentData(
 
   const project = await findOwnedPayableProject(parsedProjectId.data, session.userId);
   const amount = parseProjectAmount(project.budget);
-  let status = normalizePaymentStatus(project.payment?.status);
-
-  // Jika status masih PENDING atau CREATING dan orderId ada, periksa status terkini ke Midtrans
-  if (
-    project.payment?.orderId &&
-    (status === "PENDING" || status === "CREATING")
-  ) {
-    try {
-      const midtransStatus = await getMidtransTransactionStatus(project.payment.orderId);
-      const outcome = await applyMidtransStatus(midtransStatus);
-      if (outcome.newlyHeld && outcome.project.student) {
-        try {
-          const { createUserNotification } = await import("./notifications");
-          await Promise.allSettled([
-            createUserNotification({
-              userId: outcome.project.student.userId,
-              type: "PAYMENT",
-              title: "Dana proyek telah diamankan",
-              message: `Pembayaran ${outcome.project.title} sudah diterima. Anda dapat mulai mengerjakan proyek.`,
-              href: "/dashboard/active-projects",
-              preferenceKey: "pembayaran",
-            }),
-            createUserNotification({
-              userId: outcome.project.umkm.userId,
-              type: "PAYMENT",
-              title: "Pembayaran berhasil",
-              message: `Dana ${outcome.project.title} ditahan sampai hasil kerja disetujui.`,
-              href: "/dashboard/active-projects",
-              preferenceKey: "pembayaran",
-            }),
-          ]);
-        } catch {
-          // Abaikan jika pengiriman notifikasi gagal
-        }
-      }
-      const refreshed = await prisma.project_payment.findUnique({
-        where: { id: project.payment.id },
-        select: { status: true, redirectUrl: true },
-      });
-      if (refreshed) {
-        status = normalizePaymentStatus(refreshed.status);
-      }
-    } catch {
-      // Abaikan jika order belum dibuat di Core API (404) atau server Midtrans tidak dapat dihubungi
-    }
-  }
+  const status = normalizePaymentStatus(project.payment?.status);
 
   const retryable = status === "NOT_CREATED" || RETRYABLE_PAYMENT_STATUSES.includes(
     status as (typeof RETRYABLE_PAYMENT_STATUSES)[number],
@@ -246,12 +202,14 @@ export async function getProjectPaymentData(
     statusLabel: getPaymentStatusLabel(status),
     redirectUrl: project.payment?.redirectUrl ?? null,
     snapToken: project.payment?.snapToken ?? null,
+    orderId: project.payment?.orderId ?? null,
+    environment: getMidtransEnvironment(),
     clientKey:
-      process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ||
-      process.env.MIDTRANS_CLIENT_KEY ||
+      process.env.MIDTRANS_CLIENT_KEY?.trim() ||
+      process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY?.trim() ||
       "",
     snapScriptUrl:
-      process.env.MIDTRANS_ENVIRONMENT?.toLowerCase() === "production"
+      getMidtransEnvironment() === "production"
         ? "https://app.midtrans.com/snap/snap.js"
         : "https://app.sandbox.midtrans.com/snap/snap.js",
     canPay:
@@ -547,6 +505,73 @@ export async function applyMidtransStatus(payload: MidtransStatusPayload) {
           });
           if (claimed.count !== 1) {
             return { newlyHeld: false, project: payment.project };
+          }
+
+          const releasedUser = await transaction.user.findUnique({
+            where: { id: payment.releasedToUserId },
+            select: { saldo: true },
+          });
+          if (!releasedUser) {
+            throw new PaymentFlowError("Penerima saldo pembayaran tidak ditemukan.");
+          }
+
+          let availableBalance = releasedUser.saldo;
+          if (availableBalance < reversalDelta) {
+            const pendingWithdrawals =
+              await transaction.withdrawal_request.findMany({
+                where: {
+                  userId: payment.releasedToUserId,
+                  status: "PENDING",
+                },
+                orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+                select: { id: true, amount: true },
+              });
+
+            for (const withdrawal of pendingWithdrawals) {
+              if (availableBalance >= reversalDelta) break;
+              const cancelled = await transaction.withdrawal_request.updateMany({
+                where: { id: withdrawal.id, status: "PENDING" },
+                data: {
+                  status: "REJECTED",
+                  adminNote:
+                    "Dibatalkan otomatis karena pembayaran proyek mengalami refund atau chargeback.",
+                  processedAt: new Date(),
+                  processedByUserId: null,
+                },
+              });
+              if (cancelled.count !== 1) continue;
+
+              const balanceBeforeRefund = availableBalance;
+              const refundedUser = await transaction.user.update({
+                where: { id: payment.releasedToUserId },
+                data: { saldo: { increment: withdrawal.amount } },
+                select: { saldo: true },
+              });
+              availableBalance = refundedUser.saldo;
+              await transaction.balance_transaction.create({
+                data: {
+                  userId: payment.releasedToUserId,
+                  withdrawalId: withdrawal.id,
+                  externalReference: `withdrawal:${withdrawal.id}:refund`,
+                  type: "WITHDRAWAL_REFUND",
+                  amount: withdrawal.amount,
+                  balanceBefore: balanceBeforeRefund,
+                  balanceAfter: availableBalance,
+                },
+                select: { id: true },
+              });
+              await transaction.notification.create({
+                data: {
+                  userId: payment.releasedToUserId,
+                  type: "PAYMENT",
+                  title: "Penarikan dibatalkan otomatis",
+                  message:
+                    "Dana penarikan dikembalikan ke saldo karena pembayaran proyek mengalami refund atau chargeback.",
+                  href: "/dashboard/withdrawals",
+                },
+                select: { id: true },
+              });
+            }
           }
 
           const updatedUser = await transaction.user.update({

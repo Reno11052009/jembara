@@ -35,7 +35,7 @@ export default function AuthShell({
         </div>
 
         <div className="flex gap-6 text-[11px] uppercase tracking-[0.2em] text-slate-500">
-          <span>© 2026 Jembatan Karya Indonesia.</span>
+          <span>© 2026 Jembara.</span>
           <span></span>
         </div>
       </div>

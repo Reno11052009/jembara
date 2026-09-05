@@ -5,6 +5,9 @@ const mocks = vi.hoisted(() => ({
   userFindUnique: vi.fn(),
   skillFindMany: vi.fn(),
   projectCreate: vi.fn(),
+  transaction: vi.fn(),
+  historyCreate: vi.fn(),
+  auditCreate: vi.fn(),
   consumeRateLimit: vi.fn(),
   revalidatePath: vi.fn(),
   revalidateTag: vi.fn(),
@@ -32,6 +35,7 @@ vi.mock("@/lib/prisma", () => ({
     user: { findUnique: mocks.userFindUnique },
     skill: { findMany: mocks.skillFindMany },
     project: { create: mocks.projectCreate },
+    $transaction: mocks.transaction,
   },
 }));
 vi.mock("next/cache", () => ({
@@ -55,7 +59,7 @@ function createFormData(overrides: Partial<Record<string, string>> = {}) {
   formData.set("deadline", overrides.deadline ?? "2030-12-31");
   formData.set("workMode", overrides.workMode ?? "HYBRID");
   formData.set("location", overrides.location ?? "Malang");
-  formData.append("skillIds", overrides.skillIds ?? SKILL_ID);
+  formData.append("requiredSkillIds", overrides.skillIds ?? SKILL_ID);
   return formData;
 }
 
@@ -78,6 +82,7 @@ describe("createProjectAction", () => {
     });
     mocks.skillFindMany.mockResolvedValue([{ id: SKILL_ID }]);
     mocks.projectCreate.mockResolvedValue({ id: "project-1" });
+    mocks.transaction.mockImplementation(async (callback) => callback({ project: { create: mocks.projectCreate }, project_status_history: { create: mocks.historyCreate }, audit_log: { create: mocks.auditCreate } }));
     mocks.redirect.mockImplementation((path: string) => {
       throw new Error(`NEXT_REDIRECT:${path}`);
     });
@@ -98,7 +103,7 @@ describe("createProjectAction", () => {
         location: "Malang",
         status: "OPEN",
         umkmId: "umkm-1",
-        skillsNeeded: { create: [{ skillId: SKILL_ID }] },
+        skillsNeeded: { create: [{ skillId: SKILL_ID, required: true }] },
       },
       select: { id: true },
     });

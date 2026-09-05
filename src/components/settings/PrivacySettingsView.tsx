@@ -1,13 +1,16 @@
 import ProfileVisibilityCard from "@/components/settings/ProfileVisibilityCard";
-import PrivacyPreferencesCard from "@/components/settings/PrivacyPreferencesCard";
 import DataAccountCard from "@/components/settings/DataAccountCard";
+import type { PrivacySettingsData } from "@/lib/privacy";
 
-export default function PrivacySettingsView({ isUmkm = false }: { isUmkm?: boolean }) {
+export default function PrivacySettingsView({
+  initialData,
+}: {
+  initialData: PrivacySettingsData;
+}) {
   return (
     <div className="flex flex-col gap-6">
-      <ProfileVisibilityCard isUmkm={isUmkm} />
-      <PrivacyPreferencesCard isUmkm={isUmkm} />
-      <DataAccountCard isUmkm={isUmkm} />
+      <ProfileVisibilityCard initialData={initialData} />
+      <DataAccountCard />
     </div>
   );
 }

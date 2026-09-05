@@ -12,7 +12,7 @@ export default async function EarningsPage({ searchParams }: {
   searchParams: Promise<{ page?: string | string[] }>;
 }) {
   const query = await searchParams;
-  const { walletBalanceLabel, stats, chartData, transactions, pagination } =
+  const { walletBalanceLabel, canWithdraw, stats, chartData, transactions, pagination } =
     await getEarningsData(new Date(), query);
 
   return (
@@ -23,7 +23,7 @@ export default async function EarningsPage({ searchParams }: {
       />
 
       <div className="flex flex-col gap-6">
-        <WalletBalanceCard balanceLabel={walletBalanceLabel} />
+        <WalletBalanceCard balanceLabel={walletBalanceLabel} canWithdraw={canWithdraw} />
         <EarningsStatsGrid stats={stats} />
         <EarningsChartCard data={chartData} />
 

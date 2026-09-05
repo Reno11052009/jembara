@@ -247,7 +247,7 @@ describe("admin data access", () => {
     expect(data.stats.map(({ value }) => value)).toEqual([
       "8",
       "17",
-      "Belum tersedia",
+      "0",
     ]);
     expect(data.conversations).toEqual([]);
     expect(data.messages).toEqual([]);

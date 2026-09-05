@@ -8,22 +8,26 @@ datasource db {
 }
 
 model user {
-  id           String   @id @default(uuid()) @db.Uuid
-  email        String   @unique
-  name         String?
-  no_telepon   String?
-  password     String
-  avatar       String?
-  bio          String?
-  location     String?
-  role         String   @default("STUDENT") // STUDENT, UMKM, ADMIN
-  portfolioUrl String?
-  github       String?
-  linkedin     String?
-  behance      String?
-  saldo        Int      @default(0) @db.Integer
-  createdAt    DateTime @default(now()) @db.Timestamp(6)
-  updateAt     DateTime @updatedAt @db.Timestamp(6)
+  id                     String    @id @default(uuid()) @db.Uuid
+  email                  String    @unique
+  name                   String?
+  no_telepon             String?
+  password               String
+  avatar                 String?
+  bio                    String?
+  location               String?
+  role                   String    @default("STUDENT") // STUDENT, UMKM, ADMIN
+  portfolioUrl           String?
+  github                 String?
+  linkedin               String?
+  behance                String?
+  saldo                  Int       @default(0) @db.Integer
+  twoFactorSecret        String?   @db.VarChar(512)
+  twoFactorPendingSecret String?   @db.VarChar(512)
+  twoFactorRecoveryCodes Json?
+  twoFactorEnabledAt     DateTime? @db.Timestamp(6)
+  createdAt              DateTime  @default(now()) @db.Timestamp(6)
+  updateAt               DateTime  @updatedAt @db.Timestamp(6)
 
   student                  student?
   umkm                     umkm?
@@ -35,7 +39,17 @@ model user {
   sessions                 auth_session[]
   releasedPayments         project_payment[]           @relation("PaymentReleasedTo")
   balanceTransactions      balance_transaction[]
+  withdrawalRequests       withdrawal_request[]        @relation("WithdrawalRequester")
+  processedWithdrawals     withdrawal_request[]        @relation("WithdrawalProcessor")
+  payoutMethods            payout_method[]
   messageAttachmentUploads message_attachment_upload[]
+  verifiedSkills           student_skill[]             @relation("SkillVerifier")
+  projectStatusChanges     project_status_history[]    @relation("ProjectStatusActor")
+  revisionRequests         project_revision[]          @relation("RevisionRequester")
+  reportsCreated           content_report[]            @relation("ReportAuthor")
+  reportsTargetingUser     content_report[]            @relation("ReportTargetUser")
+  reportsResolved          content_report[]            @relation("ReportResolver")
+  auditLogs                audit_log[]                 @relation("AuditActor")
 
   @@index([createdAt, id])
 }
@@ -83,18 +97,22 @@ model student {
   kelurahan_nama     String?
   experience         Int      @default(0) // years or months
   available          Boolean  @default(false)
+  isPublicProfile    Boolean  @default(false)
   rating             Float    @default(0)
   total_project      Int      @default(0)
+  expectedBudgetMin  Int?     @db.Integer
+  expectedBudgetMax  Int?     @db.Integer
   createdAt          DateTime @default(now()) @db.Timestamp(6)
   updateAt           DateTime @updatedAt @db.Timestamp(6)
 
-  user        user                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  skills      student_skill[]
-  portfolios  portfolio[]
-  proposals   proposal[]
-  projects    project[]            @relation("ProjectStudent")
-  reviews     review[]
-  submissions project_submission[]
+  user           user                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills         student_skill[]
+  portfolios     portfolio[]
+  proposals      proposal[]
+  projects       project[]            @relation("ProjectStudent")
+  reviews        review[]
+  submissions    project_submission[]
+  matchingScores matching_score[]
 
   @@index([available, rating, total_project, createdAt])
   @@index([createdAt, id])
@@ -191,24 +209,33 @@ model skill {
 }
 
 model student_skill {
-  id         String   @id @default(uuid()) @db.Uuid
-  studentId  String   @db.Uuid
-  skillId    String   @db.Uuid
-  isVerified Boolean  @default(false)
-  createdAt  DateTime @default(now()) @db.Timestamp(6)
-  updatedAt  DateTime @updatedAt @db.Timestamp(6)
+  id                  String    @id @default(uuid()) @db.Uuid
+  studentId           String    @db.Uuid
+  skillId             String    @db.Uuid
+  isVerified          Boolean   @default(false)
+  level               String    @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
+  evidencePortfolioId String?   @db.Uuid
+  verifiedAt          DateTime? @db.Timestamp(6)
+  verifiedByUserId    String?   @db.Uuid
+  createdAt           DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt           DateTime  @updatedAt @db.Timestamp(6)
 
-  student student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  skill   skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  student           student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  skill             skill      @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  evidencePortfolio portfolio? @relation("SkillEvidencePortfolio", fields: [evidencePortfolioId], references: [id], onDelete: SetNull)
+  verifiedBy        user?      @relation("SkillVerifier", fields: [verifiedByUserId], references: [id], onDelete: SetNull)
 
   @@unique([studentId, skillId])
   @@index([skillId, studentId])
+  @@index([verifiedByUserId, verifiedAt])
+  @@index([evidencePortfolioId])
 }
 
 model project_skill {
   id        String   @id @default(uuid()) @db.Uuid
   projectId String   @db.Uuid
   skillId   String   @db.Uuid
+  required  Boolean  @default(true)
   createdAt DateTime @default(now()) @db.Timestamp(6)
   updatedAt DateTime @updatedAt @db.Timestamp(6)
 
@@ -229,7 +256,8 @@ model portfolio {
   createdAt   DateTime @default(now()) @db.Timestamp(6)
   updatedAt   DateTime @updatedAt @db.Timestamp(6)
 
-  student student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student       student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  skillEvidence student_skill[] @relation("SkillEvidencePortfolio")
 
   @@index([studentId, updatedAt])
 }
@@ -257,6 +285,10 @@ model project {
   payment           project_payment?
   submission        project_submission?
   attachmentUploads message_attachment_upload[]
+  statusHistory     project_status_history[]
+  revisions         project_revision[]
+  matchingScores    matching_score[]
+  reports           content_report[]
 
   @@index([umkmId, status, createdAt])
   @@index([umkmId, status, updatedAt])
@@ -279,6 +311,7 @@ model message {
   sender     user                @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
   recipient  user                @relation("MessageRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
   attachment message_attachment?
+  reports    content_report[]
 
   @@index([projectId, createdAt])
   @@index([recipientId, readAt])
@@ -300,15 +333,16 @@ model message_attachment {
 }
 
 model message_attachment_upload {
-  id          String   @id @default(uuid()) @db.Uuid
-  projectId   String   @db.Uuid
-  uploaderId  String   @db.Uuid
-  storagePath String   @unique @db.VarChar(1024)
-  fileName    String   @db.VarChar(255)
-  contentType String   @db.VarChar(255)
+  id          String    @id @default(uuid()) @db.Uuid
+  projectId   String    @db.Uuid
+  uploaderId  String    @db.Uuid
+  storagePath String    @unique @db.VarChar(1024)
+  fileName    String    @db.VarChar(255)
+  contentType String    @db.VarChar(255)
   sizeBytes   BigInt
-  expiresAt   DateTime @db.Timestamp(6)
-  createdAt   DateTime @default(now()) @db.Timestamp(6)
+  expiresAt   DateTime  @db.Timestamp(6)
+  cancelledAt DateTime? @db.Timestamp(6)
+  createdAt   DateTime  @default(now()) @db.Timestamp(6)
 
   project  project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   uploader user    @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
@@ -384,7 +418,8 @@ model project_payment {
 model balance_transaction {
   id                String   @id @default(uuid()) @db.Uuid
   userId            String   @db.Uuid
-  projectPaymentId  String   @db.Uuid
+  projectPaymentId  String?  @db.Uuid
+  withdrawalId      String?  @db.Uuid
   externalReference String?  @unique @db.VarChar(160)
   type              String   @default("PROJECT_EARNING")
   amount            Int      @db.Integer
@@ -392,26 +427,176 @@ model balance_transaction {
   balanceAfter      Int      @db.Integer
   createdAt         DateTime @default(now()) @db.Timestamp(6)
 
-  user           user            @relation(fields: [userId], references: [id], onDelete: Restrict)
-  projectPayment project_payment @relation(fields: [projectPaymentId], references: [id], onDelete: Restrict)
+  user           user                @relation(fields: [userId], references: [id], onDelete: Restrict)
+  projectPayment project_payment?    @relation(fields: [projectPaymentId], references: [id], onDelete: Restrict)
+  withdrawal     withdrawal_request? @relation(fields: [withdrawalId], references: [id], onDelete: Restrict)
 
   @@index([userId, createdAt])
   @@index([projectPaymentId, createdAt])
+  @@index([withdrawalId, createdAt])
+}
+
+model payout_method {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @db.Uuid
+  provider      String   @db.VarChar(80)
+  accountName   String   @db.VarChar(120)
+  accountNumber String   @db.VarChar(40)
+  isPrimary     Boolean  @default(false)
+  createdAt     DateTime @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime @updatedAt @db.Timestamp(6)
+
+  user        user                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  withdrawals withdrawal_request[]
+
+  @@unique([userId, provider, accountNumber])
+  @@index([userId, isPrimary, createdAt])
+}
+
+model withdrawal_request {
+  id                String    @id @default(uuid()) @db.Uuid
+  userId            String    @db.Uuid
+  payoutMethodId    String?   @db.Uuid
+  amount            Int       @db.Integer
+  provider          String    @db.VarChar(80)
+  accountName       String    @db.VarChar(120)
+  accountNumber     String    @db.VarChar(40)
+  status            String    @default("PENDING") // PENDING, COMPLETED, REJECTED
+  adminNote         String?   @db.VarChar(500)
+  processedByUserId String?   @db.Uuid
+  processedAt       DateTime? @db.Timestamp(6)
+  createdAt         DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime  @updatedAt @db.Timestamp(6)
+
+  user                user                  @relation("WithdrawalRequester", fields: [userId], references: [id], onDelete: Restrict)
+  processedBy         user?                 @relation("WithdrawalProcessor", fields: [processedByUserId], references: [id], onDelete: SetNull)
+  payoutMethod        payout_method?        @relation(fields: [payoutMethodId], references: [id], onDelete: SetNull)
+  balanceTransactions balance_transaction[]
+
+  @@index([userId, createdAt])
+  @@index([payoutMethodId])
+  @@index([status, createdAt])
+  @@index([processedByUserId, processedAt])
 }
 
 model project_submission {
-  id          String    @id @default(uuid()) @db.Uuid
-  projectId   String    @unique @db.Uuid
-  studentId   String    @db.Uuid
-  resultUrl   String?
-  notes       String    @db.VarChar(3000)
-  status      String    @default("SUBMITTED") // SUBMITTED, APPROVED
-  submittedAt DateTime  @default(now()) @db.Timestamp(6)
-  approvedAt  DateTime? @db.Timestamp(6)
-  updatedAt   DateTime  @updatedAt @db.Timestamp(6)
+  id            String    @id @default(uuid()) @db.Uuid
+  projectId     String    @unique @db.Uuid
+  studentId     String    @db.Uuid
+  resultUrl     String?
+  notes         String    @db.VarChar(3000)
+  status        String    @default("SUBMITTED") // SUBMITTED, REVISION_REQUESTED, APPROVED
+  revisionCount Int       @default(0)
+  submittedAt   DateTime  @default(now()) @db.Timestamp(6)
+  approvedAt    DateTime? @db.Timestamp(6)
+  updatedAt     DateTime  @updatedAt @db.Timestamp(6)
 
-  project project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  student student @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  project   project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  student   student            @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  revisions project_revision[]
 
   @@index([studentId, submittedAt])
+}
+
+model project_revision {
+  id                String   @id @default(uuid()) @db.Uuid
+  projectId         String   @db.Uuid
+  submissionId      String   @db.Uuid
+  requestedByUserId String   @db.Uuid
+  sequence          Int
+  reason            String   @db.VarChar(2000)
+  createdAt         DateTime @default(now()) @db.Timestamp(6)
+
+  project     project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  submission  project_submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  requestedBy user               @relation("RevisionRequester", fields: [requestedByUserId], references: [id], onDelete: Restrict)
+
+  @@unique([projectId, sequence])
+  @@index([submissionId, createdAt])
+  @@index([requestedByUserId, createdAt])
+}
+
+model project_status_history {
+  id          String   @id @default(uuid()) @db.Uuid
+  projectId   String   @db.Uuid
+  fromStatus  String?
+  toStatus    String
+  reason      String?  @db.VarChar(500)
+  actorUserId String?  @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamp(6)
+
+  project project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  actor   user?   @relation("ProjectStatusActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([projectId, createdAt])
+  @@index([actorUserId, createdAt])
+}
+
+model matching_score {
+  id                String   @id @default(uuid()) @db.Uuid
+  projectId         String   @db.Uuid
+  studentId         String   @db.Uuid
+  skillsScore       Int
+  portfolioScore    Int
+  ratingScore       Int
+  budgetScore       Int
+  availabilityScore Int
+  locationScore     Int
+  totalScore        Int
+  eligible          Boolean  @default(false)
+  reasons           Json
+  inputs            Json
+  calculatedAt      DateTime @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime @updatedAt @db.Timestamp(6)
+
+  project project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  student student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, studentId])
+  @@index([projectId, eligible, totalScore])
+  @@index([studentId, eligible, totalScore])
+}
+
+model content_report {
+  id               String    @id @default(uuid()) @db.Uuid
+  reporterUserId   String    @db.Uuid
+  targetUserId     String?   @db.Uuid
+  projectId        String?   @db.Uuid
+  messageId        String?   @db.Uuid
+  category         String    @db.VarChar(50)
+  description      String    @db.VarChar(2000)
+  status           String    @default("OPEN") // OPEN, REVIEWING, RESOLVED, REJECTED
+  resolutionNote   String?   @db.VarChar(2000)
+  resolvedByUserId String?   @db.Uuid
+  resolvedAt       DateTime? @db.Timestamp(6)
+  createdAt        DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt        DateTime  @updatedAt @db.Timestamp(6)
+
+  reporter   user     @relation("ReportAuthor", fields: [reporterUserId], references: [id], onDelete: Cascade)
+  targetUser user?    @relation("ReportTargetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
+  project    project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  message    message? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  resolver   user?    @relation("ReportResolver", fields: [resolvedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([reporterUserId, createdAt])
+  @@index([projectId])
+  @@index([messageId])
+  @@index([targetUserId])
+}
+
+model audit_log {
+  id          String   @id @default(uuid()) @db.Uuid
+  actorUserId String?  @db.Uuid
+  action      String   @db.VarChar(100)
+  entityType  String   @db.VarChar(80)
+  entityId    String?  @db.VarChar(100)
+  metadata    Json?
+  createdAt   DateTime @default(now()) @db.Timestamp(6)
+
+  actor user? @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId, createdAt])
+  @@index([entityType, entityId, createdAt])
+  @@index([action, createdAt])
 }

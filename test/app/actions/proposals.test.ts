@@ -31,6 +31,7 @@ vi.mock("@/lib/notifications", () => ({
   createUserNotification: mocks.createUserNotification,
   createUserNotifications: vi.fn(),
 }));
+vi.mock("@/lib/matching-snapshot", () => ({ saveMatchingSnapshot: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
   default: {
     user: { findUnique: mocks.userFindUnique },
@@ -69,13 +70,14 @@ describe("createProposalAction", () => {
     });
     mocks.userFindUnique.mockResolvedValue({
       role: "STUDENT",
-      student: { id: "student-1" },
+      student: { id: "student-1", skills: [{ skillId: "skill-1" }] },
     });
     mocks.consumeRateLimit.mockResolvedValue({ allowed: true });
     mocks.projectFindFirst.mockResolvedValue({
       id: PROJECT_ID,
       title: "Website Katalog",
       umkm: { userId: "owner-user-1" },
+      skillsNeeded: [{ skillId: "skill-1", skill: { name: "Web Development" } }],
     });
     mocks.proposalCreate.mockResolvedValue({ id: "proposal-1" });
     mocks.createUserNotification.mockResolvedValue({ id: "notification-1" });

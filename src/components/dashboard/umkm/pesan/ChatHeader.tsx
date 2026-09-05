@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { MoreVertical, User, Trash2, Ban } from "lucide-react";
+import Swal from "sweetalert2";
 import { Conversation } from "@/types/messages";
 
 interface ChatHeaderProps {
@@ -14,23 +14,14 @@ interface ChatHeaderProps {
   isBlocked?: boolean;
 }
 
-function useOptionalRouter() {
-  try {
-    return useRouter();
-  } catch {
-    return null;
-  }
-}
-
 export default function ChatHeader({
   conversation,
-  projectLabel,
+  projectLabel = "Project",
   onViewProfile,
   onClearChat,
   onToggleBlock,
   isBlocked = false,
 }: ChatHeaderProps) {
-  const router = useOptionalRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -61,21 +52,45 @@ export default function ChatHeader({
     setIsMenuOpen(false);
     if (onViewProfile) {
       onViewProfile();
-    } else if (router) {
-      router.push("/dashboard/profile");
-    } else if (typeof window !== "undefined") {
-      window.location.href = "/dashboard/profile";
+    } else {
+      void Swal.fire({
+        icon: "info",
+        title: "Profil belum tersedia",
+        text: `Halaman profil ${conversation.contactName} belum tersedia.`,
+        confirmButtonText: "Mengerti",
+        confirmButtonColor: "#FF6B35",
+      });
     }
   }
 
   function handleClearMessages() {
     setIsMenuOpen(false);
-    onClearChat?.();
+    if (onClearChat) {
+      onClearChat();
+    } else {
+      void Swal.fire({
+        icon: "info",
+        title: "Fitur belum tersedia",
+        text: `Percakapan dengan ${conversation.contactName} belum dapat dibersihkan.`,
+        confirmButtonText: "Mengerti",
+        confirmButtonColor: "#FF6B35",
+      });
+    }
   }
 
   function handleBlock() {
     setIsMenuOpen(false);
-    onToggleBlock?.();
+    if (onToggleBlock) {
+      onToggleBlock();
+    } else {
+      void Swal.fire({
+        icon: "info",
+        title: "Fitur belum tersedia",
+        text: `${conversation.contactName} belum dapat diblokir saat ini.`,
+        confirmButtonText: "Mengerti",
+        confirmButtonColor: "#FF6B35",
+      });
+    }
   }
 
   return (
@@ -104,7 +119,7 @@ export default function ChatHeader({
           </p>
           {(conversation.projectName || projectLabel) && (
             <p className="font-body text-xs text-ink-muted">
-              Project:{" "}
+              {projectLabel}:{" "}
               <span className="font-semibold font-body text-brand">
                 {conversation.projectName || projectLabel}
               </span>

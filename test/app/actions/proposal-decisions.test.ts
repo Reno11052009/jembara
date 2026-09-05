@@ -8,10 +8,13 @@ const mocks = vi.hoisted(() => ({
   proposalFindMany: vi.fn(),
   proposalUpdateMany: vi.fn(),
   projectUpdateMany: vi.fn(),
+  historyCreate: vi.fn(),
+  auditCreate: vi.fn(),
   createNotification: vi.fn(),
   createNotifications: vi.fn(),
   revalidatePath: vi.fn(),
 }));
+vi.mock("@/lib/matching-snapshot", () => ({ saveMatchingSnapshot: vi.fn() }));
 
 vi.mock("@/lib/session", () => ({ verifySession: mocks.verifySession }));
 vi.mock("@/lib/rate-limit", () => ({
@@ -97,6 +100,8 @@ describe("proposal decisions", () => {
             updateMany: mocks.proposalUpdateMany,
           },
           project: { updateMany: mocks.projectUpdateMany },
+          project_status_history: { create: mocks.historyCreate },
+          audit_log: { create: mocks.auditCreate },
         }),
     );
   });

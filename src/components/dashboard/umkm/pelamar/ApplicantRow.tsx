@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Star } from "lucide-react";
+import Swal from "sweetalert2";
 import {
   acceptProposalAction,
   rejectProposalAction,
@@ -56,18 +57,34 @@ export default function ApplicantRow({ applicant }: { applicant: Applicant }) {
     });
   }
 
-  function handleAccept() {
-    const confirmed = window.confirm(
-      `Terima ${applicant.name}? Proposal kandidat lain akan ditolak dan Anda akan diarahkan ke pembayaran Midtrans.`,
-    );
-    if (confirmed) runDecision("accept", acceptProposalAction);
+  async function handleAccept() {
+    const confirmation = await Swal.fire({
+      icon: "question",
+      title: `Terima ${applicant.name}?`,
+      text: "Proposal kandidat lain akan ditolak dan Anda akan diarahkan ke pembayaran Midtrans.",
+      showCancelButton: true,
+      confirmButtonText: "Terima Kandidat",
+      cancelButtonText: "Batal",
+      confirmButtonColor: "#FF6B35",
+      focusCancel: true,
+      reverseButtons: true,
+    });
+    if (confirmation.isConfirmed) runDecision("accept", acceptProposalAction);
   }
 
-  function handleReject() {
-    const confirmed = window.confirm(
-      `Tolak proposal dari ${applicant.name}?`,
-    );
-    if (confirmed) runDecision("reject", rejectProposalAction);
+  async function handleReject() {
+    const confirmation = await Swal.fire({
+      icon: "warning",
+      title: `Tolak proposal ${applicant.name}?`,
+      text: "Keputusan ini akan memperbarui status proposal kandidat.",
+      showCancelButton: true,
+      confirmButtonText: "Tolak Proposal",
+      cancelButtonText: "Batal",
+      confirmButtonColor: "#DC2626",
+      focusCancel: true,
+      reverseButtons: true,
+    });
+    if (confirmation.isConfirmed) runDecision("reject", rejectProposalAction);
   }
   return (
     <article className="rounded-xl border border-hairline bg-card p-6">
