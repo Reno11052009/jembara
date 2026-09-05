@@ -117,7 +117,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 lg:pt-14">
             <RunningActivityCard activities={dashboard.runningActivities} />
             <RecentNotificationsCard notifications={dashboard.notifications} />
           </div>

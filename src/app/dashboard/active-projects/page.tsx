@@ -37,7 +37,7 @@ export default async function ActiveProjectsPage({ searchParams }: {
           />
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 lg:pt-14">
           <div className="sticky top-24 flex flex-col gap-6">
             <MonthlyActivityCard
               title={summaryTitle}
