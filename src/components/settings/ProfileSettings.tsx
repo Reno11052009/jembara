@@ -48,6 +48,15 @@ export default function ProfileSettings({
   const displayName = isUmkm
     ? initialData.businessName || initialData.name
     : initialData.name;
+
+  const formatDots = (val: number | string | null | undefined) => {
+    if (!val) return "";
+    const raw = String(val).replace(/\D/g, "");
+    return raw ? new Intl.NumberFormat("id-ID").format(Number(raw)) : "";
+  };
+
+  const [expectedBudgetMin, setExpectedBudgetMin] = useState(formatDots(initialData.expectedBudgetMin));
+  const [expectedBudgetMax, setExpectedBudgetMax] = useState(formatDots(initialData.expectedBudgetMax));
   const showSemester = educationUsesSemester(educationLevel);
   const hasLegacyEducationLevel =
     Boolean(initialData.tingkat_pendidikan) &&
@@ -238,9 +247,18 @@ export default function ProfileSettings({
             onClick={() => fileInputRef.current?.click()}
           >
             <div className="w-full h-full rounded-full overflow-hidden border border-gray-200 dark:border-hairline bg-brand-soft flex items-center justify-center">
-              <span className="font-display text-lg font-black text-brand">
-                {companyInitials}
-              </span>
+              {avatarPreview && !avatarPreview.includes("ui-avatars.com") ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={avatarPreview}
+                  alt={displayName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="font-display text-lg font-black text-brand">
+                  {companyInitials}
+                </span>
+              )}
             </div>
             <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <Camera className="w-5 h-5 text-white" />
@@ -732,7 +750,36 @@ export default function ProfileSettings({
             ))}
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <label className="text-xs font-semibold text-ink-muted">Ekspektasi budget minimum (Rp)<input name="expectedBudgetMin" type="number" min={50000} step={50000} defaultValue={initialData.expectedBudgetMin ?? ""} className="mt-1 w-full rounded-lg border border-hairline bg-card px-3 py-2 text-sm text-ink" /></label>
+            <label className="block text-xs font-semibold text-ink-muted">
+              Ekspektasi budget minimum (Rp)
+              <input
+                type="text"
+                inputMode="numeric"
+                value={expectedBudgetMin}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/\D/g, "");
+                  setExpectedBudgetMin(raw ? new Intl.NumberFormat("id-ID").format(Number(raw)) : "");
+                }}
+                placeholder="Contoh: 500.000"
+                className="mt-1 w-full rounded-lg border border-hairline bg-card px-3 py-2 text-sm text-ink text-right"
+              />
+              <input type="hidden" name="expectedBudgetMin" value={expectedBudgetMin.replace(/\D/g, "")} />
+            </label>
+            <label className="block text-xs font-semibold text-ink-muted">
+              Ekspektasi budget maksimum (Rp)
+              <input
+                type="text"
+                inputMode="numeric"
+                value={expectedBudgetMax}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/\D/g, "");
+                  setExpectedBudgetMax(raw ? new Intl.NumberFormat("id-ID").format(Number(raw)) : "");
+                }}
+                placeholder="Contoh: 5.000.000"
+                className="mt-1 w-full rounded-lg border border-hairline bg-card px-3 py-2 text-sm text-ink text-right"
+              />
+              <input type="hidden" name="expectedBudgetMax" value={expectedBudgetMax.replace(/\D/g, "")} />
+            </label>
           </div>
         </div>
 

@@ -30,6 +30,8 @@ export default function WithdrawalRequestForm({
   const canSubmit = canWithdraw && payoutMethods.length > 0;
   const primaryMethod = payoutMethods.find(({ isPrimary }) => isPrimary) ?? payoutMethods[0];
 
+  const [amountValue, setAmountValue] = useState("");
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -44,6 +46,7 @@ export default function WithdrawalRequestForm({
         return;
       }
       formRef.current?.reset();
+      setAmountValue("");
       setFeedback({
         type: "success",
         message: "Permintaan berhasil dikirim dan menunggu diproses Admin.",
@@ -72,21 +75,29 @@ export default function WithdrawalRequestForm({
 
       <form ref={formRef} onSubmit={handleSubmit} className="mt-6 grid gap-4 md:grid-cols-2">
         <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
-          Nominal penarikan
+          <span>
+            Nominal penarikan (Rp) <span className="text-red-500 dark:text-red-400">*</span>
+          </span>
           <input
-            name="amount"
-            type="number"
+            name="amountDisplay"
+            type="text"
+            inputMode="numeric"
             required
-            min={MINIMUM_WITHDRAWAL}
-            max={balance}
-            step="1000"
+            value={amountValue}
+            onChange={(e) => {
+              const raw = e.target.value.replace(/\D/g, "");
+              setAmountValue(raw ? new Intl.NumberFormat("id-ID").format(Number(raw)) : "");
+            }}
             disabled={!canSubmit || isPending}
-            placeholder="10000"
-            className="rounded-lg border border-hairline bg-card px-4 py-2.5 text-sm outline-none focus:border-brand disabled:cursor-not-allowed disabled:opacity-60"
+            placeholder="Contoh: 50.000"
+            className="rounded-lg border border-hairline bg-card px-4 py-2.5 text-sm text-right outline-none focus:border-brand disabled:cursor-not-allowed disabled:opacity-60"
           />
+          <input type="hidden" name="amount" value={amountValue.replace(/\D/g, "")} />
         </label>
         <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
-          Metode pencairan
+          <span>
+            Metode pencairan <span className="text-red-500 dark:text-red-400">*</span>
+          </span>
           <select
             name="payoutMethodId"
             required

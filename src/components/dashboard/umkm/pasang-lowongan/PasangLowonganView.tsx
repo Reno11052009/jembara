@@ -44,24 +44,36 @@ export default function PasangLowonganView({ data }: { data: ProjectCreationData
       <p className="mt-1 text-sm text-ink-muted">Project langsung berstatus OPEN dan tampil di marketplace.</p>
       <form action={formAction} onSubmit={submit} noValidate className="mt-6 flex flex-col gap-6">
         <div className="grid gap-6 md:grid-cols-2">
-          <label className={labelClass}>Judul Project *
+          <label className={labelClass}>
+            <span>
+              Judul Project <span className="text-red-500 dark:text-red-400">*</span>
+            </span>
             <input name="title" required minLength={5} maxLength={120} placeholder="Contoh: Website katalog produk furnitur" className={fieldClass} />
             {state.fieldErrors?.title?.[0] && <span className="text-sm font-normal text-danger">{state.fieldErrors.title[0]}</span>}
           </label>
-          <label className={labelClass}>Budget Tetap (Rp) *
+          <label className={labelClass}>
+            <span>
+              Budget Tetap (Rp) <span className="text-red-500 dark:text-red-400">*</span>
+            </span>
             <input name="budget" inputMode="numeric" required value={budget} onChange={(event) => { const raw = event.target.value.replace(/\D/g, ""); setBudget(raw ? new Intl.NumberFormat("id-ID").format(Number(raw)) : ""); }} placeholder="Contoh: 2.500.000" className={`${fieldClass} text-right`} />
             <input type="hidden" name="budgetRaw" value={budget.replace(/\D/g, "")} />
             {state.fieldErrors?.budget?.[0] && <span className="text-sm font-normal text-danger">{state.fieldErrors.budget[0]}</span>}
           </label>
         </div>
-        <label className={labelClass}>Deskripsi Project *
+        <label className={labelClass}>
+          <span>
+            Deskripsi Project <span className="text-red-500 dark:text-red-400">*</span>
+          </span>
           <textarea name="description" rows={5} required minLength={20} maxLength={3000} placeholder="Jelaskan tujuan, kebutuhan, ruang lingkup, dan hasil yang diharapkan." className={`${fieldClass} resize-y`} />
           {state.fieldErrors?.description?.[0] && <span className="text-sm font-normal text-danger">{state.fieldErrors.description[0]}</span>}
         </label>
         <fieldset className="flex flex-col gap-4">
           <legend className="mb-3 text-base font-bold text-ink">Skill Project</legend>
           {data.skillOptions.length ? <>
-            <div><p className="mb-2 text-sm font-bold text-ink">Skill Wajib *</p>
+            <div>
+              <p className="mb-2 text-sm font-bold text-ink">
+                Skill Wajib <span className="text-red-500 dark:text-red-400">*</span>
+              </p>
               <MultiSelectDropdown id="requiredSkills" name="requiredSkillIds" values={requiredIds} onChange={updateRequired} options={skillOptions} placeholder="Pilih skill wajib" searchPlaceholder="Cari skill..." emptyMessage="Skill tidak ditemukan" maxSelections={10} invalid={(attempted && !requiredIds.length) || Boolean(state.fieldErrors?.requiredSkillIds?.[0])} disabled={isPending} />
               <p className="mt-1.5 text-xs text-ink-muted">Kandidat harus memiliki seluruh skill wajib.</p>
             </div>
@@ -77,7 +89,13 @@ export default function PasangLowonganView({ data }: { data: ProjectCreationData
         <div className="grid gap-6 md:grid-cols-3">
           <div><DatePicker id="deadline" name="deadline" label="Deadline" labelClassName={labelClass} value={deadline} onChange={setDeadline} required />{state.fieldErrors?.deadline?.[0] && <span className="text-sm text-danger">{state.fieldErrors.deadline[0]}</span>}</div>
           <SearchableSelect id="workMode" name="workMode" label="Mode Kerja" labelClassName="mt-2 text-base font-bold text-ink" value={workMode} onChange={(value) => setWorkMode(value as ProjectWorkMode)} options={workModes} placeholder="Pilih mode kerja" searchPlaceholder="Cari mode kerja..." showSearch={false} required />
-          <label className={labelClass}>Lokasi {workMode !== "REMOTE" && "*"}<input name="location" required={workMode !== "REMOTE"} disabled={workMode === "REMOTE"} maxLength={120} placeholder={workMode === "REMOTE" ? "Tidak diperlukan" : "Contoh: Bandung, Jawa Barat"} className={fieldClass} />{state.fieldErrors?.location?.[0] && <span className="text-sm text-danger">{state.fieldErrors.location[0]}</span>}</label>
+          <label className={labelClass}>
+            <span>
+              Lokasi {workMode !== "REMOTE" && <span className="text-red-500 dark:text-red-400">*</span>}
+            </span>
+            <input name="location" required={workMode !== "REMOTE"} disabled={workMode === "REMOTE"} maxLength={120} placeholder={workMode === "REMOTE" ? "Tidak diperlukan" : "Contoh: Bandung, Jawa Barat"} className={fieldClass} />
+            {state.fieldErrors?.location?.[0] && <span className="text-sm text-danger">{state.fieldErrors.location[0]}</span>}
+          </label>
         </div>
         {state.error && <p role="alert" className="rounded-lg border border-danger/20 bg-danger-soft px-4 py-3 text-sm font-semibold text-danger">{state.error}</p>}
         <div className="flex justify-end font-display font-black"><Button type="submit" variant="primary" isLoading={isPending} disabled={isPending || !data.skillOptions.length}>Publikasikan Project</Button></div>
