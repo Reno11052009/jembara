@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { usePreferences } from "@/contexts/PreferencesContext";
 import { logoutAction } from "@/app/actions/auth";
+import Swal from "sweetalert2";
 
 interface NavItem {
   key:
@@ -84,6 +85,22 @@ interface SidebarProps {
 export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { dict } = usePreferences();
+
+  const handleLogoutClick = async () => {
+    const result = await Swal.fire({
+      title: "Are You Sure?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Pretty Sure!",
+      cancelButtonText: "Nope!",
+      confirmButtonColor: "#f97316",
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
+      await logoutAction();
+    }
+  };
 
   const navItems =
     role === "ADMIN"
@@ -185,15 +202,14 @@ export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
 
         {/* Fixed Footer untuk Tombol Logout (Selalu Terlihat) */}
         <div className="shrink-0 border-t border-white/10 p-4">
-          <form action={logoutAction}>
-            <button
-              type="submit"
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm text-white transition-colors hover:bg-white/5 hover:text-white"
-            >
-              <LogOut size={18} className="shrink-0" />
-              {dict.sidebar.logout}
-            </button>
-          </form>
+          <button
+            type="button"
+            onClick={handleLogoutClick}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm text-white transition-colors hover:bg-white/5 hover:text-white"
+          >
+            <LogOut size={18} className="shrink-0" />
+            {dict.sidebar.logout}
+          </button>
         </div>
       </aside>
     </>
