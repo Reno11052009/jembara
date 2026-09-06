@@ -49,6 +49,7 @@ export default function Button({
 
   return (
     <button
+      suppressHydrationWarning
       disabled={disabled || isLoading}
       className={`${base} ${sizes[size]} ${variants[variant]} ${className ?? ""}`}
       {...rest}

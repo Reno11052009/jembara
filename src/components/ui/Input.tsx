@@ -25,6 +25,7 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
         </label>
         <div className="relative">
           <input
+            suppressHydrationWarning
             ref={ref}
             id={inputId}
             type={isPassword ? (showPassword ? "text" : "password") : type}
@@ -41,6 +42,7 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
           />
           {isPassword && (
             <button
+              suppressHydrationWarning
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
               tabIndex={-1}

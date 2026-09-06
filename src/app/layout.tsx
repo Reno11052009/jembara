@@ -44,6 +44,11 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Jembara — Jembatani Keterampilan, Wujudkan Peluang",
   description: "Jembara mempertemukan pelajar bertalenta dengan UMKM melalui Smart Matching yang transparan.",
+  icons: {
+    icon: "/images/LOGO2.png",
+    shortcut: "/images/LOGO2.png",
+    apple: "/images/LOGO2.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

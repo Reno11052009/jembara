@@ -32,7 +32,7 @@ export default function AuthShell({
           <h1 className="mt-3 font-display text-4xl font-semibold leading-tight text-white">
             {t.auth.shellHeroTitle}
           </h1>
-          <p className="mt-4 max-w-sm text-sm text-slate-400">
+          <p className="mt-4 max-w-2xl text-sm text-slate-400">
             {t.auth.shellHeroDesc}
           </p>
         </div>

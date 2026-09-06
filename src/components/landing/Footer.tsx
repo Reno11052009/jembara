@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FaInstagram, FaTwitter, FaLinkedin, FaFigma } from "react-icons/fa";
+import { FaInstagram } from "react-icons/fa";
 import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function Footer() {
@@ -79,10 +79,15 @@ export default function Footer() {
           {dict.common.copyright}
         </p>
         <div className="flex gap-4 text-ink-muted">
-          <FaInstagram size={16} className="cursor-pointer transition hover:text-brand" />
-          <FaTwitter size={16} className="cursor-pointer transition hover:text-brand" />
-          <FaLinkedin size={16} className="cursor-pointer transition hover:text-brand" />
-          <FaFigma size={16} className="cursor-pointer transition hover:text-brand" />
+          <a
+            href="https://www.instagram.com/jembaraid/?utm_source=ig_web_button_share_sheet"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram Jembara"
+            className="transition hover:text-brand"
+          >
+            <FaInstagram size={18} />
+          </a>
         </div>
       </div>
     </footer>
