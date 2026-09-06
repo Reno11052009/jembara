@@ -68,7 +68,9 @@ function json(body: object, status = 200, headers?: HeadersInit) {
 }
 
 function getBaseSystemPrompt(): string {
-  if (cachedBaseSystemPrompt) return cachedBaseSystemPrompt;
+  if (process.env.NODE_ENV !== "development" && cachedBaseSystemPrompt) {
+    return cachedBaseSystemPrompt;
+  }
 
   try {
     const promptPath = path.join(
@@ -77,13 +79,14 @@ function getBaseSystemPrompt(): string {
       "config",
       "chatbot-prompt.txt",
     );
-    cachedBaseSystemPrompt = fs.readFileSync(promptPath, "utf-8").trim();
+    const content = fs.readFileSync(promptPath, "utf-8").trim();
+    if (process.env.NODE_ENV !== "development") {
+      cachedBaseSystemPrompt = content;
+    }
+    return content;
   } catch {
-    cachedBaseSystemPrompt =
-      "Kamu adalah Jelita, Asisten Virtual Jembara. Jawab pertanyaan tentang platform Jembara dalam bahasa yang digunakan oleh pengguna secara ringkas, ramah, dan membantu. Jangan gunakan tabel markdown.";
+    return "Kamu adalah Jelita, Asisten Virtual Jembara. DETEKSI BAHASA PENGGUNA: WAJIB membalas menggunakan bahasa yang sama persis dengan bahasa pertanyaan pengguna (misalnya Bahasa Inggris jika pertanyaan Bahasa Inggris). Jawab pertanyaan tentang platform Jembara secara ringkas, ramah, dan membantu. Jangan gunakan tabel markdown.";
   }
-
-  return cachedBaseSystemPrompt;
 }
 
 async function readLimitedJson(request: NextRequest): Promise<unknown> {

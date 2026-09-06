@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -66,5 +66,8 @@
     "unrs-resolver@1.12.2": true,
     "prisma@7.9.1": true,
     "@prisma/engines@7.9.1": true
+  },
+  "optionalDependencies": {
+    "@next/swc-win32-x64-msvc": "^16.3.4"
   }
 }
