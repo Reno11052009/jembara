@@ -1,4 +1,7 @@
+"use client";
+
 import type { Transaction } from "@/types/settings";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function TransactionHistoryCard({
   transactions,
@@ -7,6 +10,8 @@ export default function TransactionHistoryCard({
   transactions: Transaction[];
   isUmkm?: boolean;
 }) {
+  const { dict } = usePreferences();
+
   const getStatusClassName = (status: string) => {
     if (["Ditolak", "Gagal", "Ditarik Kembali"].includes(status)) {
       return "bg-danger-soft text-danger";
@@ -27,7 +32,7 @@ export default function TransactionHistoryCard({
   return (
     <section className="rounded-xl border border-[#ECECEC] dark:border-[#2A2A2A] bg-white dark:bg-card p-6">
       <h2 className="font-display text-lg font-bold text-neutral-900 dark:text-ink mb-5">
-        {isUmkm ? "Riwayat Transaksi Terakhir" : "Riwayat Transaksi"}
+        {isUmkm ? (dict.settingsCards?.payments?.transactionHistoryTitle || "Riwayat Transaksi Terakhir") : (dict.settingsCards?.payments?.transactionHistoryTitle || "Riwayat Transaksi")}
       </h2>
 
       <div className="overflow-x-auto">
@@ -35,16 +40,16 @@ export default function TransactionHistoryCard({
           <thead>
             <tr className="bg-neutral-50 dark:bg-void">
               <th className="font-body text-xs font-semibold text-neutral-500 dark:text-ink-muted text-left px-4 py-3 rounded-l-lg">
-                Tanggal
+                {dict.settingsCards?.payments?.tableHeaderDate || "Tanggal"}
               </th>
               <th className="font-body text-xs font-semibold text-neutral-500 dark:text-ink-muted text-left px-4 py-3">
-                Deskripsi
+                {dict.settingsCards?.payments?.tableHeaderDesc || "Deskripsi"}
               </th>
               <th className="font-body text-xs font-semibold text-neutral-500 dark:text-ink-muted text-right px-4 py-3">
-                Jumlah
+                {dict.settingsCards?.payments?.tableHeaderAmount || "Jumlah"}
               </th>
               <th className="font-body text-xs font-semibold text-neutral-500 dark:text-ink-muted text-left px-4 py-3 rounded-r-lg">
-                Status
+                {dict.settingsCards?.payments?.tableHeaderStatus || "Status"}
               </th>
             </tr>
           </thead>
@@ -86,7 +91,7 @@ export default function TransactionHistoryCard({
         </table>
         {transactions.length === 0 && (
           <p className="py-8 text-center text-sm text-ink-muted">
-            Belum ada transaksi pembayaran atau penarikan.
+            {dict.settingsCards?.payments?.noTransactions || "Belum ada transaksi pembayaran atau penarikan."}
           </p>
         )}
       </div>

@@ -5,8 +5,10 @@ import { CreditCard, Pencil, Trash2, Plus } from "lucide-react";
 import { mockPaymentMethods, mockPaymentMethodsUmkm } from "@/lib/mock-payment-settings";
 import Input from "@/components/ui/Input";
 import type { PaymentMethod } from "@/types/settings";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function PaymentMethodsCard({ isUmkm = false }: { isUmkm?: boolean }) {
+  const { dict: t } = usePreferences();
   const [methods, setMethods] = useState<PaymentMethod[]>(
     isUmkm ? mockPaymentMethodsUmkm : mockPaymentMethods
   );
@@ -54,7 +56,7 @@ export default function PaymentMethodsCard({ isUmkm = false }: { isUmkm?: boolea
     <section className="rounded-xl border border-[#ECECEC] dark:border-hairline bg-white dark:bg-card p-6">
       <div className="flex items-center justify-between gap-4 mb-5">
         <h2 className="font-display text-lg font-bold text-neutral-900 dark:text-ink">
-          Metode Pembayaran
+          {t.earningsCards.paymentMethodsTitle}
         </h2>
         {isUmkm && !isAdding && (
           <button
@@ -63,7 +65,7 @@ export default function PaymentMethodsCard({ isUmkm = false }: { isUmkm?: boolea
             className="inline-flex shrink-0 items-center gap-1.5 font-body text-sm font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/15 rounded-full px-4 py-2 hover:bg-orange-100 dark:hover:bg-orange-500/25 transition-colors"
           >
             <Plus size={14} />
-            Tambah Metode
+            {t.earningsCards.addMethod}
           </button>
         )}
       </div>
@@ -85,7 +87,7 @@ export default function PaymentMethodsCard({ isUmkm = false }: { isUmkm?: boolea
                   </p>
                   {method.isPrimary && (
                     <span className="font-body text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/15 rounded-full px-2.5 py-0.5">
-                      Utama
+                      {t.earningsCards.primary}
                     </span>
                   )}
                 </div>
@@ -103,14 +105,14 @@ export default function PaymentMethodsCard({ isUmkm = false }: { isUmkm?: boolea
                       onClick={() => saveEdit(method.id)}
                       className="font-body text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline"
                     >
-                      Simpan
+                      {t.common.save}
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditingId(null)}
                       className="font-body text-xs text-neutral-400 dark:text-ink-muted hover:underline"
                     >
-                      Batal
+                      {t.common.cancel}
                     </button>
                   </div>
                 ) : (
@@ -142,7 +144,7 @@ export default function PaymentMethodsCard({ isUmkm = false }: { isUmkm?: boolea
 
         {methods.length === 0 && (
           <p className="font-body text-sm text-neutral-400 dark:text-ink-muted text-center py-4">
-            Belum ada metode pembayaran.
+            {t.earningsCards.emptyPaymentMethods}
           </p>
         )}
       </div>
@@ -150,14 +152,14 @@ export default function PaymentMethodsCard({ isUmkm = false }: { isUmkm?: boolea
       {isAdding ? (
         <div className="flex flex-col gap-3 rounded-lg border border-[#ECECEC] dark:border-hairline p-4 mb-2">
           <Input
-            label="Nama Metode"
-            placeholder="mis. Bank Mandiri"
+            label={t.earningsCards.methodName}
+            placeholder={t.earningsCards.methodNamePlaceholder}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
           />
           <Input
-            label="Detail"
-            placeholder="mis. **** 1234"
+            label={t.earningsCards.detail}
+            placeholder={t.earningsCards.detailPlaceholder}
             value={newDetail}
             onChange={(e) => setNewDetail(e.target.value)}
           />
@@ -167,7 +169,7 @@ export default function PaymentMethodsCard({ isUmkm = false }: { isUmkm?: boolea
               onClick={addMethod}
               className="font-body text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 transition-colors rounded-full px-5 py-2"
             >
-              Simpan
+              {t.common.save}
             </button>
             <button
               type="button"
@@ -178,7 +180,7 @@ export default function PaymentMethodsCard({ isUmkm = false }: { isUmkm?: boolea
               }}
               className="font-body text-sm font-semibold text-neutral-600 dark:text-ink-muted hover:bg-neutral-50 dark:hover:bg-void transition-colors rounded-full px-5 py-2"
             >
-              Batal
+              {t.common.cancel}
             </button>
           </div>
         </div>
@@ -190,7 +192,7 @@ export default function PaymentMethodsCard({ isUmkm = false }: { isUmkm?: boolea
             className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-neutral-900 dark:text-ink border border-neutral-300 rounded-full px-5 py-2.5 hover:bg-neutral-50 dark:hover:bg-void transition-colors"
           >
             <Plus size={14} />
-            Tambah Metode Penarikan
+            {t.earningsCards.addWithdrawalMethod}
           </button>
         )
       )}

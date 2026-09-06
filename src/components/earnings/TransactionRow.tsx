@@ -1,4 +1,7 @@
+"use client";
+
 import { Transaction } from "@/types/earnings";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface TransactionRowProps {
   transaction: Transaction;
@@ -15,7 +18,14 @@ function formatRupiah(value: number) {
 }
 
 export default function TransactionRow({ transaction }: TransactionRowProps) {
+  const { dict: t } = usePreferences();
   const style = statusStyles[transaction.status];
+
+  const getStatusText = (status: Transaction["status"]) => {
+    if (status === "Selesai") return t.earningsCards.transactionStatus.completed;
+    if (status === "Dalam Review") return t.earningsCards.transactionStatus.inReview;
+    return t.earningsCards.transactionStatus.inProgress;
+  };
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4 rounded-lg bg-canvas p-4">
@@ -39,7 +49,7 @@ export default function TransactionRow({ transaction }: TransactionRowProps) {
         <span
           className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-black font-display leading-none ${style.badge}`}
         >
-          {transaction.status}
+          {getStatusText(transaction.status)}
         </span>
       </div>
     </div>

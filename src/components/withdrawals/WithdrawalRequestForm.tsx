@@ -87,7 +87,7 @@ export default function WithdrawalRequestForm({
             value={amountValue}
             onValueChange={setAmountValue}
             disabled={!canSubmit || isPending}
-            placeholder="Contoh: 50.000"
+            placeholder={dict.withdrawals.amountPlaceholder}
             className="rounded-lg border border-hairline bg-card px-4 py-2.5 text-sm text-right outline-none focus:border-brand disabled:cursor-not-allowed disabled:opacity-60"
           />
           <input type="hidden" name="amount" value={amountValue.replace(/\D/g, "")} />
@@ -103,10 +103,10 @@ export default function WithdrawalRequestForm({
             disabled={!canSubmit || isPending}
             className="rounded-lg border border-hairline bg-card px-4 py-2.5 text-sm outline-none focus:border-brand disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {payoutMethods.length === 0 && <option value="">Belum ada rekening tersimpan</option>}
+            {payoutMethods.length === 0 && <option value="">{dict.withdrawals.noSavedAccount}</option>}
             {payoutMethods.map((method) => (
               <option key={method.id} value={method.id}>
-                {method.label}{method.isPrimary ? " (Utama)" : ""}
+                {method.label}{method.isPrimary ? dict.withdrawals.primaryBadge : ""}
               </option>
             ))}
           </select>
@@ -125,15 +125,16 @@ export default function WithdrawalRequestForm({
 
       {!canWithdraw && (
         <p className="mt-4 rounded-lg bg-orange-50 p-3 text-sm font-semibold text-orange-700 dark:bg-orange-500/15 dark:text-orange-300">
-          Saldo belum mencapai minimum penarikan Rp10.000.
+          {dict.withdrawals.minBalanceNotice}
         </p>
       )}
       {payoutMethods.length === 0 && (
         <p className="mt-4 rounded-lg bg-brand-soft p-3 text-sm text-ink">
-          Tambahkan rekening atau e-wallet terlebih dahulu di{" "}
+          {dict.withdrawals.addAccountPromptPrefix}
           <Link href="/dashboard/settings/pembayaran" className="font-bold text-brand underline">
-            Pengaturan Pembayaran
-          </Link>.
+            {dict.withdrawals.addAccountLinkText}
+          </Link>
+          {dict.withdrawals.addAccountPromptSuffix}
         </p>
       )}
       {feedback && (

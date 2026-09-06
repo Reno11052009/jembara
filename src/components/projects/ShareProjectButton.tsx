@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Check, Share2 } from "lucide-react";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface ShareProjectButtonProps {
   projectId: string;
@@ -35,6 +36,8 @@ export default function ShareProjectButton({
   projectTitle,
   className,
 }: ShareProjectButtonProps) {
+  const { dict } = usePreferences();
+  const projDict = dict.projects;
   const [shareState, setShareState] = useState<ShareState>("idle");
   const resetTimerRef = useRef<number | null>(null);
 
@@ -61,7 +64,7 @@ export default function ShareProjectButton({
       try {
         await navigator.share({
           title: `${projectTitle} | Jembara`,
-          text: `Lihat project “${projectTitle}” di Jembara.`,
+          text: projDict.shareProjectText.replace("{title}", projectTitle),
           url,
         });
         return;
@@ -81,10 +84,10 @@ export default function ShareProjectButton({
 
   const label =
     shareState === "copied"
-      ? "Tautan disalin"
+      ? projDict.linkCopied
       : shareState === "error"
-        ? "Gagal menyalin"
-        : "Bagikan";
+        ? projDict.copyFailed
+        : projDict.share;
 
   return (
     <button
@@ -94,7 +97,7 @@ export default function ShareProjectButton({
         className ??
         "inline-flex items-center justify-center gap-2 rounded-full border border-hairline bg-card px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-brand hover:text-brand"
       }
-      aria-label={`Bagikan project ${projectTitle}`}
+      aria-label={projDict.shareProjectAriaLabel.replace("{title}", projectTitle)}
     >
       {shareState === "copied" ? (
         <Check size={16} aria-hidden="true" />

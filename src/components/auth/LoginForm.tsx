@@ -80,11 +80,11 @@ export default function LoginForm() {
 
         {requiresTwoFactor && (
           <InputField
-            label="Kode autentikator atau pemulihan"
+            label={dict.auth.authenticatorLabel}
             required
             type="text"
             autoComplete="one-time-code"
-            placeholder="123456 atau ABCD-EFGH"
+            placeholder={dict.auth.authenticatorPlaceholder}
             value={formData.twoFactorCode || ""}
             onChange={(e) => handleChange("twoFactorCode", e.target.value)}
           />
@@ -102,7 +102,7 @@ export default function LoginForm() {
 
         {status === "success" && (
           <p className="text-xs text-success">
-            Masuk berhasil. Mengarahkan ke dashboard...
+            {dict.auth.loginSuccessMsg}
           </p>
         )}
 
@@ -121,11 +121,11 @@ export default function LoginForm() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         icon="error"
-        title="Koneksi ke server gagal"
-        description="Sepertinya ada gangguan saat proses matchmaking. Coba lagi dalam beberapa saat."
+        title={dict.auth.connectionErrorTitle}
+        description={dict.auth.connectionErrorDesc}
         footer={
           <a href="/help" className="text-brand hover:opacity-80">
-            Kenapa ini terjadi?
+            {dict.auth.whyThisHappened}
           </a>
         }
       />

@@ -1,4 +1,7 @@
+"use client";
+
 import type { WithdrawalListItem } from "@/types/withdrawal";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 const statusClasses = {
   PENDING: "bg-orange-50 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300",
@@ -11,12 +14,14 @@ export default function WithdrawalHistory({
 }: {
   requests: WithdrawalListItem[];
 }) {
+  const { dict } = usePreferences();
+
   return (
     <section className="rounded-2xl border border-hairline bg-card p-6">
-      <h2 className="font-display text-lg font-black text-ink">Riwayat Penarikan</h2>
+      <h2 className="font-display text-lg font-black text-ink">{dict.withdrawals?.historyTitle || "Riwayat Penarikan"}</h2>
       {requests.length === 0 ? (
         <p className="mt-4 rounded-xl border border-dashed border-hairline p-8 text-center text-sm text-ink-muted">
-          Belum ada permintaan penarikan.
+          {dict.withdrawals?.noHistory || "Belum ada permintaan penarikan."}
         </p>
       ) : (
         <div className="mt-4 divide-y divide-hairline">
@@ -27,9 +32,9 @@ export default function WithdrawalHistory({
                 <p className="mt-1 text-sm text-ink-muted">
                   {request.provider} · {request.accountName} · {request.accountNumber}
                 </p>
-                <p className="mt-1 text-xs text-ink-muted">Diajukan {request.createdAtLabel}</p>
+                <p className="mt-1 text-xs text-ink-muted">{dict.withdrawals?.submittedDate || "Diajukan"} {request.createdAtLabel}</p>
                 {request.adminNote && (
-                  <p className="mt-2 text-sm text-ink">Catatan Admin: {request.adminNote}</p>
+                  <p className="mt-2 text-sm text-ink">{dict.withdrawals?.adminNote || "Catatan Admin"}: {request.adminNote}</p>
                 )}
               </div>
               <div className="text-right">
@@ -37,7 +42,7 @@ export default function WithdrawalHistory({
                   {request.statusLabel}
                 </span>
                 {request.processedAtLabel && (
-                  <p className="mt-2 text-xs text-ink-muted">Diproses {request.processedAtLabel}</p>
+                  <p className="mt-2 text-xs text-ink-muted">{dict.withdrawals?.processedDate || "Diproses"} {request.processedAtLabel}</p>
                 )}
               </div>
             </article>

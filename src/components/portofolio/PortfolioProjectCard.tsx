@@ -1,11 +1,16 @@
+"use client";
+
 import { ExternalLink, Image as ImageIcon } from "lucide-react";
 import type { PortfolioProject } from "@/types/portfolio";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface PortfolioProjectCardProps {
   project: PortfolioProject;
 }
 
 export default function PortfolioProjectCard({ project }: PortfolioProjectCardProps) {
+  const { dict } = usePreferences();
+
   return (
     <article className="overflow-hidden rounded-xl border border-hairline bg-card">
       <div className="flex h-40 items-center justify-center overflow-hidden bg-hairline">
@@ -29,7 +34,7 @@ export default function PortfolioProjectCard({ project }: PortfolioProjectCardPr
           {project.title}
         </h3>
         <p className="mt-2 line-clamp-3 font-body text-sm text-ink-muted">
-          {project.description || "Belum ada deskripsi karya."}
+          {project.description || (dict.portfolio?.projectsSection?.emptyDescription || "Belum ada deskripsi karya.")}
         </p>
 
         <div className="mt-4 flex items-center justify-between gap-2">
@@ -41,7 +46,7 @@ export default function PortfolioProjectCard({ project }: PortfolioProjectCardPr
               rel="noreferrer"
               className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:underline"
             >
-              Lihat karya
+              {dict.common?.viewDetails || "Lihat karya"}
               <ExternalLink size={13} />
             </a>
           )}

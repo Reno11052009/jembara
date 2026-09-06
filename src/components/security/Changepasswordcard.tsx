@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import Input from "@/components/ui/Input";
 import { changePasswordAction } from "@/app/actions/security";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function ChangePasswordCard() {
+  const { dict } = usePreferences();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -30,14 +32,14 @@ export default function ChangePasswordCard() {
       router.refresh();
       await Swal.fire({
         icon: "success",
-        title: "Password diperbarui",
-        text: "Semua sesi lama telah dicabut. Sesi perangkat ini sudah diperbarui.",
+        title: dict.settingsCards?.security?.passwordUpdatedTitle || "Password diperbarui",
+        text: dict.settingsCards?.security?.passwordUpdatedText || "Semua sesi lama telah dicabut. Sesi perangkat ini sudah diperbarui.",
         confirmButtonColor: "#f97316",
       });
     } catch (error) {
       await Swal.fire({
         icon: "error",
-        title: "Gagal mengubah password",
+        title: dict.common?.cancel || "Gagal",
         text: error instanceof Error ? error.message : "Silakan coba lagi.",
         confirmButtonColor: "#f97316",
       });
@@ -47,15 +49,15 @@ export default function ChangePasswordCard() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-xl border border-[#ECECEC] dark:border-gray bg-white dark:bg-card p-6">
+    <form onSubmit={handleSubmit} className="rounded-xl border border-[#ECECEC] dark:border-gray bg-white dark:bg-[#1E1E1E] p-6">
       <h2 className="mb-5 font-display text-lg font-bold text-neutral-900 dark:text-ink">
-        Ubah Password
+        {dict.settingsCards?.security?.changePasswordTitle || "Ubah Password"}
       </h2>
 
       <div className="mb-4">
         <Input
           type="password"
-          label="Password Saat Ini"
+          label={dict.settingsCards?.security?.currentPasswordLabel || "Password Saat Ini"}
           value={currentPassword}
           onChange={(event) => setCurrentPassword(event.target.value)}
           autoComplete="current-password"
@@ -66,7 +68,7 @@ export default function ChangePasswordCard() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Input
           type="password"
-          label="Password Baru"
+          label={dict.settingsCards?.security?.newPasswordLabel || "Password Baru"}
           value={newPassword}
           onChange={(event) => setNewPassword(event.target.value)}
           autoComplete="new-password"
@@ -75,7 +77,7 @@ export default function ChangePasswordCard() {
         />
         <Input
           type="password"
-          label="Konfirmasi Password Baru"
+          label={dict.settingsCards?.security?.confirmPasswordLabel || "Konfirmasi Password Baru"}
           value={confirmPassword}
           onChange={(event) => setConfirmPassword(event.target.value)}
           autoComplete="new-password"
@@ -90,7 +92,7 @@ export default function ChangePasswordCard() {
           disabled={isSaving}
           className="rounded-full bg-brand px-6 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
+          {isSaving ? (dict.settingsCards?.security?.saving || "Menyimpan...") : (dict.settingsCards?.security?.savePasswordButton || "Simpan Perubahan")}
         </button>
       </div>
     </form>

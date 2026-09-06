@@ -11,10 +11,12 @@ import {
 } from "@/app/actions/payout-methods";
 import Button from "@/components/ui/Button";
 import type { PaymentMethod } from "@/types/settings";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function PaymentMethodsCard({ methods }: { methods: PaymentMethod[] }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const { dict } = usePreferences();
   const [isAdding, setIsAdding] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{
@@ -46,8 +48,8 @@ export default function PaymentMethodsCard({ methods }: { methods: PaymentMethod
         title: "Hapus metode pencairan?",
         text: "Rekening atau e-wallet ini akan dihapus dari akun Anda.",
         showCancelButton: true,
-        confirmButtonText: "Hapus",
-        cancelButtonText: "Batal",
+        confirmButtonText: dict.common?.delete || "Hapus",
+        cancelButtonText: dict.common?.cancel || "Batal",
         confirmButtonColor: "#DC2626",
         focusCancel: true,
         reverseButtons: true,
@@ -76,8 +78,8 @@ export default function PaymentMethodsCard({ methods }: { methods: PaymentMethod
     <section className="rounded-xl border border-hairline bg-card p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-lg font-bold text-ink">Metode Pencairan</h2>
-          <p className="mt-1 text-sm text-ink-muted">Rekening tersimpan akan tersedia saat mengajukan penarikan saldo.</p>
+          <h2 className="font-display text-lg font-bold text-ink">{dict.settingsCards?.payments?.payoutMethodsTitle || "Metode Pencairan"}</h2>
+          <p className="mt-1 text-sm text-ink-muted">{dict.settingsCards?.payments?.payoutMethodsDesc || "Rekening tersimpan akan tersedia saat mengajukan penarikan saldo."}</p>
         </div>
         <Button
           type="button"
@@ -90,14 +92,14 @@ export default function PaymentMethodsCard({ methods }: { methods: PaymentMethod
           disabled={isPending || (!isAdding && methods.length >= 5)}
         >
           {isAdding ? <X size={14} /> : <Plus size={14} />}
-          {isAdding ? "Tutup" : "Tambah"}
+          {isAdding ? (dict.settingsCards?.payments?.closeMethod || "Tutup") : (dict.settingsCards?.payments?.addMethod || "Tambah")}
         </Button>
       </div>
 
       {isAdding && (
         <form ref={formRef} onSubmit={submitMethod} className="mt-5 grid gap-4 rounded-xl bg-canvas p-4 md:grid-cols-2">
           <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
-            Bank atau e-wallet
+            {dict.settingsCards?.payments?.providerLabel || "Bank atau e-wallet"}
             <input
               name="provider"
               required
@@ -118,7 +120,7 @@ export default function PaymentMethodsCard({ methods }: { methods: PaymentMethod
             </datalist>
           </label>
           <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
-            Nama pemilik rekening
+            {dict.settingsCards?.payments?.accountNameLabel || "Nama pemilik rekening"}
             <input
               name="accountName"
               required
@@ -129,7 +131,7 @@ export default function PaymentMethodsCard({ methods }: { methods: PaymentMethod
             />
           </label>
           <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
-            Nomor rekening/e-wallet
+            {dict.settingsCards?.payments?.accountNumberLabel || "Nomor rekening/e-wallet"}
             <input
               name="accountNumber"
               required
@@ -141,10 +143,10 @@ export default function PaymentMethodsCard({ methods }: { methods: PaymentMethod
           </label>
           <label className="flex items-center gap-2 self-end pb-3 text-sm font-medium text-ink">
             <input name="isPrimary" type="checkbox" className="h-4 w-4 accent-brand" />
-            Jadikan rekening utama
+            {dict.settingsCards?.payments?.makePrimaryLabel || "Jadikan rekening utama"}
           </label>
           <div className="md:col-span-2">
-            <Button type="submit" isLoading={isPending}>Simpan Metode</Button>
+            <Button type="submit" isLoading={isPending}>{dict.settingsCards?.payments?.saveMethodButton || "Simpan Metode"}</Button>
           </div>
         </form>
       )}
@@ -152,7 +154,7 @@ export default function PaymentMethodsCard({ methods }: { methods: PaymentMethod
       <div className="mt-5 flex flex-col gap-3">
         {methods.length === 0 ? (
           <p className="rounded-xl border border-dashed border-hairline p-8 text-center text-sm text-ink-muted">
-            Belum ada metode pencairan. Tambahkan rekening sebelum menarik saldo.
+            {dict.settingsCards?.payments?.noMethodsNote || "Belum ada metode pencairan. Tambahkan rekening sebelum menarik saldo."}
           </p>
         ) : (
           methods.map((method) => (
@@ -165,7 +167,7 @@ export default function PaymentMethodsCard({ methods }: { methods: PaymentMethod
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-body text-sm font-semibold text-ink">{method.name}</p>
                     {method.isPrimary && (
-                      <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-semibold text-brand">Utama</span>
+                      <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-semibold text-brand">{dict.settingsCards?.payments?.primaryBadge || "Utama"}</span>
                     )}
                   </div>
                   <p className="mt-1 text-xs text-ink-muted">{method.detailLine}</p>
@@ -180,7 +182,7 @@ export default function PaymentMethodsCard({ methods }: { methods: PaymentMethod
                     aria-label={`Jadikan ${method.name} rekening utama`}
                     className="inline-flex h-9 items-center gap-1.5 rounded-full border border-hairline px-3 text-xs font-semibold text-ink hover:border-brand hover:text-brand disabled:opacity-50"
                   >
-                    <Star size={14} /> Utamakan
+                    <Star size={14} /> {dict.settingsCards?.payments?.makePrimaryButton || "Utamakan"}
                   </button>
                 )}
                 <button
@@ -198,7 +200,7 @@ export default function PaymentMethodsCard({ methods }: { methods: PaymentMethod
         )}
       </div>
 
-      {methods.length >= 5 && <p className="mt-3 text-xs text-ink-muted">Maksimal 5 metode pencairan per akun.</p>}
+      {methods.length >= 5 && <p className="mt-3 text-xs text-ink-muted">{dict.settingsCards?.payments?.maxMethodsNote || "Maksimal 5 metode pencairan per akun."}</p>}
       {feedback && (
         <p role={feedback.type === "error" ? "alert" : "status"} className={`mt-4 rounded-lg p-3 text-sm font-semibold ${feedback.type === "error" ? "bg-danger-soft text-danger" : "bg-success/10 text-success"}`}>
           {feedback.message}

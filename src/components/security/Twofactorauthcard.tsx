@@ -8,10 +8,12 @@ import {
   confirmTwoFactorSetupAction,
   disableTwoFactorAction,
 } from "@/app/actions/security";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function TwoFactorAuthCard({ enabled }: { enabled: boolean }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const { dict } = usePreferences();
   const [setup, setSetup] = useState<{
     secret: string;
     otpAuthUri: string;
@@ -26,7 +28,7 @@ export default function TwoFactorAuthCard({ enabled }: { enabled: boolean }) {
       if (!result.success) {
         await Swal.fire({
           icon: "error",
-          title: "Setup gagal",
+          title: dict.common?.cancel || "Setup gagal",
           text: result.error,
         });
         return;
@@ -74,7 +76,7 @@ export default function TwoFactorAuthCard({ enabled }: { enabled: boolean }) {
       if (!result.success) {
         await Swal.fire({
           icon: "error",
-          title: "Gagal menonaktifkan",
+          title: dict.common?.cancel || "Gagal",
           text: result.error,
         });
         return;
@@ -94,11 +96,10 @@ export default function TwoFactorAuthCard({ enabled }: { enabled: boolean }) {
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div>
           <h2 className="mb-2 font-display text-lg font-bold text-neutral-900 dark:text-ink">
-            Autentikasi Dua Faktor (2FA)
+            {dict.settingsCards?.security?.twoFactorTitle || "Autentikasi Dua Faktor (2FA)"}
           </h2>
           <p className="max-w-xl text-sm text-neutral-500 dark:text-ink-muted">
-            Gunakan aplikasi autentikator berbasis TOTP. Delapan kode pemulihan
-            hanya ditampilkan sekali saat aktivasi.
+            {dict.settingsCards?.security?.twoFactorDesc || "Gunakan aplikasi autentikator berbasis TOTP. Delapan kode pemulihan hanya ditampilkan sekali saat aktivasi."}
           </p>
         </div>
 
@@ -109,7 +110,7 @@ export default function TwoFactorAuthCard({ enabled }: { enabled: boolean }) {
               : "bg-neutral-100 text-neutral-600 dark:bg-surface dark:text-ink-muted"
           }`}
         >
-          {enabled ? "Aktif" : "Tidak aktif"}
+          {enabled ? (dict.settingsCards?.security?.active || "Aktif") : (dict.settingsCards?.security?.inactive || "Tidak aktif")}
         </span>
       </div>
 
@@ -118,7 +119,7 @@ export default function TwoFactorAuthCard({ enabled }: { enabled: boolean }) {
           type="password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          placeholder="Konfirmasi password saat ini"
+          placeholder={dict.auth?.confirmPasswordLabel || "Konfirmasi password saat ini"}
           className="w-full rounded-lg border border-hairline bg-card px-4 py-3 text-sm"
         />
 
@@ -129,14 +130,14 @@ export default function TwoFactorAuthCard({ enabled }: { enabled: boolean }) {
             onClick={begin}
             className="rounded-full bg-brand px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
           >
-            Mulai Setup 2FA
+            {dict.settingsCards?.security?.startSetup || "Mulai Setup 2FA"}
           </button>
         )}
 
         {setup && (
           <div className="space-y-3 rounded-xl bg-canvas p-4">
             <p className="text-sm font-semibold">
-              Masukkan secret berikut ke aplikasi autentikator:
+              {dict.settingsCards?.security?.enterSecretNote || "Masukkan secret berikut ke aplikasi autentikator:"}
             </p>
             <code className="block break-all rounded-lg bg-card p-3 text-sm">
               {setup.secret}
@@ -145,7 +146,7 @@ export default function TwoFactorAuthCard({ enabled }: { enabled: boolean }) {
               href={setup.otpAuthUri}
               className="inline-flex text-sm font-bold text-brand"
             >
-              Buka di aplikasi autentikator
+              {dict.settingsCards?.security?.openAuthApp || "Buka di aplikasi autentikator"}
             </a>
             <input
               value={code}
@@ -164,7 +165,7 @@ export default function TwoFactorAuthCard({ enabled }: { enabled: boolean }) {
               onClick={confirm}
               className="rounded-full bg-success px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
             >
-              Verifikasi & Aktifkan
+              {dict.settingsCards?.security?.verifyAndActivate || "Verifikasi & Aktifkan"}
             </button>
           </div>
         )}
@@ -176,7 +177,7 @@ export default function TwoFactorAuthCard({ enabled }: { enabled: boolean }) {
             onClick={disable}
             className="rounded-full border border-danger px-5 py-2.5 text-sm font-bold text-danger disabled:opacity-50"
           >
-            Nonaktifkan 2FA
+            {dict.settingsCards?.security?.disable2FA || "Nonaktifkan 2FA"}
           </button>
         )}
       </div>

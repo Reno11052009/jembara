@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, Search } from "lucide-react";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export type SearchableSelectOption = {
   code: string;
@@ -38,10 +39,13 @@ export default function SearchableSelect({
   disabled = false,
   required = false,
   placeholder,
-  searchPlaceholder = "Cari...",
+  searchPlaceholder,
   labelClassName = defaultLabelClassName,
   showSearch = true,
 }: SearchableSelectProps) {
+  const { dict: t } = usePreferences();
+  const effectiveSearchPlaceholder = searchPlaceholder ?? t.common.ui.searchPlaceholder;
+
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
@@ -96,6 +100,7 @@ export default function SearchableSelect({
       ) : null}
 
       <button
+        suppressHydrationWarning
         type="button"
         id={id}
         onClick={toggleOpen}
@@ -110,7 +115,7 @@ export default function SearchableSelect({
       >
         <span className={selected ? "text-gray-900 dark:text-ink" : "text-gray-400 dark:text-ink-muted"}>
           {loading
-            ? `Memuat ${(label ?? "pilihan").toLocaleLowerCase("id-ID")}...`
+            ? t.common.loading
             : selected?.name ?? placeholder}
         </span>
         <ChevronDown
@@ -146,11 +151,12 @@ export default function SearchableSelect({
             <div className="flex items-center gap-2 border-b border-gray-100 dark:border-hairline px-3 py-2">
               <Search size={14} className="shrink-0 text-gray-400 dark:text-ink-muted" />
               <input
+                suppressHydrationWarning
                 ref={searchInputRef}
                 type="text"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder={searchPlaceholder}
+                placeholder={effectiveSearchPlaceholder}
                 className="w-full bg-transparent text-sm text-gray-900 dark:text-ink outline-none focus:outline-none focus:ring-0 placeholder:text-gray-400 dark:placeholder:text-ink-muted font-body"
               />
             </div>
@@ -159,7 +165,7 @@ export default function SearchableSelect({
           <div className="max-h-56 overflow-y-auto py-1">
             {filteredOptions.length === 0 ? (
               <p className="px-4 py-3 text-sm text-gray-400 dark:text-ink-muted font-body">
-                Tidak ditemukan
+                {t.common.ui.notFound}
               </p>
             ) : (
               filteredOptions.map((option) => {

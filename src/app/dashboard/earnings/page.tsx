@@ -1,4 +1,4 @@
-import PageHeader from "@/components/layout/PageHeader";
+import EarningsHeader from "@/components/earnings/EarningsHeader";
 import EarningsStatsGrid from "@/components/earnings/EarningsStatsGrid";
 import EarningsChartCard from "@/components/earnings/EarningsChartCard";
 import TransactionHistoryCard from "@/components/earnings/TransactionHistoryCard";
@@ -13,14 +13,11 @@ export default async function EarningsPage({ searchParams }: {
 }) {
   const query = await searchParams;
   const { walletBalanceLabel, canWithdraw, stats, chartData, transactions, pagination } =
-    await getEarningsData(new Date(), query);
+    await getEarningsData(undefined, query);
 
   return (
     <>
-      <PageHeader
-        title="Earnings"
-        subtitle="Pantau nilai proyek berdasarkan status dan pembaruan terakhir proyek."
-      />
+      <EarningsHeader />
 
       <div className="flex flex-col gap-6">
         <WalletBalanceCard balanceLabel={walletBalanceLabel} canWithdraw={canWithdraw} />

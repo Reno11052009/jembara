@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { RegionLevel, RegionOption } from "@/lib/regions";
 import SearchableSelect from "@/components/ui/SearchableSelect";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export type RegionFieldValue = {
   addressDetail?: string;
@@ -79,6 +80,9 @@ export default function IndonesiaRegionFields({
   initialValue = {},
   allowManualFallback = false,
 }: IndonesiaRegionFieldsProps) {
+  const { dict } = usePreferences();
+  const t = dict.regions;
+
   const hasCompleteInitialCodes = Boolean(
     initialValue.provinceCode &&
       initialValue.regencyCode &&
@@ -119,7 +123,7 @@ export default function IndonesiaRegionFields({
         <>
           <div>
             <label htmlFor="provinceName" className={labelClassName}>
-              Provinsi <span className="text-red-500 dark:text-red-400">*</span>
+              {t.provinceLabel} <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               id="provinceName"
@@ -128,14 +132,14 @@ export default function IndonesiaRegionFields({
               defaultValue={initialValue.provinceName || ""}
               minLength={2}
               maxLength={150}
-              placeholder="Tulis nama provinsi"
+              placeholder={t.typeProvince}
               className={fieldClassName}
               required
             />
           </div>
           <div>
             <label htmlFor="regencyName" className={labelClassName}>
-              Kabupaten/Kota <span className="text-red-500 dark:text-red-400">*</span>
+              {t.regencyLabel} <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               id="regencyName"
@@ -144,14 +148,14 @@ export default function IndonesiaRegionFields({
               defaultValue={initialValue.regencyName || ""}
               minLength={2}
               maxLength={150}
-              placeholder="Tulis nama kabupaten/kota"
+              placeholder={t.typeRegency}
               className={fieldClassName}
               required
             />
           </div>
           <div>
             <label htmlFor="districtName" className={labelClassName}>
-              Kecamatan <span className="text-red-500 dark:text-red-400">*</span>
+              {t.districtLabel} <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               id="districtName"
@@ -160,14 +164,14 @@ export default function IndonesiaRegionFields({
               defaultValue={initialValue.districtName || ""}
               minLength={2}
               maxLength={150}
-              placeholder="Tulis nama kecamatan"
+              placeholder={t.typeDistrict}
               className={fieldClassName}
               required
             />
           </div>
           <div>
             <label htmlFor="villageName" className={labelClassName}>
-              Kelurahan/Desa <span className="text-red-500 dark:text-red-400">*</span>
+              {t.villageLabel} <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               id="villageName"
@@ -176,7 +180,7 @@ export default function IndonesiaRegionFields({
               defaultValue={initialValue.villageName || ""}
               minLength={2}
               maxLength={150}
-              placeholder="Tulis nama kelurahan/desa"
+              placeholder={t.typeVillage}
               className={fieldClassName}
               required
             />
@@ -187,7 +191,7 @@ export default function IndonesiaRegionFields({
           <SearchableSelect
             id="provinceCode"
             name="provinceCode"
-            label="Provinsi"
+            label={t.provinceLabel}
             value={provinceCode}
             onChange={(code) => {
               setProvinceCode(code);
@@ -197,14 +201,14 @@ export default function IndonesiaRegionFields({
             }}
             options={provinces.options}
             loading={provinces.loading}
-            placeholder="Pilih provinsi"
-            searchPlaceholder="Cari provinsi..."
+            placeholder={t.selectProvince}
+            searchPlaceholder={t.searchProvince}
             required
           />
           <SearchableSelect
             id="regencyCode"
             name="regencyCode"
-            label="Kabupaten/Kota"
+            label={t.regencyLabel}
             value={regencyCode}
             onChange={(code) => {
               setRegencyCode(code);
@@ -214,14 +218,14 @@ export default function IndonesiaRegionFields({
             options={regencies.options}
             loading={regencies.loading}
             disabled={!provinceCode}
-            placeholder="Pilih kota"
-            searchPlaceholder="Cari kabupaten/kota..."
+            placeholder={t.selectRegency}
+            searchPlaceholder={t.searchRegency}
             required
           />
           <SearchableSelect
             id="districtCode"
             name="districtCode"
-            label="Kecamatan"
+            label={t.districtLabel}
             value={districtCode}
             onChange={(code) => {
               setDistrictCode(code);
@@ -230,21 +234,21 @@ export default function IndonesiaRegionFields({
             options={districts.options}
             loading={districts.loading}
             disabled={!regencyCode}
-            placeholder="Pilih kecamatan"
-            searchPlaceholder="Cari kecamatan..."
+            placeholder={t.selectDistrict}
+            searchPlaceholder={t.searchDistrict}
             required
           />
           <SearchableSelect
             id="villageCode"
             name="villageCode"
-            label="Kelurahan/Desa"
+            label={t.villageLabel}
             value={villageCode}
             onChange={setVillageCode}
             options={villages.options}
             loading={villages.loading}
             disabled={!districtCode}
-            placeholder="Pilih desa"
-            searchPlaceholder="Cari kelurahan/desa..."
+            placeholder={t.selectVillage}
+            searchPlaceholder={t.searchVillage}
             required
           />
         </>
@@ -253,17 +257,16 @@ export default function IndonesiaRegionFields({
       {allowManualFallback ? (
         <div className="md:col-span-2">
           <button
+            suppressHydrationWarning
             type="button"
             onClick={() => setIsManualMode((current) => !current)}
             className="text-sm font-semibold text-brand transition hover:text-brand-dark hover:underline"
           >
-            {isManualMode
-              ? "Kembali pilih dari daftar wilayah"
-              : "Wilayah tidak ada di daftar? Isi secara manual"}
+            {isManualMode ? t.manualToggleOff : t.manualToggleOn}
           </button>
           {isManualMode ? (
             <p className="mt-1 text-xs text-gray-400 dark:text-ink-muted">
-              Nama wilayah manual akan disimpan tanpa kode wilayah.id.
+              {t.manualModeNote}
             </p>
           ) : null}
         </div>
@@ -271,9 +274,10 @@ export default function IndonesiaRegionFields({
 
       <div className="md:col-span-2">
         <label htmlFor="addressDetail" className={labelClassName}>
-          Detail Alamat <span className="text-red-500 dark:text-red-400">*</span>
+          {t.addressDetailLabel} <span className="text-red-500 dark:text-red-400">*</span>
         </label>
         <textarea
+          suppressHydrationWarning
           id="addressDetail"
           name="addressDetail"
           defaultValue={initialValue.addressDetail || ""}
@@ -281,7 +285,7 @@ export default function IndonesiaRegionFields({
           minLength={5}
           maxLength={255}
           autoComplete="street-address"
-          placeholder="Nama jalan, nomor bangunan, RT/RW, atau patokan"
+          placeholder={t.addressDetailPlaceholder}
           className={fieldClassName + " resize-none"}
           required
         />
@@ -292,12 +296,12 @@ export default function IndonesiaRegionFields({
           role="alert"
           className="rounded-xl bg-red-50 dark:bg-red-500/15 px-4 py-3 text-sm font-medium text-red-700 dark:text-red-400 md:col-span-2"
         >
-          {regionError}. Silakan coba lagi.
+          {t.fetchError}
         </p>
       ) : null}
 
       <p className="text-xs text-gray-400 dark:text-ink-muted md:col-span-2">
-        Data wilayah administratif disediakan oleh wilayah.id.
+        {t.attributionNote}
       </p>
     </div>
   );

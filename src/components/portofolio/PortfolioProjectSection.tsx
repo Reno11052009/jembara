@@ -7,6 +7,7 @@ import { createPortfolioAction } from "@/app/actions/portfolio";
 import Button from "@/components/ui/Button";
 import type { PortfolioProject } from "@/types/portfolio";
 import PortfolioProjectCard from "@/components/portofolio/PortfolioProjectCard";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface PortfolioProjectSectionProps {
   projects: PortfolioProject[];
@@ -17,6 +18,7 @@ export default function PortfolioProjectSection({
 }: PortfolioProjectSectionProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const { dict } = usePreferences();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
@@ -34,14 +36,14 @@ export default function PortfolioProjectSection({
       if (!result.success) {
         setFeedback({
           type: "error",
-          message: result.error || "Portofolio gagal disimpan.",
+          message: result.error || (dict.portfolio?.projectsSection?.saveError || "Portofolio gagal disimpan."),
         });
         return;
       }
 
       formRef.current?.reset();
       setIsFormOpen(false);
-      setFeedback({ type: "success", message: "Portofolio berhasil ditambahkan." });
+      setFeedback({ type: "success", message: dict.portfolio?.projectsSection?.saveSuccess || "Portofolio berhasil ditambahkan." });
       router.refresh();
     });
   }
@@ -49,7 +51,7 @@ export default function PortfolioProjectSection({
   return (
     <section>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-lg font-black text-ink">Karya Terbaikmu</h2>
+        <h2 className="font-display text-lg font-black text-ink">{dict.portfolio?.projectsSection?.bestWorks || "Karya Terbaikmu"}</h2>
         <Button
           type="button"
           variant="primary"
@@ -60,7 +62,7 @@ export default function PortfolioProjectSection({
           }}
         >
           {isFormOpen ? <X size={14} /> : <Plus size={14} />}
-          {isFormOpen ? "Tutup Form" : "Tambah Project"}
+          {isFormOpen ? (dict.portfolio?.projectsSection?.closeForm || "Tutup Form") : (dict.portfolio?.projectsSection?.addProject || "Tambah Project")}
         </Button>
       </div>
 
@@ -73,7 +75,7 @@ export default function PortfolioProjectSection({
           <div className="grid gap-4 md:grid-cols-2">
             <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
               <span className="inline-flex items-center gap-1">
-                Judul karya
+                {dict.portfolio?.projectsSection?.workTitle || "Judul karya"}
                 <span className="text-red-500 dark:text-red-400">*</span>
               </span>
               <input
@@ -88,7 +90,7 @@ export default function PortfolioProjectSection({
             </label>
             
             <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
-              Tautan karya (opsional)
+              {dict.portfolio?.projectsSection?.workLink || "Tautan karya (opsional)"}
               <input
                 name="link"
                 type="text"
@@ -99,7 +101,7 @@ export default function PortfolioProjectSection({
             </label>
             
             <label className="flex flex-col gap-1.5 text-sm font-medium text-ink md:col-span-2">
-              URL gambar (opsional)
+              {dict.portfolio?.projectsSection?.imageUrl || "URL gambar (opsional)"}
               <input
                 name="image"
                 type="text"
@@ -110,7 +112,7 @@ export default function PortfolioProjectSection({
             </label>
             
             <label className="flex flex-col gap-1.5 text-sm font-medium text-ink md:col-span-2">
-              Deskripsi (opsional)
+              {dict.portfolio?.projectsSection?.description || "Deskripsi (opsional)"}
               <textarea
                 name="description"
                 rows={4}
@@ -128,7 +130,7 @@ export default function PortfolioProjectSection({
               </p>
             )}
             <Button type="submit" isLoading={isPending} disabled={isPending}>
-              Simpan Portofolio
+              {dict.portfolio?.projectsSection?.savePortfolio || "Simpan Portofolio"}
             </Button>
           </div>
         </form>
@@ -148,7 +150,7 @@ export default function PortfolioProjectSection({
         </div>
       ) : (
         <div className="mt-4 rounded-xl border border-dashed border-hairline bg-card p-8 text-center text-sm text-ink-muted">
-          Belum ada karya. Tambahkan portofolio pertama untuk memperkuat profilmu.
+          {dict.portfolio?.projectsSection?.emptyProjects || "Belum ada karya. Tambahkan portofolio pertama untuk memperkuat profilmu."}
         </div>
       )}
     </section>

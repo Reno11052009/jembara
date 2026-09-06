@@ -55,29 +55,95 @@ function getPresentation(type: string) {
   return notificationPresentation[normalizedType] ?? notificationPresentation.INFO;
 }
 
-function formatRelativeTime(value: string) {
+import type { Language } from "@/lib/i18n/dictionary";
+
+function localizeNotification(title: string, message: string, language: Language) {
+  if (language === "id") return { title, message };
+
+  let locTitle = title;
+  let locMessage = message;
+
+  if (title === "Profil berhasil diperbarui") {
+    locTitle = language === "en" ? "Profile updated successfully" : "プロフィールが正常に更新されました";
+  } else if (title === "Selamat datang di JemBara" || title === "Selamat datang di Jembara") {
+    locTitle = language === "en" ? "Welcome to Jembara" : "Jembaraへようこそ";
+  } else if (title === "Dana proyek telah diamankan") {
+    locTitle = language === "en" ? "Project funds secured" : "プロジェクト資金が保護されました";
+  } else if (title === "Pembayaran berhasil") {
+    locTitle = language === "en" ? "Payment successful" : "お支払いが完了しました";
+  } else if (title === "Proposal baru masuk") {
+    locTitle = language === "en" ? "New proposal received" : "新しい提案が届きました";
+  } else if (title === "Proposal diterima") {
+    locTitle = language === "en" ? "Proposal accepted" : "提案が採用されました";
+  } else if (title === "Proposal belum terpilih") {
+    locTitle = language === "en" ? "Proposal not selected" : "提案は選ばれませんでした";
+  } else if (title === "Proposal belum diterima") {
+    locTitle = language === "en" ? "Proposal not accepted" : "提案は受け入れられませんでした";
+  } else if (title === "Hasil proyek siap direview") {
+    locTitle = language === "en" ? "Project result ready for review" : "プロジェクト成果物のレビュー準備完了";
+  } else if (title.startsWith("Revisi ")) {
+    locTitle = language === "en" ? title.replace("Revisi", "Revision").replace("diminta", "requested") : title.replace("Revisi", "修正").replace("diminta", "依頼");
+  } else if (title === "Ulasan baru diterima") {
+    locTitle = language === "en" ? "New review received" : "新しいレビューが届きました";
+  } else if (title === "Saldo proyek telah masuk") {
+    locTitle = language === "en" ? "Project funds credited" : "プロジェクト資金が入金されました";
+  } else if (title === "Penarikan selesai") {
+    locTitle = language === "en" ? "Withdrawal completed" : "出金が完了しました";
+  } else if (title === "Penarikan ditolak") {
+    locTitle = language === "en" ? "Withdrawal rejected" : "出金が拒否されました";
+  }
+
+  if (message === "Perubahan profil Anda telah tersimpan di Jembara.") {
+    locMessage = language === "en" ? "Your profile changes have been saved to Jembara." : "プロフィールの変更がJembaraに保存されました。";
+  } else if (message === "Akun Anda berhasil dibuat. Silakan lengkapi profil untuk mulai menggunakan platform.") {
+    locMessage = language === "en" ? "Your account was created successfully. Please complete your profile to get started." : "アカウントが正常に作成されました。開始するにはプロフィールを完成させてください。";
+  }
+
+  return { title: locTitle, message: locMessage };
+}
+
+function formatRelativeTime(value: string, language: Language) {
   const timestamp = new Date(value).getTime();
-  if (Number.isNaN(timestamp)) return "Baru saja";
+  if (Number.isNaN(timestamp)) {
+    return language === "en" ? "Just now" : language === "ja" ? "たった今" : "Baru saja";
+  }
 
   const elapsedMinutes = Math.max(0, Math.floor((Date.now() - timestamp) / 60_000));
-  if (elapsedMinutes < 1) return "Baru saja";
-  if (elapsedMinutes < 60) return `${elapsedMinutes} menit lalu`;
+  if (elapsedMinutes < 1) {
+    return language === "en" ? "Just now" : language === "ja" ? "たった今" : "Baru saja";
+  }
+  if (elapsedMinutes < 60) {
+    if (language === "en") return `${elapsedMinutes}m ago`;
+    if (language === "ja") return `${elapsedMinutes}分前`;
+    return `${elapsedMinutes} menit lalu`;
+  }
 
   const elapsedHours = Math.floor(elapsedMinutes / 60);
-  if (elapsedHours < 24) return `${elapsedHours} jam lalu`;
+  if (elapsedHours < 24) {
+    if (language === "en") return `${elapsedHours}h ago`;
+    if (language === "ja") return `${elapsedHours}時間前`;
+    return `${elapsedHours} jam lalu`;
+  }
 
   const elapsedDays = Math.floor(elapsedHours / 24);
-  if (elapsedDays < 7) return `${elapsedDays} hari lalu`;
+  if (elapsedDays < 7) {
+    if (language === "en") return `${elapsedDays}d ago`;
+    if (language === "ja") return `${elapsedDays}日前`;
+    return `${elapsedDays} hari lalu`;
+  }
 
-  return new Intl.DateTimeFormat("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(timestamp));
+  return new Intl.DateTimeFormat(
+    language === "en" ? "en-US" : language === "ja" ? "ja-JP" : "id-ID",
+    {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    },
+  ).format(new Date(timestamp));
 }
 
 export default function NotificationMenu() {
-  const { dict } = usePreferences();
+  const { dict, language } = usePreferences();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<HeaderNotification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -200,6 +266,7 @@ export default function NotificationMenu() {
   return (
     <div ref={menuRef} className="relative">
       <button
+        suppressHydrationWarning
         type="button"
         aria-label={`Notifikasi${unreadCount > 0 ? `, ${unreadCount} belum dibaca` : ""}`}
         aria-expanded={isOpen}
@@ -270,6 +337,9 @@ export default function NotificationMenu() {
               notifications.map((notification) => {
                 const presentation = getPresentation(notification.type);
                 const Icon = presentation.icon;
+                const loc = localizeNotification(notification.title, notification.message, language);
+                const timeLabel = formatRelativeTime(notification.createdAt, language);
+
                 const content = (
                   <>
                     <span className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${presentation.color}`}>
@@ -278,17 +348,17 @@ export default function NotificationMenu() {
                     <span className="min-w-0 flex-1">
                       <span className="flex items-start justify-between gap-3">
                         <span className={`text-sm text-ink ${notification.isRead ? "font-semibold" : "font-bold"}`}>
-                          {notification.title}
+                          {loc.title}
                         </span>
                         {!notification.isRead && (
                           <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand" aria-label="Belum dibaca" />
                         )}
                       </span>
                       <span className="mt-1 block text-xs leading-relaxed text-ink-muted">
-                        {notification.message}
+                        {loc.message}
                       </span>
                       <span className="mt-1.5 block text-[11px] font-medium text-gray-400 dark:text-ink-muted">
-                        {formatRelativeTime(notification.createdAt)}
+                        {timeLabel}
                       </span>
                     </span>
                   </>

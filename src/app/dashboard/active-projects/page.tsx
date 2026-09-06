@@ -1,4 +1,4 @@
-import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
+import ActiveProjectsHeader from "@/components/active-projects/ActiveProjectsHeader";
 import ActiveProjectsView from "@/components/active-projects/ActiveProjectsView";
 import MonthlyActivityCard from "@/components/active-projects/MonthlyActivityCard";
 import CollaborationTipsCard from "@/components/active-projects/CollaborationTipsCard";
@@ -11,19 +11,10 @@ export default async function ActiveProjectsPage({ searchParams }: {
 }) {
   const query = await searchParams;
   const data = await getActiveProjectsData(query);
-  const summaryTitle =
-    data.role === "STUDENT"
-      ? "Ringkasan Proyek Saya"
-      : data.role === "UMKM"
-        ? "Ringkasan Kolaborasi UMKM"
-        : "Ringkasan Platform";
 
   return (
     <>
-      <DashboardPageHeader
-        title={data.pageTitle}
-        subtitle={data.pageSubtitle}
-      />
+      <ActiveProjectsHeader role={data.role} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
@@ -40,10 +31,13 @@ export default async function ActiveProjectsPage({ searchParams }: {
         <div className="flex flex-col gap-6 lg:pt-14">
           <div className="sticky top-24 flex flex-col gap-6">
             <MonthlyActivityCard
-              title={summaryTitle}
               metrics={data.metrics}
+              viewerRole={data.role}
             />
-            <CollaborationTipsCard tip={data.collaborationTip} />
+            <CollaborationTipsCard
+              tip={data.collaborationTip}
+              viewerRole={data.role}
+            />
           </div>
         </div>
       </div>

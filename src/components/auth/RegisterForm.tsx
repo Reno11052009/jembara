@@ -83,7 +83,7 @@ export default function RegisterForm() {
     >
       <div>
         <div className="mb-1.5 flex justify-between text-xs text-ink-muted">
-          <span>Profile Progress</span>
+          <span>{dict.auth.profileProgress}</span>
           <span className="font-medium text-brand">
             {progress.filled}/{progress.total}
           </span>
@@ -104,7 +104,7 @@ export default function RegisterForm() {
         label={dict.auth.nameLabel}
         required
         autoComplete="name"
-        placeholder="Nama kamu"
+        placeholder={dict.auth.fullNamePlaceholder}
         value={formData.fullName}
         error={errors.fullName}
         onChange={(e) => handleChange("fullName", e.target.value)}
@@ -120,11 +120,11 @@ export default function RegisterForm() {
         onChange={(e) => handleChange("email", e.target.value)}
       />
       <InputField
-        label="Alamat"
+        label={dict.auth.addressLabel}
         required
         type="text"
         autoComplete="street-address"
-        placeholder="Alamat lengkap (min. 5 karakter)"
+        placeholder={dict.auth.addressPlaceholder}
         value={formData.address}
         error={errors.address}
         onChange={(e) => handleChange("address", e.target.value)}
@@ -134,7 +134,7 @@ export default function RegisterForm() {
         required
         type="password"
         autoComplete="new-password"
-        placeholder="Minimal 8 karakter"
+        placeholder={dict.auth.passwordMinPlaceholder}
         value={formData.password}
         error={errors.password}
         onChange={(e) => handleChange("password", e.target.value)}
@@ -144,7 +144,7 @@ export default function RegisterForm() {
         required
         type="password"
         autoComplete="new-password"
-        placeholder="Ulangi password"
+        placeholder={dict.auth.repeatPasswordPlaceholder}
         value={formData.confirmPassword}
         error={errors.confirmPassword}
         onChange={(e) => handleChange("confirmPassword", e.target.value)}
@@ -152,7 +152,7 @@ export default function RegisterForm() {
 
       {status === "success" && (
         <p className="text-xs text-success">
-          Akun dibuat. Menyiapkan profil kamu...
+          {dict.auth.registerSuccessMsg}
         </p>
       )}
 

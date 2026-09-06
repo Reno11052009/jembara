@@ -1,34 +1,39 @@
+"use client";
+
 import { BadgeCheck, BriefcaseBusiness, FolderOpen, Star } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import type { PortfolioSummary } from "@/types/portfolio";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface PortfolioStatsGridProps {
   summary: PortfolioSummary;
 }
 
 export default function PortfolioStatsGrid({ summary }: PortfolioStatsGridProps) {
+  const { dict } = usePreferences();
+
   const stats = [
     {
       id: "portfolio",
-      label: "Karya Portofolio",
+      label: dict.portfolio?.stats?.portfolioWorks || "Karya Portofolio",
       value: summary.portfolioCount.toString(),
       icon: FolderOpen,
     },
     {
       id: "completed",
-      label: "Proyek Selesai",
+      label: dict.portfolio?.stats?.completedProjects || "Proyek Selesai",
       value: summary.completedProjectCount.toString(),
       icon: BriefcaseBusiness,
     },
     {
       id: "rating",
-      label: "Rata-rata Rating",
-      value: summary.averageRating ? summary.averageRating.toFixed(1) : "Belum ada",
+      label: dict.portfolio?.stats?.averageRating || "Rata-rata Rating",
+      value: summary.averageRating ? summary.averageRating.toFixed(1) : (dict.portfolio?.stats?.noRating || "Belum ada"),
       icon: Star,
     },
     {
       id: "verified",
-      label: "Skill Terverifikasi",
+      label: dict.portfolio?.stats?.verifiedSkills || "Skill Terverifikasi",
       value: summary.verifiedSkillCount.toString(),
       icon: BadgeCheck,
     },

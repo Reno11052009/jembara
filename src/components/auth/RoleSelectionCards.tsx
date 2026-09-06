@@ -111,7 +111,7 @@ export default function RoleSelectionCards() {
               aria-expanded={showBusinessForm}
               className="inline-flex w-full scale-[1.02] items-center justify-center gap-2 rounded-xl bg-zinc-900 dark:bg-white px-4 py-3 text-sm font-medium text-white dark:text-zinc-900 transition-all duration-300 hover:bg-brand dark:hover:bg-brand hover:text-white dark:hover:text-white hover:shadow-lg hover:shadow-brand/30 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Isi Profil Usaha
+              {dict.auth.fillBusinessProfile}
             </button>
           ) : (
             <form action={formAction} className="space-y-4 text-left">
@@ -119,7 +119,7 @@ export default function RoleSelectionCards() {
 
               <div>
                 <label htmlFor="businessName" className="mb-1.5 block text-sm font-semibold text-zinc-700 dark:text-ink-muted">
-                  Nama usaha <span className="text-red-500 dark:text-danger">*</span>
+                  {dict.auth.businessNameLabel} <span className="text-red-500 dark:text-danger">*</span>
                 </label>
                 <input
                   id="businessName"
@@ -128,7 +128,7 @@ export default function RoleSelectionCards() {
                   minLength={3}
                   maxLength={120}
                   autoComplete="organization"
-                  placeholder="Contoh: Kopi Jembara"
+                  placeholder={dict.auth.businessNamePlaceholder}
                   className={inputClassName}
                 />
               </div>
@@ -137,16 +137,16 @@ export default function RoleSelectionCards() {
                 <SearchableSelect
                   id="businessCategory"
                   name="businessCategory"
-                  label="Kategori usaha"
+                  label={dict.auth.businessCategoryLabel}
                   labelClassName="mb-1.5 block text-sm font-semibold text-zinc-700"
                   value={businessCategory}
                   onChange={(code) => setBusinessCategory(code)}
                   options={businessCategoryOptions.map((option) => ({
                     code: option.value,
-                    name: option.label,
+                    name: dict.auth.categories[option.value as keyof typeof dict.auth.categories] || option.label,
                   }))}
-                  placeholder="Pilih kategori usaha"
-                  searchPlaceholder="Cari kategori..."
+                  placeholder={dict.auth.selectBusinessCategory}
+                  searchPlaceholder={dict.auth.searchCategoryPlaceholder}
                   showSearch={true}
                   required
                 />
@@ -157,7 +157,7 @@ export default function RoleSelectionCards() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="phone" className="mb-1.5 block text-sm font-semibold text-zinc-700 dark:text-ink-muted">
-                    Nomor telepon <span className="text-red-500 dark:text-danger">*</span>
+                    {dict.auth.phoneLabel} <span className="text-red-500 dark:text-danger">*</span>
                   </label>
                   <input
                     id="phone"
@@ -180,7 +180,7 @@ export default function RoleSelectionCards() {
 
                 <div>
                   <label htmlFor="website" className="mb-1.5 block text-sm font-semibold text-zinc-700 dark:text-ink-muted">
-                    Website
+                    {dict.auth.websiteLabel}
                   </label>
                   <input
                     id="website"
@@ -198,7 +198,7 @@ export default function RoleSelectionCards() {
                     className={inputClassName}
                   />
                   {websiteError && (
-                    <p className="mt-1 text-xs text-red-500 dark:text-danger">{websiteError}</p>
+                    <p className="mt-1 text-xs text-red-500 dark:text-danger">{dict.auth.websiteErrorMsg}</p>
                   )}
                 </div>
               </div>
@@ -224,7 +224,7 @@ export default function RoleSelectionCards() {
                   className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {pending ? <LoaderCircle size={17} className="animate-spin" /> : null}
-                  {pending ? "Menyimpan..." : "Simpan dan Lanjutkan"}
+                  {pending ? dict.auth.saving : dict.auth.saveAndContinue}
                 </button>
               </div>
             </form>
