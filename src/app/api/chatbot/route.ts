@@ -80,7 +80,7 @@ function getBaseSystemPrompt(): string {
     cachedBaseSystemPrompt = fs.readFileSync(promptPath, "utf-8").trim();
   } catch {
     cachedBaseSystemPrompt =
-      "Kamu adalah Jelita, Asisten Virtual Jembara. Jawab pertanyaan tentang platform Jembara dalam bahasa Indonesia secara ringkas, ramah, dan membantu. Jangan gunakan tabel markdown.";
+      "Kamu adalah Jelita, Asisten Virtual Jembara. Jawab pertanyaan tentang platform Jembara dalam bahasa yang digunakan oleh pengguna secara ringkas, ramah, dan membantu. Jangan gunakan tabel markdown.";
   }
 
   return cachedBaseSystemPrompt;
