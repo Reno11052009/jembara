@@ -104,12 +104,15 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   );
 }
 
+const defaultContextValue: PreferencesContextValue = {
+  language: "id",
+  setLanguage: () => {},
+  fontSize: "medium",
+  setFontSize: () => {},
+  dict: dictionary.id,
+};
+
 export function usePreferences() {
   const ctx = useContext(PreferencesContext);
-  if (!ctx) {
-    throw new Error(
-      "usePreferences must be used within a PreferencesProvider"
-    );
-  }
-  return ctx;
+  return ctx ?? defaultContextValue;
 }

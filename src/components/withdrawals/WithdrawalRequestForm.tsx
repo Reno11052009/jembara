@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { createWithdrawalRequestAction } from "@/app/actions/withdrawals";
 import Button from "@/components/ui/Button";
 import FormattedNumericInput from "@/components/ui/FormattedNumericInput";
+import { usePreferences } from "@/contexts/PreferencesContext";
 import type { PayoutMethodOption } from "@/types/withdrawal";
 
 const MINIMUM_WITHDRAWAL = 10_000;
@@ -21,6 +22,7 @@ export default function WithdrawalRequestForm({
   payoutMethods: PayoutMethodOption[];
 }) {
   const router = useRouter();
+  const { dict } = usePreferences();
   const formRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{
@@ -62,14 +64,14 @@ export default function WithdrawalRequestForm({
         <div>
           <div className="flex items-center gap-2 text-brand">
             <BanknoteArrowDown size={22} />
-            <h2 className="font-display text-lg font-black text-ink">Tarik Saldo</h2>
+            <h2 className="font-display text-lg font-black text-ink">{dict.withdrawals.pageTitle}</h2>
           </div>
           <p className="mt-2 text-sm text-ink-muted">
-            Minimum penarikan Rp10.000. Saldo akan dicadangkan sampai Admin memproses permintaan.
+            {dict.withdrawals.minimumWithdrawalNote}
           </p>
         </div>
         <div className="rounded-xl bg-brand-soft px-4 py-3 text-right">
-          <p className="text-xs font-semibold text-ink-muted">Saldo tersedia</p>
+          <p className="text-xs font-semibold text-ink-muted">{dict.withdrawals.availableBalance}</p>
           <p className="font-display text-lg font-black text-brand">{balanceLabel}</p>
         </div>
       </div>
@@ -77,7 +79,7 @@ export default function WithdrawalRequestForm({
       <form ref={formRef} onSubmit={handleSubmit} className="mt-6 grid gap-4 md:grid-cols-2">
         <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
           <span>
-            Nominal penarikan (Rp) <span className="text-red-500 dark:text-red-400">*</span>
+            {dict.withdrawals.nominalLabel} <span className="text-red-500 dark:text-red-400">*</span>
           </span>
           <FormattedNumericInput
             name="amountDisplay"
@@ -92,7 +94,7 @@ export default function WithdrawalRequestForm({
         </label>
         <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
           <span>
-            Metode pencairan <span className="text-red-500 dark:text-red-400">*</span>
+            {dict.withdrawals.methodLabel} <span className="text-red-500 dark:text-red-400">*</span>
           </span>
           <select
             name="payoutMethodId"
@@ -112,11 +114,11 @@ export default function WithdrawalRequestForm({
 
         <div className="flex flex-wrap items-center gap-3 md:col-span-2">
           <Button type="submit" isLoading={isPending} disabled={!canSubmit || isPending}>
-            Ajukan Penarikan
+            {dict.withdrawals.submitButton}
           </Button>
           <p className="flex items-center gap-1.5 text-xs text-ink-muted">
             <ShieldCheck size={15} className="text-success" />
-            Pastikan nama dan nomor tujuan sudah benar.
+            {dict.withdrawals.securityNote}
           </p>
         </div>
       </form>

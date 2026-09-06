@@ -29,6 +29,37 @@ export interface Dictionary {
     monitorPesan: string;
     logout: string;
   };
+  common: {
+    copyright: string;
+    search: string;
+    save: string;
+    cancel: string;
+    delete: string;
+    edit: string;
+    back: string;
+    loading: string;
+    viewDetails: string;
+    submit: string;
+    close: string;
+    status: {
+      OPEN: string;
+      PROPOSAL: string;
+      IN_PROGRESS: string;
+      REVIEW: string;
+      COMPLETED: string;
+      CANCELLED: string;
+    };
+    verified: string;
+    unverified: string;
+    noData: string;
+  };
+  notifications: {
+    title: string;
+    markAllRead: string;
+    empty: string;
+    loadError: string;
+    justNow: string;
+  };
   settings: {
     pageTitle: string;
     pageSubtitle: string;
@@ -45,6 +76,7 @@ export interface Dictionary {
     language: {
       cardTitle: string;
       selectLabel: string;
+      autoSaveNote: string;
     };
     headers: {
       keamanan: { title: string; subtitle: string; subtitleUmkm: string };
@@ -64,6 +96,41 @@ export interface Dictionary {
       large: { title: string; desc: string };
     };
     save: string;
+  };
+  messages: {
+    pageTitle: string;
+    searchPlaceholder: string;
+    checkProfile: string;
+    clearChat: string;
+    clearChatConfirmTitle: string;
+    clearChatConfirmText: string;
+    clearChatSuccess: string;
+    typePlaceholder: string;
+    send: string;
+    noMessages: string;
+  };
+  withdrawals: {
+    pageTitle: string;
+    availableBalance: string;
+    minimumWithdrawalNote: string;
+    nominalLabel: string;
+    methodLabel: string;
+    submitButton: string;
+    securityNote: string;
+  };
+  projects: {
+    createTitle: string;
+    createSubtitle: string;
+    titleLabel: string;
+    budgetLabel: string;
+    descriptionLabel: string;
+    skillsLabel: string;
+    requiredSkills: string;
+    optionalSkills: string;
+    deadlineLabel: string;
+    workModeLabel: string;
+    locationLabel: string;
+    publishButton: string;
   };
 }
 
@@ -91,6 +158,37 @@ const dictionary: Record<Language, Dictionary> = {
       monitorPesan: "Monitor Pesan",
       logout: "Log Out",
     },
+    common: {
+      copyright: "© 2026 Jembara. Hak Cipta Dilindungi Undang-Undang.",
+      search: "Cari...",
+      save: "Simpan Perubahan",
+      cancel: "Batal",
+      delete: "Hapus",
+      edit: "Ubah",
+      back: "Kembali",
+      loading: "Memuat...",
+      viewDetails: "Lihat Detail",
+      submit: "Kirim",
+      close: "Tutup",
+      status: {
+        OPEN: "OPEN",
+        PROPOSAL: "PROPOSAL",
+        IN_PROGRESS: "IN PROGRESS",
+        REVIEW: "REVIEW",
+        COMPLETED: "COMPLETED",
+        CANCELLED: "CANCELLED",
+      },
+      verified: "Terverifikasi",
+      unverified: "Belum terverifikasi",
+      noData: "Belum ada data tersedia.",
+    },
+    notifications: {
+      title: "Notifikasi",
+      markAllRead: "Tandai semua dibaca",
+      empty: "Belum ada notifikasi baru.",
+      loadError: "Notifikasi belum dapat dimuat.",
+      justNow: "Baru saja",
+    },
     settings: {
       pageTitle: "Pengaturan",
       pageSubtitle: "Kelola akun dan preferensi kamu.",
@@ -107,6 +205,7 @@ const dictionary: Record<Language, Dictionary> = {
       language: {
         cardTitle: "Bahasa Sistem",
         selectLabel: "PILIH BAHASA",
+        autoSaveNote: "Perubahan bahasa, tema, dan ukuran huruf tersimpan otomatis di perangkat ini.",
       },
       headers: {
         keamanan: {
@@ -137,7 +236,42 @@ const dictionary: Record<Language, Dictionary> = {
         medium: { title: "Sedang (14px)", desc: "Ukuran default yang seimbang untuk kenyamanan membaca reguler." },
         large: { title: "Besar (16px)", desc: "Teks lebih mencolok dan ramah untuk dibaca jarak menengah." },
       },
-      save: "Simpan",
+      save: "Simpan Perubahan",
+    },
+    messages: {
+      pageTitle: "Pesan",
+      searchPlaceholder: "Cari obrolan atau pengguna...",
+      checkProfile: "Cek Profil",
+      clearChat: "Bersihkan Chat",
+      clearChatConfirmTitle: "Bersihkan Chat?",
+      clearChatConfirmText: "Seluruh riwayat obrolan dengan kontak ini akan dibersihkan dari tampilan Anda.",
+      clearChatSuccess: "Tampilan riwayat chat telah dibersihkan.",
+      typePlaceholder: "Ketik pesan...",
+      send: "Kirim",
+      noMessages: "Belum ada obrolan terpilih.",
+    },
+    withdrawals: {
+      pageTitle: "Tarik Saldo",
+      availableBalance: "Saldo tersedia",
+      minimumWithdrawalNote: "Minimum penarikan Rp10.000. Saldo akan dicadangkan sampai Admin memproses permintaan.",
+      nominalLabel: "Nominal penarikan (Rp)",
+      methodLabel: "Metode pencairan",
+      submitButton: "Ajukan Penarikan",
+      securityNote: "Pastikan nama dan nomor tujuan sudah benar.",
+    },
+    projects: {
+      createTitle: "Pasang Lowongan Baru",
+      createSubtitle: "Publikasikan project baru untuk {businessName} dan mulai menerima proposal.",
+      titleLabel: "Judul Project",
+      budgetLabel: "Budget Tetap (Rp)",
+      descriptionLabel: "Deskripsi Project",
+      skillsLabel: "Skill Project",
+      requiredSkills: "Skill Wajib",
+      optionalSkills: "Skill Opsional",
+      deadlineLabel: "Deadline",
+      workModeLabel: "Mode Kerja",
+      locationLabel: "Lokasi",
+      publishButton: "Publikasikan Project",
     },
   },
   en: {
@@ -163,6 +297,37 @@ const dictionary: Record<Language, Dictionary> = {
       monitorPesan: "Message Monitoring",
       logout: "Log Out",
     },
+    common: {
+      copyright: "© 2026 Jembara. All Rights Reserved.",
+      search: "Search...",
+      save: "Save Changes",
+      cancel: "Cancel",
+      delete: "Delete",
+      edit: "Edit",
+      back: "Back",
+      loading: "Loading...",
+      viewDetails: "View Details",
+      submit: "Submit",
+      close: "Close",
+      status: {
+        OPEN: "OPEN",
+        PROPOSAL: "PROPOSAL",
+        IN_PROGRESS: "IN PROGRESS",
+        REVIEW: "REVIEW",
+        COMPLETED: "COMPLETED",
+        CANCELLED: "CANCELLED",
+      },
+      verified: "Verified",
+      unverified: "Unverified",
+      noData: "No data available yet.",
+    },
+    notifications: {
+      title: "Notifications",
+      markAllRead: "Mark all as read",
+      empty: "No new notifications.",
+      loadError: "Unable to load notifications.",
+      justNow: "Just now",
+    },
     settings: {
       pageTitle: "Settings",
       pageSubtitle: "Manage your account and preferences.",
@@ -179,6 +344,7 @@ const dictionary: Record<Language, Dictionary> = {
       language: {
         cardTitle: "System Language",
         selectLabel: "SELECT LANGUAGE",
+        autoSaveNote: "Language, theme, and font size changes are saved automatically on this device.",
       },
       headers: {
         keamanan: {
@@ -209,7 +375,42 @@ const dictionary: Record<Language, Dictionary> = {
         medium: { title: "Medium (14px)", desc: "The balanced default size for comfortable reading." },
         large: { title: "Large (16px)", desc: "More prominent text, easier to read from mid-range." },
       },
-      save: "Save",
+      save: "Save Changes",
+    },
+    messages: {
+      pageTitle: "Messages",
+      searchPlaceholder: "Search conversations or users...",
+      checkProfile: "View Profile",
+      clearChat: "Clear Chat",
+      clearChatConfirmTitle: "Clear Chat?",
+      clearChatConfirmText: "All chat history with this contact will be cleared from your view.",
+      clearChatSuccess: "Chat history view cleared.",
+      typePlaceholder: "Type a message...",
+      send: "Send",
+      noMessages: "No chat selected.",
+    },
+    withdrawals: {
+      pageTitle: "Withdraw Balance",
+      availableBalance: "Available balance",
+      minimumWithdrawalNote: "Minimum withdrawal Rp10.000. Balance is reserved until Admin processes the request.",
+      nominalLabel: "Withdrawal amount (Rp)",
+      methodLabel: "Payout method",
+      submitButton: "Submit Withdrawal",
+      securityNote: "Ensure account name and number are correct.",
+    },
+    projects: {
+      createTitle: "Post New Listing",
+      createSubtitle: "Publish a new project for {businessName} and start receiving proposals.",
+      titleLabel: "Project Title",
+      budgetLabel: "Fixed Budget (Rp)",
+      descriptionLabel: "Project Description",
+      skillsLabel: "Project Skills",
+      requiredSkills: "Required Skills",
+      optionalSkills: "Optional Skills",
+      deadlineLabel: "Deadline",
+      workModeLabel: "Work Mode",
+      locationLabel: "Location",
+      publishButton: "Publish Project",
     },
   },
   ja: {
@@ -235,6 +436,37 @@ const dictionary: Record<Language, Dictionary> = {
       monitorPesan: "メッセージ監視",
       logout: "ログアウト",
     },
+    common: {
+      copyright: "© 2026 Jembara. 無断転載を禁じます。",
+      search: "検索...",
+      save: "変更を保存",
+      cancel: "キャンセル",
+      delete: "削除",
+      edit: "編集",
+      back: "戻る",
+      loading: "読み込み中...",
+      viewDetails: "詳細を見る",
+      submit: "送信",
+      close: "閉じる",
+      status: {
+        OPEN: "募集中",
+        PROPOSAL: "提案中",
+        IN_PROGRESS: "進行中",
+        REVIEW: "レビュー中",
+        COMPLETED: "完了",
+        CANCELLED: "キャンセル済み",
+      },
+      verified: "確認済み",
+      unverified: "未確認",
+      noData: "利用可能なデータがありません。",
+    },
+    notifications: {
+      title: "通知",
+      markAllRead: "すべて既読にする",
+      empty: "新しい通知はありません。",
+      loadError: "通知を読み込めませんでした。",
+      justNow: "たった今",
+    },
     settings: {
       pageTitle: "設定",
       pageSubtitle: "アカウントと環境設定を管理します。",
@@ -251,6 +483,7 @@ const dictionary: Record<Language, Dictionary> = {
       language: {
         cardTitle: "システム言語",
         selectLabel: "言語を選択",
+        autoSaveNote: "言語、テーマ、フォントサイズの設定はこのデバイスに自動保存されます。",
       },
       headers: {
         keamanan: {
@@ -281,7 +514,42 @@ const dictionary: Record<Language, Dictionary> = {
         medium: { title: "中 (14px)", desc: "読みやすさとバランスの取れた標準サイズです。" },
         large: { title: "大 (16px)", desc: "見やすく、離れた距離からも読みやすい文字サイズです。" },
       },
-      save: "保存",
+      save: "変更を保存",
+    },
+    messages: {
+      pageTitle: "メッセージ",
+      searchPlaceholder: "会話やユーザーを検索...",
+      checkProfile: "プロフィールを見る",
+      clearChat: "チャットを消去",
+      clearChatConfirmTitle: "チャットを消去しますか？",
+      clearChatConfirmText: "この連絡先とのすべての会話履歴があなたの画面から消去されます。",
+      clearChatSuccess: "チャット履歴の表示が消去されました。",
+      typePlaceholder: "メッセージを入力...",
+      send: "送信",
+      noMessages: "選択されたチャットはありません。",
+    },
+    withdrawals: {
+      pageTitle: "出金申請",
+      availableBalance: "利用可能残高",
+      minimumWithdrawalNote: "最低出金額はRp10.000です。管理者が処理するまで残高は予約されます。",
+      nominalLabel: "出金金額 (Rp)",
+      methodLabel: "受取方法",
+      submitButton: "出金を申請",
+      securityNote: "口座名義と口座番号が正しいかご確認ください。",
+    },
+    projects: {
+      createTitle: "新規求人を投稿",
+      createSubtitle: "{businessName}の新しいプロジェクトを公開して提案の受け取りを開始します。",
+      titleLabel: "プロジェクト名",
+      budgetLabel: "固定予算 (Rp)",
+      descriptionLabel: "プロジェクト概要",
+      skillsLabel: "必要スキル",
+      requiredSkills: "必須スキル",
+      optionalSkills: "推奨スキル",
+      deadlineLabel: "締切日",
+      workModeLabel: "勤務形態",
+      locationLabel: "勤務地",
+      publishButton: "プロジェクトを公開",
     },
   },
 };

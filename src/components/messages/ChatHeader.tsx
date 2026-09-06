@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Ban, ChevronLeft, MoreVertical, Trash2, User } from "lucide-react";
 import { Conversation } from "@/types/messages";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface ChatHeaderProps {
   conversation: Conversation;
@@ -30,6 +31,7 @@ export default function ChatHeader({
   onToggleBlock,
   isBlocked = false,
 }: ChatHeaderProps) {
+  const { dict } = usePreferences();
   const router = useOptionalRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -150,7 +152,7 @@ export default function ChatHeader({
               className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-canvas hover:text-brand"
             >
               <User size={16} className="shrink-0 text-ink-muted" />
-              Cek Profil
+              {dict.messages.checkProfile}
             </button>
 
             <button
@@ -160,7 +162,7 @@ export default function ChatHeader({
               className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-canvas hover:text-brand"
             >
               <Trash2 size={16} className="shrink-0 text-ink-muted" />
-              Bersihkan Chat
+              {dict.messages.clearChat}
             </button>
 
             <button

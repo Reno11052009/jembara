@@ -22,6 +22,7 @@ import {
   markAllNotificationsAsReadAction,
   markNotificationAsReadAction,
 } from "@/app/actions/notifications";
+import { usePreferences } from "@/contexts/PreferencesContext";
 import type { HeaderNotification } from "@/types/notification";
 
 const NOTIFICATION_REFRESH_INTERVAL_MS = 120_000;
@@ -76,6 +77,7 @@ function formatRelativeTime(value: string) {
 }
 
 export default function NotificationMenu() {
+  const { dict } = usePreferences();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<HeaderNotification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -222,9 +224,9 @@ export default function NotificationMenu() {
         >
           <div className="flex items-center justify-between border-b border-gray-100 dark:border-hairline px-5 py-4">
             <div>
-              <h2 className="font-display text-base font-black text-ink">Notifikasi</h2>
+              <h2 className="font-display text-base font-black text-ink">{dict.notifications.title}</h2>
               <p className="mt-0.5 text-xs text-ink-muted">
-                {unreadCount > 0 ? `${unreadCount} belum dibaca` : "Semua sudah dibaca"}
+                {unreadCount > 0 ? `${unreadCount} unread` : "All read"}
               </p>
             </div>
             {unreadCount > 0 && (
@@ -233,7 +235,7 @@ export default function NotificationMenu() {
                 onClick={() => void markAllAsRead()}
                 className="text-xs font-bold text-brand transition-colors hover:text-orange-700"
               >
-                Tandai semua dibaca
+                {dict.notifications.markAllRead}
               </button>
             )}
           </div>
@@ -242,7 +244,7 @@ export default function NotificationMenu() {
             {isLoading ? (
               <div className="flex items-center justify-center gap-2 px-5 py-10 text-sm text-ink-muted">
                 <LoaderCircle size={18} className="animate-spin" />
-                Memuat notifikasi...
+                {dict.common.loading}
               </div>
             ) : loadError ? (
               <div className="px-5 py-8 text-center">
@@ -254,7 +256,7 @@ export default function NotificationMenu() {
                   }}
                   className="mt-3 text-xs font-bold text-brand hover:text-orange-700"
                 >
-                  Coba lagi
+                  {dict.common.loading}
                 </button>
               </div>
             ) : notifications.length === 0 ? (
@@ -262,8 +264,7 @@ export default function NotificationMenu() {
                 <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 dark:bg-surface text-gray-400 dark:text-ink-muted">
                   <Bell size={20} />
                 </span>
-                <p className="mt-3 text-sm font-bold text-ink">Belum ada notifikasi</p>
-                <p className="mt-1 text-xs text-ink-muted">Aktivitas terbaru akan tampil di sini.</p>
+                <p className="mt-3 text-sm font-bold text-ink">{dict.notifications.empty}</p>
               </div>
             ) : (
               notifications.map((notification) => {
