@@ -103,11 +103,11 @@ Kredensial asli tidak disimpan di repository. Gunakan environment lokal yang kua
   <img src="./docs/landing_page.png" alt="Homepage" width="800"/>
   <p><em>Homepage - Tampilan utama aplikasi</em></p>
   
-  <img src="[URL_SCREENSHOT_2]" alt="Dashboard" width="800"/>
+  <img src="./docs/admin_panel.png" alt="Dashboard" width="800"/>
   <p><em>Dashboard - Panel kontrol pengguna</em></p>
   
-  <img src="[URL_SCREENSHOT_3]" alt="Feature" width="800"/>
-  <p><em>[Nama Fitur] - [Deskripsi screenshot]</em></p>
+  <img src="./docs/jelita_ai.png" alt="Feature" width="800"/>
+  <p><em>Jelita AI - AI Asisten untuk Student dan UMKM</em></p>
 </div>
 
 

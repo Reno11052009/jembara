@@ -261,15 +261,37 @@ export default function ChatBubbleWidget({
     setInput("");
     setIsLoading(true);
 
+    const mapped = nextMessages
+      .map((m) => ({
+        role: m.sender === "user" ? ("user" as const) : ("assistant" as const),
+        content: m.text.trim().slice(0, 2000),
+      }))
+      .filter((m) => m.content.length > 0);
+
+    let payloadMessages = mapped.slice(-9);
+    while (payloadMessages.length > 0 && payloadMessages[0].role !== "user") {
+      payloadMessages.shift();
+    }
+    while (
+      payloadMessages.length > 0 &&
+      payloadMessages.at(-1)?.role !== "user"
+    ) {
+      payloadMessages.pop();
+    }
+    payloadMessages = payloadMessages.filter((msg, idx, arr) => {
+      if (idx === 0) return true;
+      return msg.role !== arr[idx - 1].role;
+    });
+    if (payloadMessages.length === 0) {
+      payloadMessages = [{ role: "user", content: trimmed.slice(0, 2000) }];
+    }
+
     try {
       const response = await fetch("/api/chatbot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: nextMessages.map((m) => ({
-            role: m.sender === "user" ? "user" : "assistant",
-            content: m.text,
-          })),
+          messages: payloadMessages,
         }),
       });
 
