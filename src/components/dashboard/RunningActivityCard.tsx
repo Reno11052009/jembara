@@ -1,4 +1,7 @@
+"use client";
+
 import { RunningActivity } from "@/types/dashboard";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface RunningActivityCardProps {
   activities: RunningActivity[];
@@ -7,14 +10,23 @@ interface RunningActivityCardProps {
 export default function RunningActivityCard({
   activities,
 }: RunningActivityCardProps) {
+  const { dict } = usePreferences();
+
+  const title =
+    dict.sidebar.activeProjects === "Active Projects"
+      ? "Running Projects Activity"
+      : dict.sidebar.activeProjects === "進行中のプロジェクト"
+      ? "進行中プロジェクトのアクティビティ"
+      : "Aktivitas Project Berjalan";
+
   return (
     <div className="rounded-xl border border-hairline bg-card p-4">
-      <h3 className="text-sm font-display font-black text-ink">Aktivitas Project Berjalan</h3>
+      <h3 className="text-sm font-display font-black text-ink">{title}</h3>
 
       <div className="mt-2 flex flex-col gap-4">
         {activities.length === 0 && (
           <p className="rounded-lg bg-canvas p-4 text-sm text-ink-muted">
-            Belum ada aktivitas proyek.
+            {dict.common.noData}
           </p>
         )}
         {activities.map((activity) => {
@@ -48,10 +60,10 @@ export default function RunningActivityCard({
                   }`}
                 >
                   {activity.status === "completed"
-                    ? "Completed"
+                    ? dict.common.status.COMPLETED
                     : activity.status === "review"
-                      ? "In Review"
-                      : "In Progress"}
+                      ? dict.common.status.REVIEW
+                      : dict.common.status.IN_PROGRESS}
                 </span>
               </div>
                 

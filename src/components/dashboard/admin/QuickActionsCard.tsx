@@ -1,10 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import { AdminQuickAction } from "@/types/admin-dashboard";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function QuickActionsCard({ actions }: { actions: AdminQuickAction[] }) {
+  const { dict } = usePreferences();
+
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-hairline bg-card p-6">
-      <h2 className="font-display text-lg font-black text-ink">Aksi Cepat Admin</h2>
+      <h2 className="font-display text-lg font-black text-ink">{dict.admin.quickActionsTitle}</h2>
       <div className="flex flex-col gap-3">
         {actions.map((action) => {
           const Icon = action.icon;

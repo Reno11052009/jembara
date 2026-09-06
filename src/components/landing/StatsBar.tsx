@@ -3,9 +3,19 @@
 import type { StatItem } from "@/types/landing";
 import { useReveal } from "@/hooks/useReveal";
 import { Reveal } from "@/components/ui/Reveal";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function StatsBar({ stats }: { stats: StatItem[] }) {
+  const { dict } = usePreferences();
   const { ref, isVisible } = useReveal<HTMLElement>();
+
+  const getLocalizedLabel = (label: string) => {
+    if (label.includes("Proyek Selesai")) return dict.landing.stats.completedProjects;
+    if (label.includes("Mahasiswa Aktif")) return dict.landing.stats.activeStudents;
+    if (label.includes("UMKM Mitra")) return dict.landing.stats.partnerUmkm;
+    if (label.includes("Tingkat Kepuasan")) return dict.landing.stats.satisfactionRate;
+    return label;
+  };
 
   return (
     <section
@@ -23,7 +33,9 @@ export default function StatsBar({ stats }: { stats: StatItem[] }) {
             <p className="font-display font-black text-3xl text-brand">
               {stat.value}
             </p>
-            <p className="mt-1 font-body text-sm text-white">{stat.label}</p>
+            <p className="mt-1 font-body text-sm text-white">
+              {getLocalizedLabel(stat.label)}
+            </p>
           </Reveal>
         ))}
       </div>

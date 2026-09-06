@@ -4,6 +4,7 @@ import { Calendar } from "lucide-react";
 import type { LandingProject, ProjectBadge } from "@/types/landing";
 import { useReveal } from "@/hooks/useReveal";
 import { Reveal } from "@/components/ui/Reveal";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 const badgeStyles: Record<ProjectBadge, string> = {
   Premium: "bg-brand-soft text-brand",
@@ -11,6 +12,7 @@ const badgeStyles: Record<ProjectBadge, string> = {
 };
 
 export default function LatestProjects({ projects }: { projects: LandingProject[] }) {
+  const { dict } = usePreferences();
   const { ref, isVisible } = useReveal<HTMLElement>();
 
   return (
@@ -26,7 +28,7 @@ export default function LatestProjects({ projects }: { projects: LandingProject[
           delay={1}
           className="font-display text-xs font-black uppercase tracking-[0.15em] text-brand"
         >
-          Daftar Project
+          {dict.landing.latestProjects.badge}
         </Reveal>
         <Reveal
           as="h2"
@@ -34,7 +36,7 @@ export default function LatestProjects({ projects }: { projects: LandingProject[
           delay={2}
           className="mt-2 font-display text-3xl font-black text-ink"
         >
-          Project Terbaru dari UMKM
+          {dict.landing.latestProjects.title}
         </Reveal>
         <Reveal
           as="p"
@@ -42,8 +44,7 @@ export default function LatestProjects({ projects }: { projects: LandingProject[
           delay={3}
           className="font-body mx-auto mt-3 max-w-xl text-sm text-ink-muted"
         >
-          Lihat peluang kerja sama terbaru dan mulailah membangun portofolio
-          hebat Anda hari ini.
+          {dict.landing.latestProjects.subtitle}
         </Reveal>
 
         <div className="mt-12 grid grid-cols-1 gap-5 text-left sm:grid-cols-2 lg:grid-cols-3">
@@ -75,7 +76,7 @@ export default function LatestProjects({ projects }: { projects: LandingProject[
 
               {/* 3. Estimasi Budget */}
               <div className="mt-4">
-                <p className="font-body text-xs text-ink-muted">Estimasi Budget</p>
+                <p className="font-body text-xs text-ink-muted">{dict.projects.budgetLabel}</p>
                 <p className="font-display text-sm font-black text-brand">
                   {project.budgetLabel}
                 </p>
@@ -100,7 +101,7 @@ export default function LatestProjects({ projects }: { projects: LandingProject[
               </div>
             </Reveal>
           ))}
-          {projects.length === 0 && <p className="col-span-full rounded-xl border border-dashed border-hairline p-8 text-center text-ink-muted">Belum ada project OPEN. Jadilah UMKM pertama yang memasang project.</p>}
+          {projects.length === 0 && <p className="col-span-full rounded-xl border border-dashed border-hairline p-8 text-center text-ink-muted">{dict.landing.latestProjects.noProjects}</p>}
         </div>
       </div>
     </section>

@@ -1,15 +1,20 @@
+"use client";
+
 import PageHeader from "@/components/layout/PageHeader";
 import UserListToolbar from "@/components/dashboard/admin/users/UserListToolbar";
 import UserListTable from "@/components/dashboard/admin/users/UserListTable";
 import AdminPagination from "@/components/dashboard/admin/AdminPagination";
 import type { AdminUsersData } from "@/types/admin-users";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function AdminUserListView({ data }: { data: AdminUsersData }) {
+  const { dict } = usePreferences();
+
   return (
     <>
       <PageHeader
-        title="Daftar User"
-        subtitle="Manajemen seluruh talenta / mahasiswa yang terdaftar di Jembara."
+        title={dict.admin.userListTitle}
+        subtitle={dict.admin.userListSubtitle}
         userName={data.adminName}
         avatarUrl={data.adminAvatarUrl}
       />

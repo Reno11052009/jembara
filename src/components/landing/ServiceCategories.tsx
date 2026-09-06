@@ -3,8 +3,10 @@
 import { serviceCategories } from "@/lib/landing-content";
 import { useReveal } from "@/hooks/useReveal";
 import { Reveal } from "@/components/ui/Reveal";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function ServiceCategories() {
+  const { dict } = usePreferences();
   const { ref, isVisible } = useReveal<HTMLElement>();
 
   return (
@@ -20,7 +22,7 @@ export default function ServiceCategories() {
           delay={1}
           className="text-xs font-display font-black uppercase tracking-[0.15em] text-brand"
         >
-          Kategori Populer
+          {dict.landing.categories.badge}
         </Reveal>
         <Reveal
           as="h2"
@@ -28,7 +30,7 @@ export default function ServiceCategories() {
           delay={2}
           className="mt-2 font-display text-3xl font-black text-black dark:text-ink"
         >
-          Layanan Digital Paling Dicari
+          {dict.landing.categories.title}
         </Reveal>
         <Reveal
           as="p"
@@ -36,8 +38,7 @@ export default function ServiceCategories() {
           delay={3}
           className="font-body mx-auto mt-3 max-w-xl text-sm text-ink-muted"
         >
-          Temukan talenta terbaik berdasarkan keahlian spesifik yang
-          dibutuhkan bisnis Anda.
+          {dict.landing.categories.subtitle}
         </Reveal>
 
         <div className="mt-12 grid grid-cols-1 gap-5 text-left sm:grid-cols-2 lg:grid-cols-3">
@@ -58,7 +59,7 @@ export default function ServiceCategories() {
                     {category.title}
                   </h3>
                   <p className="font-body text-sm text-ink-muted">
-                    {category.activeProjectsLabel}
+                    {dict.landing.categories.activeProjectsLabel}
                   </p>
                 </div>
               </Reveal>

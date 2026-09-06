@@ -3,9 +3,18 @@
 import { processSteps } from "@/lib/landing-content";
 import { useReveal } from "@/hooks/useReveal";
 import { Reveal } from "@/components/ui/Reveal";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function ProcessSteps() {
+  const { dict } = usePreferences();
   const { ref, isVisible } = useReveal<HTMLElement>();
+
+  const steps = [
+    { number: "01", title: dict.landing.process.step1Title, description: dict.landing.process.step1Desc },
+    { number: "02", title: dict.landing.process.step2Title, description: dict.landing.process.step2Desc },
+    { number: "03", title: dict.landing.process.step3Title, description: dict.landing.process.step3Desc },
+    { number: "04", title: dict.landing.process.step4Title, description: dict.landing.process.step4Desc },
+  ];
 
   return (
     <section
@@ -20,7 +29,7 @@ export default function ProcessSteps() {
           delay={1}
           className="font-body text-xs font-black uppercase tracking-[0.15em] text-brand"
         >
-          Proses Sederhana
+          {dict.landing.process.badge}
         </Reveal>
         <Reveal
           as="h2"
@@ -28,7 +37,7 @@ export default function ProcessSteps() {
           delay={2}
           className="mt-2 font-display text-3xl font-black text-ink"
         >
-          Bagaimana Jembara Membantu Anda
+          {dict.landing.process.title}
         </Reveal>
         <Reveal
           as="p"
@@ -36,12 +45,11 @@ export default function ProcessSteps() {
           delay={3}
           className="font-body mx-auto mt-3 max-w-xl text-sm text-ink-muted"
         >
-          Dari pasang project hingga serah terima hasil kerja, semua
-          dirancang aman dan transparan.
+          {dict.landing.process.subtitle}
         </Reveal>
 
         <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {processSteps.map((step, i) => (
+          {steps.map((step, i) => (
             <Reveal
               key={step.number}
               active={isVisible}

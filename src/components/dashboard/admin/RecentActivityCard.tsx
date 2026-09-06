@@ -1,10 +1,15 @@
+"use client";
+
 import ActivityListItem from "@/components/dashboard/admin/ActivityListItem";
 import { PlatformActivity } from "@/types/admin-dashboard";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function RecentActivityCard({ activities }: { activities: PlatformActivity[] }) {
+  const { dict } = usePreferences();
+
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-hairline bg-card p-6">
-      <h2 className="font-display text-lg font-black text-ink">Aktivitas Terbaru Platform</h2>
+      <h2 className="font-display text-lg font-black text-ink">{dict.admin.recentActivityTitle}</h2>
       <div className="flex flex-col gap-3">
         {activities.length > 0 ? (
           activities.map((activity) => (
@@ -12,7 +17,7 @@ export default function RecentActivityCard({ activities }: { activities: Platfor
           ))
         ) : (
           <p className="rounded-xl bg-canvas p-6 text-center text-sm text-ink-muted">
-            Belum ada aktivitas platform.
+            {dict.admin.noActivity}
           </p>
         )}
       </div>

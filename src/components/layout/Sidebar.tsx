@@ -87,12 +87,9 @@ export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
   const { dict } = usePreferences();
 
   const handleLogoutClick = async () => {
-    // Easter egg: kesempatan 1 banding 1.000.000, icon "!" default SweetAlert
-    // diganti gambar custom. Selain itu (judul, tombol, alur logout) tetap sama.
-    // TEMP: dipaksa selalu true buat preview — balikin ke baris di bawah kalau udah oke:
-    // const isEasterEgg = Math.floor(Math.random() * 1_000_000) === 0;
-    const isEasterEgg = true;
-
+    
+    const isEasterEgg = Math.floor(Math.random() * 1_000_000) === 0;
+    
     const result = await Swal.fire({
       title: "Are You Sure?",
       showCancelButton: true,

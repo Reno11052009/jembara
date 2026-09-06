@@ -1,15 +1,20 @@
+"use client";
+
 import PageHeader from "@/components/layout/PageHeader";
 import UmkmListToolbar from "@/components/dashboard/admin/umkm/UmkmListToolbar";
 import UmkmListTable from "@/components/dashboard/admin/umkm/UmkmListTable";
 import AdminPagination from "@/components/dashboard/admin/AdminPagination";
 import type { AdminUmkmData } from "@/types/admin-umkm";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function AdminUmkmListView({ data }: { data: AdminUmkmData }) {
+  const { dict } = usePreferences();
+
   return (
     <>
       <PageHeader
-        title="Daftar Pemilik UMKM"
-        subtitle="Tinjau profil dan aktivitas pelaku usaha mikro, kecil, dan menengah."
+        title={dict.admin.umkmListTitle}
+        subtitle={dict.admin.umkmListSubtitle}
         userName={data.adminName}
         avatarUrl={data.adminAvatarUrl}
       />

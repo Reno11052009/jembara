@@ -7,8 +7,10 @@ import Modal from "@/components/ui/Modal";
 import { LoginFormData, LoginFormErrors, FormStatus } from "@/types/auth";
 import { validatePassword } from "@/lib/validation";
 import { loginAction } from "@/app/actions/auth";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function LoginForm() {
+  const { dict } = usePreferences();
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -66,7 +68,7 @@ export default function LoginForm() {
         className="flex flex-col gap-5 rounded-xl border border-gray-200 p-6 dark:border-gray-700"
       >
         <InputField
-          label="Email"
+          label={dict.auth.emailLabel}
           required
           type="email"
           autoComplete="email"
@@ -88,7 +90,7 @@ export default function LoginForm() {
           />
         )}
         <InputField
-          label="Password"
+          label={dict.auth.passwordLabel}
           required
           type="password"
           autoComplete="current-password"
@@ -111,7 +113,7 @@ export default function LoginForm() {
         )}
 
         <Button type="submit" isLoading={status === "submitting"} fullWidth>
-          Masuk Antrean
+          {dict.auth.loginButton}
         </Button>
       </form>
 
