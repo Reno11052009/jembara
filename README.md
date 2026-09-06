@@ -91,9 +91,9 @@ Untuk kemudahan pengujian dan evaluasi alur kerja end-to-end tanpa perlu mendaft
 
 | Peran | Nama Akun | Email | Kata Sandi | Cakupan Pengujian |
 |:---|:---|:---|:---|:---|
-| **Student (Pelajar/Talenta)** | Dikonfigurasi saat seed demo | `DEMO_STUDENT_EMAIL` | `DEMO_STUDENT_PASSWORD` | Marketplace, proposal, portofolio, Skill Passport, dan pengiriman hasil. |
-| **UMKM (Pemilik Usaha)** | Dikonfigurasi saat seed demo | `DEMO_UMKM_EMAIL` | `DEMO_UMKM_PASSWORD` | Lowongan, Smart Matching, pembayaran, revisi, dan approval. |
-| **Admin** | Dikonfigurasi melalui environment | `ADMIN_SEED_EMAIL` | `ADMIN_SEED_PASSWORD` | Moderasi laporan, verifikasi skill, audit, dan penarikan saldo. |
+| **Student (Pelajar/Talenta)** | Dikonfigurasi saat seed demo | `test-student@jembara.web.id` | `12345678` | Marketplace, proposal, portofolio, Skill Passport, dan pengiriman hasil. |
+| **UMKM (Pemilik Usaha)** | Dikonfigurasi saat seed demo | `test-umkm@jembara.web.id` | `12345678` | Lowongan, Smart Matching, pembayaran, revisi, dan approval. |
+| **Admin** | Dikonfigurasi melalui environment | `admin@jembara.web.id` | `QoSED9-PdhbCYu_aV7UVnExVd5BZs3GNYH_fWwdYNe_TO_98` | Moderasi laporan, verifikasi skill, audit, dan penarikan saldo. |
 
 Kredensial asli tidak disimpan di repository. Gunakan environment lokal yang kuat dan berbeda dari produksi.
 
