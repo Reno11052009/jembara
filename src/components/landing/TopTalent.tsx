@@ -5,8 +5,10 @@ import Link from "next/link";
 import type { Talent } from "@/types/landing";
 import { useReveal } from "@/hooks/useReveal";
 import { Reveal } from "@/components/ui/Reveal";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function TopTalent({ talents }: { talents: Talent[] }) {
+  const { dict } = usePreferences();
   const { ref, isVisible } = useReveal<HTMLElement>();
 
   return (
@@ -22,7 +24,7 @@ export default function TopTalent({ talents }: { talents: Talent[] }) {
           delay={1}
           className="text-xs font-display font-black uppercase tracking-[0.15em] text-brand"
         >
-          Talenta Berbakat
+          {dict.landing.topTalents.badge}
         </Reveal>
         <Reveal
           as="h2"
@@ -30,7 +32,7 @@ export default function TopTalent({ talents }: { talents: Talent[] }) {
           delay={2}
           className="mt-2 font-display text-3xl font-black text-ink"
         >
-          Mahasiswa Terbaik Minggu Ini
+          {dict.landing.topTalents.title}
         </Reveal>
         <Reveal
           as="p"
@@ -38,8 +40,7 @@ export default function TopTalent({ talents }: { talents: Talent[] }) {
           delay={3}
           className="mx-auto mt-3 max-w-xl text-sm font-body text-ink-muted"
         >
-          Lihat profil mahasiswa berprestasi dengan rekam jejak penyelesaian
-          project yang mengagumkan.
+          {dict.landing.topTalents.subtitle}
         </Reveal>
 
         <div className="mt-12 grid grid-cols-1 gap-5 text-left sm:grid-cols-2 lg:grid-cols-3">
@@ -83,10 +84,12 @@ export default function TopTalent({ talents }: { talents: Talent[] }) {
                   </span>
                 ))}
               </div>
-              <Link href={`/talent/${talent.id}`} className="mt-5 inline-flex text-sm font-bold text-brand">Lihat Skill Passport</Link>
+              <Link href={`/talent/${talent.id}`} className="mt-5 inline-flex text-sm font-bold text-brand">
+                {dict.portfolio.skillPassportTitle}
+              </Link>
             </Reveal>
           ))}
-          {talents.length === 0 && <p className="col-span-full rounded-xl border border-dashed border-hairline p-8 text-center text-ink-muted">Belum ada talent publik yang sedang tersedia.</p>}
+          {talents.length === 0 && <p className="col-span-full rounded-xl border border-dashed border-hairline p-8 text-center text-ink-muted">{dict.landing.topTalents.noTalent}</p>}
         </div>
       </div>
     </section>

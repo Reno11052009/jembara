@@ -11,6 +11,7 @@ import {
   validateAddress,
 } from "@/lib/validation";
 import { registerAction } from "@/app/actions/auth";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 const initialData: RegisterFormData = {
   fullName: "",
@@ -21,6 +22,7 @@ const initialData: RegisterFormData = {
 };
 
 export default function RegisterForm() {
+  const { dict } = usePreferences();
   const [formData, setFormData] = useState<RegisterFormData>(initialData);
   const [errors, setErrors] = useState<RegisterFormErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -99,7 +101,7 @@ export default function RegisterForm() {
       </div>
 
       <InputField
-        label="Nama Lengkap"
+        label={dict.auth.nameLabel}
         required
         autoComplete="name"
         placeholder="Nama kamu"
@@ -108,7 +110,7 @@ export default function RegisterForm() {
         onChange={(e) => handleChange("fullName", e.target.value)}
       />
       <InputField
-        label="Email"
+        label={dict.auth.emailLabel}
         required
         type="email"
         autoComplete="email"
@@ -128,7 +130,7 @@ export default function RegisterForm() {
         onChange={(e) => handleChange("address", e.target.value)}
       />
       <InputField
-        label="Password"
+        label={dict.auth.passwordLabel}
         required
         type="password"
         autoComplete="new-password"
@@ -138,7 +140,7 @@ export default function RegisterForm() {
         onChange={(e) => handleChange("password", e.target.value)}
       />
       <InputField
-        label="Konfirmasi Password"
+        label={dict.auth.confirmPasswordLabel}
         required
         type="password"
         autoComplete="new-password"
@@ -161,7 +163,7 @@ export default function RegisterForm() {
       )}
 
       <Button type="submit" isLoading={status === "submitting"} fullWidth>
-        Gabung Matchmaking
+        {dict.auth.registerButton}
       </Button>
     </form>
   );

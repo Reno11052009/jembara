@@ -3,6 +3,7 @@
 import type { Testimonial } from "@/types/landing";
 import { useReveal } from "@/hooks/useReveal";
 import { Reveal } from "@/components/ui/Reveal";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 function getInitials(name: string) {
   return name
@@ -14,6 +15,7 @@ function getInitials(name: string) {
 }
 
 export default function Testimonials({ testimonials }: { testimonials: Testimonial[] }) {
+  const { dict } = usePreferences();
   const { ref, isVisible } = useReveal<HTMLElement>();
 
   return (
@@ -28,7 +30,7 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
           delay={1}
           className="font-display text-lg font-black uppercase tracking-[0.15em] text-brand"
         >
-          Cerita Sukses
+          {dict.landing.testimonials.badge}
         </Reveal>
         <Reveal
           as="h2"
@@ -36,7 +38,7 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
           delay={2}
           className="mt-2 font-display text-4xl font-black text-ink"
         >
-          Apa Kata Mereka Tentang Kami
+          {dict.landing.testimonials.title}
         </Reveal>
         <Reveal
           as="p"
@@ -44,8 +46,7 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
           delay={3}
           className="mx-auto mt-3 max-w-xl text-base text-ink-muted"
         >
-          Dari para pelaku usaha kecil hingga talenta muda masa depan negeri
-          ini.
+          {dict.landing.testimonials.subtitle}
         </Reveal>
 
         <div className="mt-12 grid grid-cols-1 gap-5 text-left sm:grid-cols-2">
@@ -77,7 +78,7 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
               </div>
             </Reveal>
           ))}
-          {testimonials.length === 0 && <p className="col-span-full rounded-xl border border-dashed border-hairline p-8 text-center text-ink-muted">Cerita sukses akan tampil setelah proyek pertama selesai dan diberi ulasan.</p>}
+          {testimonials.length === 0 && <p className="col-span-full rounded-xl border border-dashed border-hairline p-8 text-center text-ink-muted">{dict.landing.testimonials.empty}</p>}
         </div>
       </div>
     </section>

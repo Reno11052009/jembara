@@ -1,3 +1,5 @@
+"use client";
+
 import { Briefcase, CheckCircle2, FileText, Users } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 import OwnerStatsGrid from "@/components/dashboard/umkm/OwnerStatsGrid";
@@ -5,6 +7,7 @@ import RecentJobListings from "@/components/dashboard/umkm/RecentJobListings";
 import RecentApplicants from "@/components/dashboard/umkm/RecentApplicants";
 import type { DashboardStat } from "@/types/dashboard";
 import type { OwnerDashboardOverview } from "@/types/umkm-owner-dashboard";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 const statIcons = {
   "lowongan-aktif": FileText,
@@ -24,16 +27,24 @@ export default function OwnerDashboardView({
   ownerAvatarUrl,
   data,
 }: OwnerDashboardViewProps) {
+  const { dict } = usePreferences();
   const stats: DashboardStat[] = data.stats.map((stat) => ({
     ...stat,
     icon: statIcons[stat.id as keyof typeof statIcons] ?? Briefcase,
   }));
 
+  const greeting =
+    dict.dashboard.welcome === "Welcome Back"
+      ? `Hello, ${ownerName}!`
+      : dict.dashboard.welcome === "おかえりなさい"
+      ? `こんにちは、${ownerName}さん！`
+      : `Halo, ${ownerName}!`;
+
   return (
     <>
       <PageHeader
-        title={`Halo, ${ownerName}!`}
-        subtitle={`Selamat datang di dashboard bisnis ${data.businessName}. Pantau aktivitas pencarian talenta Anda.`}
+        title={greeting}
+        subtitle={dict.dashboard.subtitleUmkm}
         userName={ownerName}
         avatarUrl={ownerAvatarUrl}
       />

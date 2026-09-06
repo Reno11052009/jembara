@@ -4,14 +4,7 @@ import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { ChevronDown, Menu, User, X } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
-
-const navLinks = [
-  { label: "Bagaimana Cara Kerja", href: "#cara-kerja" },
-  { label: "Kategori", href: "#kategori" },
-  { label: "Talenta", href: "#talenta" },
-  { label: "Project", href: "#project" },
-  { label: "Statistik", href: "#statistik" },
-];
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface NavbarProps {
   sessionName: string | null;
@@ -23,6 +16,7 @@ interface AccountDropdownProps {
 }
 
 function AccountDropdown({ sessionName, mobile = false }: AccountDropdownProps) {
+  const { dict } = usePreferences();
   const [isOpen, setIsOpen] = useState(false);
   const menuId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -91,14 +85,14 @@ function AccountDropdown({ sessionName, mobile = false }: AccountDropdownProps) 
             onClick={() => setIsOpen(false)}
             className="rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-black/5 dark:hover:bg-white/10"
           >
-            Dashboard
+            {dict.landing.nav.dashboard}
           </Link>
           <form action={logoutAction}>
             <button
               type="submit"
               className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-ink hover:bg-black/5 dark:hover:bg-white/10"
             >
-              Logout
+              {dict.sidebar.logout}
             </button>
           </form>
         </div>
@@ -108,8 +102,17 @@ function AccountDropdown({ sessionName, mobile = false }: AccountDropdownProps) 
 }
 
 export default function Navbar({ sessionName }: NavbarProps) {
+  const { dict } = usePreferences();
   const [isOpen, setIsOpen] = useState(false);
   const authenticatedName = sessionName?.trim() || null;
+
+  const navLinks = [
+    { label: dict.landing.nav.caraKerja, href: "#cara-kerja" },
+    { label: dict.landing.nav.kategori, href: "#kategori" },
+    { label: dict.landing.nav.cariTalent, href: "#talenta" },
+    { label: dict.landing.nav.cariProject, href: "#project" },
+    { label: dict.landing.nav.statistik, href: "#statistik" },
+  ];
 
   return (
     <header className="sticky top-0 z-40 border-b border-hairline bg-card">
@@ -143,13 +146,13 @@ export default function Navbar({ sessionName }: NavbarProps) {
           ) : (
             <>
               <Link href="/login" className="text-sm font-medium text-ink hover:text-brand">
-                Masuk
+                {dict.landing.nav.login}
               </Link>
               <Link
                 href="/register"
-                className="flex items-center justify-center rounded-full bg-ink dark:bg-brand px-5 py-2.5 text-sm font-body font-black text-white hover:opacity-90"
+                className="flex items-center justify-center rounded-full bg-ink dark:bg-brand px-5 py-2.5 text-sm font-body font-black text-white hover:opacity-90 uppercase"
               >
-                DAFTAR SEKARANG
+                {dict.landing.nav.register}
               </Link>
             </>
           )}
@@ -177,13 +180,13 @@ export default function Navbar({ sessionName }: NavbarProps) {
             ) : (
               <>
                 <Link href="/login" className="text-sm font-black text-ink">
-                  Masuk
+                  {dict.landing.nav.login}
                 </Link>
                 <Link
                   href="/register"
                   className="rounded-full bg-ink dark:bg-brand px-5 py-2.5 text-center text-sm font-semibold text-white"
                 >
-                  Daftar Sekarang
+                  {dict.landing.nav.register}
                 </Link>
               </>
             )}

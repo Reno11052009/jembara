@@ -1,6 +1,9 @@
+"use client";
+
 import { Flame } from "lucide-react";
 import Link from "next/link";
 import { RecommendedProject } from "@/types/dashboard";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface RecommendedProjectCardProps {
   project: RecommendedProject;
@@ -9,6 +12,8 @@ interface RecommendedProjectCardProps {
 export default function RecommendedProjectCard({
   project,
 }: RecommendedProjectCardProps) {
+  const { dict } = usePreferences();
+
   return (
     <div className="rounded-xl border border-hairline bg-card p-4 sm:p-5">
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
@@ -29,12 +34,12 @@ export default function RecommendedProjectCard({
       <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex gap-6 text-base">
           <div>
-            <p className="text-ink-muted font-body text-xs">Budget</p>
+            <p className="text-ink-muted font-body text-xs">{dict.projects.budgetLabel}</p>
             <p className="mt-0.5 font-black font-display text-sm text-ink">{project.budgetLabel}</p>
           </div>
           <div>
             <p className="text-ink-muted font-body text-xs">
-              Deadline
+              {dict.projects.deadlineLabel}
             </p>
             <p className="mt-0.5 font-black font-display text-sm text-ink">{project.deadlineLabel}</p>
           </div>
@@ -54,9 +59,9 @@ export default function RecommendedProjectCard({
       <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-3">
         <Link
           href="/dashboard/find-projects"
-          className="inline-flex h-10 w-full sm:w-auto items-center justify-center rounded-full border-2 border-ink px-6 text-xs sm:text-sm font-semibold text-ink transition-colors hover:border-brand hover:text-brand"
+          className="inline-flex h-10 w-full sm:w-auto items-center justify-center rounded-full border-2 border-ink px-6 text-xs sm:text-sm font-semibold text-ink transition-colors hover:border-brand hover:text-brand uppercase"
         >
-          LIHAT PROJECT
+          {dict.common.viewDetails}
         </Link>
         <span className="text-xs sm:text-sm text-ink-muted">{project.postedLabel}</span>
       </div>

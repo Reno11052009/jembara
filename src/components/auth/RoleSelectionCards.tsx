@@ -8,6 +8,7 @@ import {
 } from "@/app/actions/auth";
 import SearchableSelect from "@/components/ui/SearchableSelect";
 import IndonesiaRegionFields from "@/components/regions/IndonesiaRegionFields";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 const initialState: RoleSelectionActionState = {};
 
@@ -29,6 +30,7 @@ const inputClassName =
   "w-full rounded-xl border border-zinc-200 dark:border-hairline bg-white dark:bg-card px-4 py-3 text-sm text-zinc-900 dark:text-ink outline-none transition placeholder:text-zinc-400 dark:placeholder:text-ink-muted focus:border-brand focus:ring-3 focus:ring-brand/10";
 
 export default function RoleSelectionCards() {
+  const { dict } = usePreferences();
   const [showBusinessForm, setShowBusinessForm] = useState(false);
   const [state, formAction, pending] = useActionState(
     selectRoleAction,
@@ -64,10 +66,10 @@ export default function RoleSelectionCards() {
           </div>
 
           <h2 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-ink">
-            Pelajar / Mahasiswa
+            {dict.auth.roleStudent}
           </h2>
           <p className="mb-7 text-sm leading-relaxed text-zinc-500 dark:text-ink-muted">
-            Cari pengalaman, kerjakan project nyata, dan bangun portfolio profesionalmu.
+            {dict.auth.roleStudentDesc}
           </p>
 
           <form action={formAction}>
@@ -80,7 +82,7 @@ export default function RoleSelectionCards() {
               {pending && !showBusinessForm ? (
                 <LoaderCircle size={17} className="animate-spin" />
               ) : null}
-              Pilih Pelajar
+              {dict.auth.roleStudent}
             </button>
           </form>
         </div>
@@ -96,10 +98,10 @@ export default function RoleSelectionCards() {
           </div>
 
           <h2 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-ink">
-            Pemilik UMKM
+            {dict.auth.roleUmkm}
           </h2>
           <p className="mb-7 text-sm leading-relaxed text-zinc-500 dark:text-ink-muted">
-            Temukan pelajar bertalenta untuk membantu digitalisasi dan perkembangan usahamu.
+            {dict.auth.roleUmkmDesc}
           </p>
 
           {!showBusinessForm ? (

@@ -1,15 +1,17 @@
+"use client";
+
 import Link from "next/link";
 import { Reveal } from "@/components/ui/Reveal";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function CtaSection() {
+  const { dict } = usePreferences();
+
   return (
     <section className="bg-black px-6 py-20 text-center">
       <div className="mx-auto max-w-2xl">
         <Reveal as="h2" className="font-display text-4xl font-black text-white">
-          Siap Memulai Langkah Anda
-          <span className="block">
-            Bersama <span className="text-brand">Jembara</span>?
-          </span>
+          {dict.landing.cta.title}
         </Reveal>
 
         <Reveal
@@ -17,8 +19,7 @@ export default function CtaSection() {
           as="p"
           className="mt-4 text-lg font-body text-slate-400"
         >
-          Daftarkan bisnis UMKM Anda atau profil mahasiswa bertalenta tinggi
-          secara gratis sekarang juga.
+          {dict.landing.cta.subtitle}
         </Reveal>
 
         <Reveal
@@ -27,15 +28,15 @@ export default function CtaSection() {
         >
           <Link
             href="/register?role=umkm"
-            className="rounded-full bg-brand px-6 py-3 text-sm font-body font-black text-white hover:opacity-90"
+            className="rounded-full bg-brand px-6 py-3 text-sm font-body font-black text-white hover:opacity-90 uppercase"
           >
-            DAFTAR SEBAGAI UMKM
+            {dict.landing.cta.umkmCta}
           </Link>
           <Link
             href="/register?role=mahasiswa"
             className="text-sm font-body font-black uppercase text-white hover:text-brand"
           >
-            Daftar Sebagai Mahasiswa
+            {dict.landing.cta.studentCta}
           </Link>
         </Reveal>
       </div>

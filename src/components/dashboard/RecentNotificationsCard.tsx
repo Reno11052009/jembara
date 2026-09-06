@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { Bell, CheckCircle2, Info } from "lucide-react";
 import type { DashboardNotification } from "@/types/dashboard";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 function NotificationItem({ notification }: { notification: DashboardNotification }) {
   const Icon = notification.isRead ? CheckCircle2 : Info;
@@ -40,17 +43,19 @@ export default function RecentNotificationsCard({
 }: {
   notifications: DashboardNotification[];
 }) {
+  const { dict } = usePreferences();
+
   return (
     <div className="rounded-xl border border-hairline bg-card p-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-display font-black text-ink">Notifikasi Terbaru</h3>
+        <h3 className="text-sm font-display font-black text-ink">{dict.notifications.title}</h3>
         <Bell size={16} className="text-brand" />
       </div>
 
       <div className="mt-2 flex flex-col gap-3">
         {notifications.length === 0 ? (
           <p className="rounded-lg bg-canvas p-4 text-sm text-ink-muted">
-            Belum ada notifikasi.
+            {dict.notifications.empty}
           </p>
         ) : (
           notifications.map((notification) => (

@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useMountReveal } from "@/hooks/useMountReveal";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function Hero() {
+  const { dict } = usePreferences();
   const isVisible = useMountReveal();
 
   return (
@@ -14,7 +16,7 @@ export default function Hero() {
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
-          Jembatani Keterampilan, Wujudkan Peluang
+          {dict.landing.hero.tag}
         </span>
 
         <h1
@@ -22,9 +24,9 @@ export default function Hero() {
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
-          Temukan Talenta.
+          {dict.landing.hero.titleLine1}
           <br />
-          <span className="text-brand">Selesaikan Project.</span>
+          <span className="text-brand">{dict.landing.hero.titleLine2}</span>
         </h1>
 
         <p
@@ -32,9 +34,7 @@ export default function Hero() {
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 font-body"
           }`}
         >
-          Jembara menghubungkan UMKM yang membutuhkan solusi digital
-          berkualitas dengan mahasiswa berbakat yang siap menghadirkan karya
-          terbaik.
+          {dict.landing.hero.subtitle}
         </p>
 
         <div
@@ -46,13 +46,13 @@ export default function Hero() {
             href="/register"
             className="w-full sm:w-auto text-center rounded-full bg-brand px-6 py-3 text-sm font-body font-black uppercase tracking-wide text-white transition-all duration-200 ease-out hover:opacity-90 hover:shadow-lg active:scale-95"
           >
-            Cari Talenta
+            {dict.landing.hero.ctaFindTalent}
           </Link>
           <Link
             href="/cari-talent"
             className="w-full sm:w-auto text-center rounded-full border border-ink px-6 py-3 text-sm font-body font-black uppercase tracking-wide text-ink transition-all duration-200 ease-out hover:border-brand hover:text-brand active:scale-95"
           >
-            Temukan Project
+            {dict.landing.hero.ctaFindProject}
           </Link>
         </div>
       </div>

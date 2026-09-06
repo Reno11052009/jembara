@@ -44,7 +44,7 @@ describe("RegisterForm", () => {
     fireEvent.change(screen.getByLabelText(/Konfirmasi Password/), {
       target: { value: "Password123!" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Gabung Matchmaking" }));
+    fireEvent.click(screen.getByRole("button", { name: /Daftar|Gabung/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/Pendaftaran belum dapat diproses/)).toBeTruthy();

@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Briefcase,
   Building2,
@@ -15,6 +17,7 @@ import type {
   AdminQuickAction,
   AdminStat,
 } from "@/types/admin-dashboard";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 const statIcons = {
   talent: Users,
@@ -39,6 +42,7 @@ export default function AdminDashboardView({
   adminName,
   data,
 }: AdminDashboardViewProps) {
+  const { dict } = usePreferences();
   const stats: AdminStat[] = data.stats.map((stat) => ({
     ...stat,
     icon: statIcons[stat.id as keyof typeof statIcons] ?? Briefcase,
@@ -52,8 +56,8 @@ export default function AdminDashboardView({
   return (
     <>
       <PageHeader
-        title="Dashboard Admin Jembara"
-        subtitle="Overview performa operasional, talenta, dan UMKM se-Indonesia hari ini."
+        title={dict.admin.dashboardTitle}
+        subtitle={dict.admin.dashboardSubtitle}
         userName={adminName}
       />
 
