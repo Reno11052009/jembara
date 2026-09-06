@@ -1,6 +1,7 @@
 "use client";
 
 import { ActiveProjectStatus } from "@/types/active-project";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 type FilterValue = "Semua" | ActiveProjectStatus;
 
@@ -17,6 +18,16 @@ export default function ActiveProjectFilterTabs({
   counts,
   onChange,
 }: ActiveProjectFilterTabsProps) {
+  const { dict } = usePreferences();
+
+  const getTabLabel = (tab: FilterValue) => {
+    if (tab === "Semua") return dict.activeProjects.all;
+    if (tab === "In Progress") return `${dict.common.status.IN_PROGRESS} (${counts[tab]})`;
+    if (tab === "In Review") return `${dict.common.status.REVIEW} (${counts[tab]})`;
+    if (tab === "Completed") return `${dict.common.status.COMPLETED} (${counts[tab]})`;
+    return `${tab} (${counts[tab]})`;
+  };
+
   return (
     <div className="flex flex-wrap gap-2">
       {tabs.map((tab) => {
@@ -31,7 +42,7 @@ export default function ActiveProjectFilterTabs({
                 : "border border-hairline bg-card text-ink hover:border-brand hover:text-brand"
             }`}
           >
-            {tab === "Semua" ? tab : `${tab} (${counts[tab]})`}
+            {getTabLabel(tab)}
           </button>
         );
       })}

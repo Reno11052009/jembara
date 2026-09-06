@@ -21,23 +21,29 @@ import type { BusinessCategoryOption } from "@/lib/business-categories";
 function SwalSearchableSelect({
   options,
   onChange,
+  label,
+  placeholder,
+  searchPlaceholder,
 }: {
   options: { code: string; name: string }[];
   onChange: (val: string) => void;
+  label?: string;
+  placeholder?: string;
+  searchPlaceholder?: string;
 }) {
   const [val, setVal] = useState("");
   return (
     <SearchableSelect
       id="swal-skill-select"
-      label="Pilih skill resmi dari jembara"
+      label={label || "Pilih skill resmi dari Jembara"}
       value={val}
       onChange={(selected) => {
         setVal(selected);
         onChange(selected);
       }}
       options={options}
-      placeholder="Pilih skill resmi Jembara"
-      searchPlaceholder="Cari skill (mis. React, UI/UX...)"
+      placeholder={placeholder || "Pilih skill resmi Jembara"}
+      searchPlaceholder={searchPlaceholder || "Cari skill (mis. React, UI/UX...)"}
       required
       showSearch
     />
@@ -49,10 +55,13 @@ type ProfileSettingsProps = {
   businessCategoryOptions: BusinessCategoryOption[];
 };
 
+import { usePreferences } from "@/contexts/PreferencesContext";
+
 export default function ProfileSettings({
   initialData,
   businessCategoryOptions,
 }: ProfileSettingsProps) {
+  const { dict } = usePreferences();
   const initialBusinessCategory =
     businessCategoryOptions.find(
       ({ code }) =>
@@ -112,14 +121,16 @@ export default function ProfileSettings({
     ];
   }, [businessCategoryOptions, initialData.businessCategory]);
 
+  const profDict = dict.settingsCards.profile;
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
       void Swal.fire({
         icon: "error",
-        title: "Foto tidak valid",
-        text: "Pilih gambar PNG, JPEG, atau WebP dengan ukuran maksimal 5 MB.",
+        title: profDict.invalidPhotoTitle,
+        text: profDict.invalidPhotoText,
         confirmButtonColor: "#f97316",
       });
       e.target.value = "";
@@ -154,8 +165,8 @@ export default function ProfileSettings({
       if (webpDataUrl.length > 360_000) {
         void Swal.fire({
           icon: "error",
-          title: "Foto masih terlalu besar",
-          text: "Gunakan gambar yang lebih sederhana atau beresolusi lebih kecil.",
+          title: profDict.photoTooLargeTitle,
+          text: profDict.photoTooLargeText,
           confirmButtonColor: "#f97316",
         });
         URL.revokeObjectURL(objectUrl);
@@ -176,8 +187,8 @@ export default function ProfileSettings({
     if (skills.length >= 20) {
       await Swal.fire({
         icon: "info",
-        title: "Batas skill tercapai",
-        text: "Maksimal 20 skill dapat ditambahkan.",
+        title: profDict.skillLimitTitle,
+        text: profDict.skillLimitText,
         confirmButtonColor: "#FF6B35",
       });
       return;
@@ -192,7 +203,7 @@ export default function ProfileSettings({
     if (availableSkills.length === 0) {
       await Swal.fire({
         icon: "info",
-        title: "Semua skill sudah dipilih",
+        title: profDict.allSkillsSelectedTitle,
         confirmButtonColor: "#FF6B35",
       });
       return;
@@ -207,12 +218,12 @@ export default function ProfileSettings({
     }));
 
     const { value: newSkill } = await Swal.fire({
-      title: "Tambah Skill",
+      title: profDict.addSkillModalTitle,
       html: '<div id="swal-skill-mount-container" class="text-left my-2"></div>',
       showCancelButton: true,
       confirmButtonColor: "#FF6B35",
-      confirmButtonText: "Tambah",
-      cancelButtonText: "Batal",
+      confirmButtonText: profDict.addSkillModalConfirm,
+      cancelButtonText: dict.common.cancel,
       didOpen: () => {
         const popup = Swal.getPopup();
         if (popup) popup.style.overflow = "visible";
@@ -225,6 +236,9 @@ export default function ProfileSettings({
           rootInstance.render(
             <SwalSearchableSelect
               options={options}
+              label={profDict.selectOfficialSkill}
+              placeholder={profDict.selectOfficialSkill}
+              searchPlaceholder={profDict.searchSkillPlaceholder}
               onChange={(val) => {
                 selectedSkillValue = val;
               }}
@@ -239,7 +253,7 @@ export default function ProfileSettings({
       },
       preConfirm: () => {
         if (!selectedSkillValue) {
-          Swal.showValidationMessage("Pilih salah satu skill.");
+          Swal.showValidationMessage(profDict.addSkillModalValidation);
           return false;
         }
         return selectedSkillValue;
@@ -272,7 +286,7 @@ export default function ProfileSettings({
       Swal.fire({
         icon: 'success',
         title: 'Berhasil!',
-        text: 'Profil Anda telah diperbarui.',
+        text: profDict.saveSuccess,
         confirmButtonColor: '#FF6B35'
       }).then(() => {
         router.refresh();
@@ -281,7 +295,7 @@ export default function ProfileSettings({
       Swal.fire({
         icon: 'error',
         title: 'Gagal',
-        text: err instanceof Error ? err.message : 'Gagal menyimpan perubahan.',
+        text: err instanceof Error ? err.message : profDict.saveError,
         confirmButtonColor: '#FF6B35'
       });
     } finally {
@@ -301,7 +315,7 @@ export default function ProfileSettings({
 
   if (isUmkm) {
     return (
-      <div className="flex flex-col gap-6 pb-10">
+      <div suppressHydrationWarning className="flex flex-col gap-6 pb-10">
         {/* Header Logo Card — Perusahaan */}
         <div className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline p-6 shadow-sm flex items-center gap-5">
           <div
@@ -326,6 +340,7 @@ export default function ProfileSettings({
               <Camera className="w-5 h-5 text-white" />
             </div>
             <input
+              suppressHydrationWarning
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
@@ -338,32 +353,34 @@ export default function ProfileSettings({
               {displayName}
             </h2>
             <button
+              suppressHydrationWarning
               type="button"
               onClick={() => fileInputRef.current?.click()}
               className="rounded-full border border-gray-900 dark:border-ink px-4 py-1.5 text-xs font-body font-semibold text-gray-900 dark:text-ink hover:bg-gray-900 dark:hover:bg-ink hover:text-white dark:hover:text-canvas transition"
             >
-              Ganti Logo
+              {profDict.changeLogo}
             </button>
           </div>
         </div>
 
-        <form onSubmit={handleSaveProfile} className="flex flex-col gap-6">
+        <form suppressHydrationWarning onSubmit={handleSaveProfile} className="flex flex-col gap-6">
           {/* "Nama Lengkap" tidak ditampilkan untuk perusahaan — dikirim
               tersembunyi agar validasi backend (name wajib diisi) tetap lolos. */}
-          <input type="hidden" name="name" value={initialData.name} />
+          <input suppressHydrationWarning type="hidden" name="name" value={initialData.name} />
 
           {/* Profil Perusahaan Card */}
           <div className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline p-6 lg:p-7 shadow-sm flex flex-col gap-5">
             <h3 className="font-display text-lg font-bold text-gray-900 dark:text-ink mb-1">
-              Profil Perusahaan
+              {profDict.companyProfileTitle}
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <label className="block font-body text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
-                  Nama Perusahaan <span className="text-red-500 dark:text-red-400">*</span>
+                  {profDict.companyNameLabel} <span className="text-red-500 dark:text-red-400">*</span>
                 </label>
                 <input
+                  suppressHydrationWarning
                   id="businessName"
                   type="text"
                   name="businessName"
@@ -380,7 +397,7 @@ export default function ProfileSettings({
                 <SearchableSelect
                   id="businessCategory"
                   name="businessCategory"
-                  label="Industri / Kategori"
+                  label={profDict.industryLabel}
                   value={businessCategory}
                   onChange={setBusinessCategory}
                   options={selectableBusinessCategories}
@@ -399,9 +416,10 @@ export default function ProfileSettings({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <label className="block font-body text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
-                  Email Perusahaan <span className="text-red-500 dark:text-red-400">*</span>
+                  {profDict.companyEmailLabel} <span className="text-red-500 dark:text-red-400">*</span>
                 </label>
                 <input
+                  suppressHydrationWarning
                   type="email"
                   defaultValue={initialData.email || ""}
                   placeholder="contact@perusahaan.com"
@@ -411,9 +429,10 @@ export default function ProfileSettings({
               </div>
               <div>
                 <label className="block font-body text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
-                  Nomor Telepon
+                  {profDict.phoneNumberLabel}
                 </label>
                 <input
+                  suppressHydrationWarning
                   type="text"
                   name="phone"
                   defaultValue={initialData.phone || ""}
@@ -425,7 +444,7 @@ export default function ProfileSettings({
 
             <div>
               <h4 className="mb-3 font-body text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase">
-                Alamat Utama
+                {profDict.mainAddressTitle}
               </h4>
               <IndonesiaRegionFields
                 initialValue={{
@@ -446,9 +465,10 @@ export default function ProfileSettings({
             <div className="grid grid-cols-1 gap-5">
               <div>
                 <label htmlFor="businessWebsite" className="block font-body text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
-                  Website Resmi
+                  {profDict.officialWebsiteLabel}
                 </label>
                 <input
+                  suppressHydrationWarning
                   id="businessWebsite"
                   type="text"
                   name="businessWebsite"
@@ -462,18 +482,13 @@ export default function ProfileSettings({
               </div>
             </div>
 
-            {/*
-              Jumlah Karyawan & Tahun Berdiri: kolomnya belum ada di database
-              (lihat lib/profile.ts & app/actions/profile.ts). Ditampilkan
-              dulu sesuai desain, tapi belum tersambung ke penyimpanan —
-              backend perlu nambahin field ini dulu di skema UMKM.
-            */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <label htmlFor="employeeCount" className="block font-body text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
-                  Jumlah Karyawan
+                  {profDict.employeeCountLabel}
                 </label>
                 <input
+                  suppressHydrationWarning
                   id="employeeCount"
                   type="text"
                   name="employeeCount"
@@ -483,9 +498,10 @@ export default function ProfileSettings({
               </div>
               <div>
                 <label htmlFor="foundedYear" className="block font-body text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
-                  Tahun Berdiri
+                  {profDict.foundedYearLabel}
                 </label>
                 <input
+                  suppressHydrationWarning
                   id="foundedYear"
                   type="number"
                   name="foundedYear"
@@ -499,9 +515,10 @@ export default function ProfileSettings({
 
             <div>
               <label className="block font-body text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
-                Deskripsi Perusahaan
+                {profDict.companyDescriptionLabel}
               </label>
               <textarea
+                suppressHydrationWarning
                 name="about"
                 rows={3}
                 defaultValue={initialData.about}
@@ -511,11 +528,12 @@ export default function ProfileSettings({
 
             <div className="flex justify-end mt-2">
               <button
+                suppressHydrationWarning
                 type="submit"
                 disabled={isLoading}
                 className="bg-brand hover:bg-brand-dark text-white font-body font-bold text-sm px-6 py-2.5 rounded-full shadow-sm transition disabled:opacity-70"
               >
-                {isLoading ? "Menyimpan..." : "Simpan Perubahan"}
+                {isLoading ? profDict.saving : profDict.saveProfileButton}
               </button>
             </div>
           </div>
@@ -525,7 +543,7 @@ export default function ProfileSettings({
   }
 
   return (
-    <div className="flex flex-col gap-6 pb-10">
+    <div suppressHydrationWarning className="flex flex-col gap-6 pb-10">
       {/* Header Avatar Card */}
       <div className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline p-6 shadow-sm flex items-center gap-5">
         <div 
@@ -545,6 +563,7 @@ export default function ProfileSettings({
             <Camera className="w-5 h-5 text-white" />
           </div>
           <input 
+            suppressHydrationWarning
             type="file" 
             ref={fileInputRef} 
             onChange={handleFileChange} 
@@ -557,25 +576,27 @@ export default function ProfileSettings({
             {initialData.name.split(" ")[0]}
           </h2>
           <button 
+            suppressHydrationWarning
             onClick={() => fileInputRef.current?.click()}
             className="rounded-full border border-gray-900 dark:border-ink px-4 py-1.5 text-xs font-semibold text-gray-900 dark:text-ink hover:bg-gray-900 dark:hover:bg-ink hover:text-white dark:hover:text-canvas transition"
           >
-            Ganti Foto
+            {profDict.changePhoto}
           </button>
         </div>
       </div>
 
-      <form onSubmit={handleSaveProfile} className="flex flex-col gap-6">
+      <form suppressHydrationWarning onSubmit={handleSaveProfile} className="flex flex-col gap-6">
         {/* Informasi Pribadi Card */}
         <div className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline p-6 lg:p-7 shadow-sm flex flex-col gap-5">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-ink mb-1">Informasi Pribadi</h3>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-ink mb-1">{profDict.personalInfoTitle}</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
-                Nama Lengkap <span className="text-red-500 dark:text-red-400">*</span>
+                {profDict.fullNameLabel} <span className="text-red-500 dark:text-red-400">*</span>
               </label>
               <input
+                suppressHydrationWarning
                 type="text"
                 name="name"
                 defaultValue={initialData.name}
@@ -585,9 +606,10 @@ export default function ProfileSettings({
             </div>
             <div>
               <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
-                Email <span className="text-red-500 dark:text-red-400">*</span>
+                {profDict.emailLabel} <span className="text-red-500 dark:text-red-400">*</span>
               </label>
               <input
+                suppressHydrationWarning
                 type="email"
                 defaultValue={initialData.email || ""}
                 placeholder="contoh@email.com"
@@ -599,8 +621,9 @@ export default function ProfileSettings({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">Nomor Telepon</label>
+              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">{profDict.phoneLabel}</label>
               <input
+                suppressHydrationWarning
                 type="text"
                 name="phone"
                 defaultValue={initialData.phone || ""}
@@ -627,7 +650,7 @@ export default function ProfileSettings({
 
           <div className="border-t border-gray-100 dark:border-hairline pt-6">
             <h3 className="mb-5 text-lg font-bold text-gray-900 dark:text-ink">
-              Informasi Pendidikan
+              {profDict.educationInfoTitle}
             </h3>
 
             {(
@@ -636,7 +659,7 @@ export default function ProfileSettings({
                   <SearchableSelect
                     id="tingkat_pendidikan"
                     name="tingkat_pendidikan"
-                    label="Jenjang Pendidikan"
+                    label={profDict.educationLevelLabel}
                     labelClassName="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5"
                     value={educationLevel}
                     onChange={(code) => setEducationLevel(code)}
@@ -649,8 +672,8 @@ export default function ProfileSettings({
                         name: option.label,
                       })),
                     ]}
-                    placeholder="Pilih jenjang pendidikan"
-                    searchPlaceholder="Cari jenjang..."
+                    placeholder={profDict.educationLevelPlaceholder}
+                    searchPlaceholder={dict.common.search}
                     showSearch={false}
                     required
                   />
@@ -658,27 +681,29 @@ export default function ProfileSettings({
                 <div>
                   <label htmlFor="school" className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
                     <span className="inline-flex items-center gap-1">
-                      Nama Universitas/Sekolah
+                      {profDict.schoolLabel}
                       <span className="text-red-500 dark:text-red-400">*</span>
                     </span>
                   </label>
                   <input
+                    suppressHydrationWarning
                     id="school"
                     type="text"
                     name="school"
                     defaultValue={initialData.school}
-                    placeholder="Contoh: Universitas Brawijaya"
+                    placeholder={profDict.schoolPlaceholder}
                     className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                   />
                 </div>
                 <div>
                   <label htmlFor="headline" className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
                     <span className="inline-flex items-center gap-1">
-                      Jurusan
+                      {profDict.majorLabel}
                       <span className="text-red-500 dark:text-red-400">*</span>
                     </span>
                   </label>
                   <input
+                    suppressHydrationWarning
                     id="headline"
                     type="text"
                     name="headline"
@@ -688,8 +713,9 @@ export default function ProfileSettings({
                 </div>
                 {showSemester && (
                   <div>
-                    <label htmlFor="semester" className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">Semester</label>
+                    <label htmlFor="semester" className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">{profDict.semesterLabel}</label>
                     <input
+                      suppressHydrationWarning
                       id="semester"
                       type="number"
                       name="semester"
@@ -697,7 +723,7 @@ export default function ProfileSettings({
                       min={1}
                       max={20}
                       step={1}
-                      placeholder="Contoh: 6"
+                      placeholder={profDict.semesterPlaceholder}
                       className="w-full rounded-xl border border-gray-200 dark:border-hairline px-4 py-2.5 text-sm text-gray-900 dark:text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                     />
                   </div>
@@ -709,11 +735,12 @@ export default function ProfileSettings({
           <div>
             <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
               <span className="inline-flex items-center gap-1">
-                Bio
+                {profDict.bioLabel}
                 <span className="text-red-500 dark:text-red-400">*</span>
               </span>
             </label>
             <textarea
+              suppressHydrationWarning
               name="about"
               rows={2}
               defaultValue={initialData.about}
@@ -724,9 +751,10 @@ export default function ProfileSettings({
           {!isUmkm && (
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-hairline dark:bg-surface">
-                <input type="hidden" name="availabilitySubmitted" value="1" />
+                <input suppressHydrationWarning type="hidden" name="availabilitySubmitted" value="1" />
                 <label htmlFor="available" className="flex cursor-pointer items-start gap-3">
                   <input
+                    suppressHydrationWarning
                     id="available"
                     name="available"
                     type="checkbox"
@@ -735,22 +763,23 @@ export default function ProfileSettings({
                   />
                   <span>
                     <span className="block text-sm font-bold text-gray-900 dark:text-ink">
-                      Tersedia menerima proyek
+                      {profDict.availableForProjects}
                     </span>
                     <span className="mt-1 block text-xs leading-relaxed text-gray-500 dark:text-ink-muted">
-                      Aktifkan agar profil masuk rekomendasi Smart Matching dan pencarian talent.
+                      {profDict.availableForProjectsDesc}
                     </span>
                   </span>
                 </label>
               </div>
 
               <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-hairline dark:bg-surface">
-                <input type="hidden" name="publicProfileSubmitted" value="1" />
+                <input suppressHydrationWarning type="hidden" name="publicProfileSubmitted" value="1" />
                 <label
                   htmlFor="isPublicProfile"
                   className="flex cursor-pointer items-start gap-3"
                 >
                   <input
+                    suppressHydrationWarning
                     id="isPublicProfile"
                     name="isPublicProfile"
                     type="checkbox"
@@ -759,11 +788,10 @@ export default function ProfileSettings({
                   />
                   <span>
                     <span className="block text-sm font-bold text-gray-900 dark:text-ink">
-                      Tampilkan profil di halaman publik
+                      {profDict.publicProfile}
                     </span>
                     <span className="mt-1 block text-xs leading-relaxed text-gray-500 dark:text-ink-muted">
-                      Nama, sekolah, jurusan, skill, rating, dan jumlah proyek dapat tampil.
-                      Alamat, email, dan nomor telepon tetap dirahasiakan.
+                      {profDict.publicProfileDesc}
                     </span>
                   </span>
                 </label>
@@ -773,11 +801,12 @@ export default function ProfileSettings({
 
           <div className="flex justify-end mt-2">
             <button 
+              suppressHydrationWarning
               type="submit" 
               disabled={isLoading}
               className="bg-brand hover:bg-brand-dark text-white font-bold text-sm px-6 py-2.5 rounded-full shadow-sm transition disabled:opacity-70"
             >
-              {isLoading ? "Menyimpan..." : "Simpan Perubahan"}
+              {isLoading ? profDict.saving : profDict.saveProfileButton}
             </button>
           </div>
         </div>
@@ -785,13 +814,14 @@ export default function ProfileSettings({
         {/* Skill & Keahlian — khusus profil pelajar. */}
         <div className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline p-6 lg:p-7 shadow-sm">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-ink">Skill & Keahlian</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-ink">{profDict.skillsTitle}</h3>
             <button 
+              suppressHydrationWarning
               type="button"
               onClick={handleAddSkill}
               className="rounded-full border border-gray-900 dark:border-ink px-4 py-1.5 text-xs font-semibold text-gray-900 dark:text-ink hover:bg-gray-900 dark:hover:bg-ink hover:text-white dark:hover:text-canvas transition whitespace-nowrap"
             >
-              + Tambah Skill
+              {profDict.addSkillButton}
             </button>
           </div>
           <div className="flex flex-wrap gap-2.5 mt-2">
@@ -802,6 +832,7 @@ export default function ProfileSettings({
               >
                 <span>{skill}</span>
                 <button
+                  suppressHydrationWarning
                   type="button"
                   onClick={() => removeSkill(skill)}
                   className="w-4 h-4 rounded-full bg-gray-400 dark:bg-line text-white flex items-center justify-center hover:bg-red-500 transition-colors ml-1"
@@ -812,7 +843,7 @@ export default function ProfileSettings({
               </div>
             ))}
             {skills.length === 0 && (
-              <p className="text-sm text-gray-500 dark:text-ink-muted italic">Belum ada skill yang ditambahkan.</p>
+              <p className="text-sm text-gray-500 dark:text-ink-muted italic">{profDict.noSkillsAdded}</p>
             )}
           </div>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -839,24 +870,24 @@ export default function ProfileSettings({
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <label className="block text-xs font-semibold text-ink-muted">
-              Ekspektasi budget minimum (Rp)
+              {profDict.minBudgetExpectation}
               <FormattedNumericInput
                 value={expectedBudgetMin}
                 onValueChange={setExpectedBudgetMin}
-                placeholder="Contoh: 500.000"
+                placeholder={profDict.minBudgetPlaceholder}
                 className="mt-1 w-full rounded-lg border border-hairline bg-card px-3 py-2 text-sm text-ink text-right"
               />
-              <input type="hidden" name="expectedBudgetMin" value={expectedBudgetMin.replace(/\D/g, "")} />
+              <input suppressHydrationWarning type="hidden" name="expectedBudgetMin" value={expectedBudgetMin.replace(/\D/g, "")} />
             </label>
             <label className="block text-xs font-semibold text-ink-muted">
-              Ekspektasi budget maksimum (Rp)
+              {profDict.maxBudgetExpectation}
               <FormattedNumericInput
                 value={expectedBudgetMax}
                 onValueChange={setExpectedBudgetMax}
-                placeholder="Contoh: 5.000.000"
+                placeholder={profDict.maxBudgetPlaceholder}
                 className="mt-1 w-full rounded-lg border border-hairline bg-card px-3 py-2 text-sm text-ink text-right"
               />
-              <input type="hidden" name="expectedBudgetMax" value={expectedBudgetMax.replace(/\D/g, "")} />
+              <input suppressHydrationWarning type="hidden" name="expectedBudgetMax" value={expectedBudgetMax.replace(/\D/g, "")} />
             </label>
           </div>
         </div>
@@ -864,17 +895,18 @@ export default function ProfileSettings({
 
         {/* Link Portfolio & Sosial Media Card */}
         <div className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline p-6 lg:p-7 shadow-sm flex flex-col gap-5">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-ink mb-1">Link Portfolio & Sosial Media</h3>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-ink mb-1">{profDict.portfolioAndSocialTitle}</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
             {/* Portfolio */}
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">Portfolio URL</label>
+              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">{profDict.portfolioUrlLabel}</label>
               <div className="relative flex items-center rounded-xl border border-gray-200 dark:border-hairline bg-white dark:bg-card overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
                 <div className="pl-3.5 pr-2 text-gray-400 dark:text-ink-muted">
                   <Globe className="w-4 h-4" />
                 </div>
                 <input
+                  suppressHydrationWarning
                   type="text"
                   name="portfolioUrl"
                   defaultValue={initialData.portfolioUrl || ""}
@@ -889,12 +921,13 @@ export default function ProfileSettings({
 
             {/* GitHub */}
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">Github</label>
+              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">{profDict.githubLabel}</label>
               <div className="relative flex items-center rounded-xl border border-gray-200 dark:border-hairline bg-white dark:bg-card overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
                 <div className="pl-3.5 pr-2 text-gray-400 dark:text-ink-muted">
                   <FaGithub className="w-4 h-4" />
                 </div>
                 <input
+                  suppressHydrationWarning
                   type="text"
                   name="github"
                   defaultValue={initialData.github || ""}
@@ -909,12 +942,13 @@ export default function ProfileSettings({
 
             {/* LinkedIn */}
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">Linkedin</label>
+              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">{profDict.linkedinLabel}</label>
               <div className="relative flex items-center rounded-xl border border-gray-200 dark:border-hairline bg-white dark:bg-card overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
                 <div className="pl-3.5 pr-2 text-gray-400 dark:text-ink-muted">
                   <FaLinkedin className="w-4 h-4" />
                 </div>
                 <input
+                  suppressHydrationWarning
                   type="text"
                   name="linkedin"
                   defaultValue={initialData.linkedin || ""}
@@ -929,12 +963,13 @@ export default function ProfileSettings({
 
             {/* Behance */}
             <div>
-              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">Behance</label>
+              <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">{profDict.behanceLabel}</label>
               <div className="relative flex items-center rounded-xl border border-gray-200 dark:border-hairline bg-white dark:bg-card overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
                 <div className="pl-3.5 pr-2 text-gray-400 dark:text-ink-muted">
                   <FaBehance className="w-4 h-4" />
                 </div>
                 <input
+                  suppressHydrationWarning
                   type="text"
                   name="behance"
                   defaultValue={initialData.behance || ""}
@@ -950,11 +985,12 @@ export default function ProfileSettings({
 
           <div className="flex justify-end mt-2">
             <button
+              suppressHydrationWarning
               type="submit"
               disabled={isLoading}
               className="bg-white dark:bg-card border-2 border-brand text-brand hover:bg-brand-light font-bold text-sm px-8 py-2 rounded-full transition disabled:opacity-70"
             >
-              {isLoading ? "..." : "Simpan"}
+              {isLoading ? profDict.saving : profDict.saveButton}
             </button>
           </div>
         </div>

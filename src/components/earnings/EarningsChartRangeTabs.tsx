@@ -1,5 +1,7 @@
 "use client";
 
+import { usePreferences } from "@/contexts/PreferencesContext";
+
 type RangeValue = "6 Bulan" | "1 Tahun" | "Semua";
 
 interface EarningsChartRangeTabsProps {
@@ -13,6 +15,14 @@ export default function EarningsChartRangeTabs({
   active,
   onChange,
 }: EarningsChartRangeTabsProps) {
+  const { dict: t } = usePreferences();
+
+  const getLabel = (value: RangeValue) => {
+    if (value === "6 Bulan") return t.earningsCards.rangeSixMonths;
+    if (value === "1 Tahun") return t.earningsCards.rangeOneYear;
+    return t.earningsCards.rangeAll;
+  };
+
   return (
     <div className="flex gap-2">
       {ranges.map((range) => {
@@ -27,7 +37,7 @@ export default function EarningsChartRangeTabs({
                 : "border border-hairline bg-card text-ink hover:border-brand hover:text-brand"
             }`}
           >
-            {range}
+            {getLabel(range)}
           </button>
         );
       })}

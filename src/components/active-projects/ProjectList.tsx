@@ -1,8 +1,11 @@
+"use client";
+
 import type {
   ActiveProject,
   ActiveProjectsViewerRole,
 } from "@/types/active-project";
 import ProjectCard from "@/components/active-projects/ProjectCard";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface ProjectListProps {
   projects: ActiveProject[];
@@ -15,10 +18,19 @@ export default function ProjectList({
   viewerRole,
   emptyMessage,
 }: ProjectListProps) {
+  const { dict: t } = usePreferences();
+
+  const localizedEmptyMessage =
+    viewerRole === "UMKM"
+      ? t.activeProjects.emptyMessageUmkm
+      : viewerRole === "ADMIN"
+        ? t.activeProjects.emptyMessageAdmin
+        : t.activeProjects.emptyMessageStudent;
+
   if (projects.length === 0) {
     return (
       <div className="rounded-xl border border-hairline bg-card p-8 text-center text-sm text-ink-muted">
-        {emptyMessage}
+        {localizedEmptyMessage || emptyMessage}
       </div>
     );
   }

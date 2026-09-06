@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useState,
   useSyncExternalStore,
   ReactNode,
 } from "react";
@@ -58,16 +59,29 @@ const PreferencesContext = createContext<PreferencesContextValue | undefined>(
 );
 
 export function PreferencesProvider({ children }: { children: ReactNode }) {
-  const language = useSyncExternalStore<Language>(
-    subscribeToPreferences,
-    getStoredLanguage,
-    () => "id"
-  );
-  const fontSize = useSyncExternalStore<FontSize>(
-    subscribeToPreferences,
-    getStoredFontSize,
-    () => "medium"
-  );
+  const [language, setLanguageState] = useState<Language>("id");
+  const [fontSize, setFontSizeState] = useState<FontSize>("medium");
+
+  // Sync initial state from localStorage after hydration mount
+  useEffect(() => {
+    const storedLang = getStoredLanguage();
+    const storedFont = getStoredFontSize();
+    setLanguageState(storedLang);
+    setFontSizeState(storedFont);
+
+    const handleSync = () => {
+      setLanguageState(getStoredLanguage());
+      setFontSizeState(getStoredFontSize());
+    };
+
+    window.addEventListener("storage", handleSync);
+    window.addEventListener(PREFERENCES_CHANGE_EVENT, handleSync);
+
+    return () => {
+      window.removeEventListener("storage", handleSync);
+      window.removeEventListener(PREFERENCES_CHANGE_EVENT, handleSync);
+    };
+  }, []);
 
   // Apply font size to the document root so every rem-based text on the site scales
   useEffect(() => {
@@ -81,11 +95,13 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
 
   const setLanguage = (next: Language) => {
     window.localStorage.setItem(LANGUAGE_STORAGE_KEY, next);
+    setLanguageState(next);
     window.dispatchEvent(new Event(PREFERENCES_CHANGE_EVENT));
   };
 
   const setFontSize = (next: FontSize) => {
     window.localStorage.setItem(FONT_SIZE_STORAGE_KEY, next);
+    setFontSizeState(next);
     window.dispatchEvent(new Event(PREFERENCES_CHANGE_EVENT));
   };
 

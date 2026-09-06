@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { createProposalAction } from "@/app/actions/proposals";
 import Button from "@/components/ui/Button";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function ProposalForm({
   projectId,
@@ -11,6 +12,8 @@ export default function ProposalForm({
   projectId: string;
   budgetLabel: string;
 }) {
+  const { dict } = usePreferences();
+  const projDict = dict.projects;
   const [state, formAction, isPending] = useActionState(
     createProposalAction,
     {},
@@ -20,18 +23,18 @@ export default function ProposalForm({
     <form action={formAction} className="mt-5 flex flex-col gap-4">
       <input type="hidden" name="projectId" value={projectId} />
       <label className="flex flex-col gap-2 text-sm font-bold text-ink">
-        Proposal Anda
+        {projDict.yourProposal}
         <textarea
           name="coverLetter"
           required
           minLength={50}
           maxLength={2000}
           rows={7}
-          placeholder="Jelaskan pengalaman yang relevan, pendekatan pengerjaan, dan alasan Anda cocok untuk project ini."
+          placeholder={projDict.proposalPlaceholder}
           className="resize-y rounded-xl border border-hairline bg-white dark:bg-card px-4 py-3 font-body text-sm font-normal text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
         />
         <span className="font-normal text-ink-muted">
-          Minimal 50 karakter, maksimal 2.000 karakter.
+          {projDict.proposalCharLimit}
         </span>
         {state.fieldErrors?.coverLetter?.[0] && (
           <span className="font-normal text-danger">
@@ -48,7 +51,7 @@ export default function ProposalForm({
           className="mt-0.5 h-4 w-4 accent-brand"
         />
         <span>
-          Saya menyetujui budget tetap project sebesar <strong>{budgetLabel}</strong>.
+          {projDict.proposalBudgetAgree} <strong>{budgetLabel}</strong>.
         </span>
       </label>
       {state.fieldErrors?.budgetAgreement?.[0] && (
@@ -72,7 +75,7 @@ export default function ProposalForm({
         disabled={isPending}
         fullWidth
       >
-        Kirim Proposal
+        {isPending ? projDict.submittingProposal : projDict.submitProposal}
       </Button>
     </form>
   );

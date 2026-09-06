@@ -1,5 +1,8 @@
+"use client";
+
 import { BriefcaseBusiness, CircleCheck, MapPin, University, Star } from "lucide-react";
 import Link from "next/link";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface ProfileCardProps {
   isPublic?: boolean;
@@ -30,14 +33,16 @@ export default function ProfileCard({
   reviewCount,
   totalProject,
 }: ProfileCardProps) {
+  const { dict: t } = usePreferences();
+
   const roleLabel =
     role === "STUDENT"
-      ? "Pelajar"
+      ? t.profilePage.card.roleStudent
       : role === "UMKM"
-        ? "UMKM"
+        ? t.profilePage.card.roleUmkm
         : role === "ADMIN"
-          ? "Admin"
-          : "Pengguna";
+          ? t.profilePage.card.roleAdmin
+          : t.profilePage.card.roleUser;
 
   return (
     <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-100 dark:border-hairline p-6 flex flex-col items-center text-center static lg:sticky lg:top-24">
@@ -56,7 +61,7 @@ export default function ProfileCard({
 
       <div className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full mb-6 ${available ? "bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-400" : "bg-gray-100 dark:bg-surface text-gray-600 dark:text-ink-muted"}`}>
         <CircleCheck className="w-3.5 h-3.5" />
-        {available ? "Tersedia untuk Proyek" : "Belum Tersedia"}
+        {available ? t.profilePage.card.available : t.profilePage.card.unavailable}
       </div>
 
       <div className="w-full flex flex-col gap-3 text-sm text-gray-600 dark:text-ink-muted mb-6 text-left">
@@ -72,27 +77,27 @@ export default function ProfileCard({
         )}
         <div className="flex items-center gap-3">
           <Star className="w-4 h-4 text-gray-400 dark:text-ink-muted" fill="currentColor" />
-          <span><span className="font-bold text-gray-900 dark:text-ink">{rating.toFixed(1)}</span> ({reviewCount} Ulasan)</span>
+          <span><span className="font-bold text-gray-900 dark:text-ink">{rating.toFixed(1)}</span> ({reviewCount} {t.profilePage.card.reviews})</span>
         </div>
         <div className="flex items-center gap-3">
           <BriefcaseBusiness className="w-4 h-4 text-gray-400 dark:text-ink-muted" />
-          <span>{totalProject} Proyek Selesai</span>
+          <span>{totalProject} {t.profilePage.card.completedProjects}</span>
         </div>
       </div>
 
       {!isPublic ? (
         <Link href="/dashboard/settings" className="w-full block bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-4 rounded-lg transition-colors text-center">
-          EDIT PROFIL
+          {t.profilePage.card.editProfile}
         </Link>
       ) : (
         <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-4 rounded-lg transition-colors">
-          HUBUNGI & REKRUT {name.split(" ")[0].toUpperCase()}
+          {t.profilePage.card.contactHire} {name.split(" ")[0].toUpperCase()}
         </button>
       )}
 
       {/* Keahlian & Tools dipindah ke bawah tombol */}
       <div className="w-full text-left mt-6">
-        <h3 className="font-bold text-lg mb-4">Keahlian & Tools</h3>
+        <h3 className="font-bold text-lg mb-4">{t.profilePage.card.skillsTitle}</h3>
         {skills.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {skills.map((skill) => (
@@ -105,7 +110,7 @@ export default function ProfileCard({
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 dark:text-ink-muted">Belum ada keahlian yang ditambahkan.</p>
+          <p className="text-sm text-gray-500 dark:text-ink-muted">{t.profilePage.card.emptySkills}</p>
         )}
       </div>
     </div>

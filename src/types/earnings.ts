@@ -30,10 +30,12 @@ export interface UpcomingWithdrawal {
   statusLabel: string;
 }
 
+import type { DashboardMetric } from "@/types/dashboard";
+
 export interface EarningsData {
   walletBalanceLabel: string;
   canWithdraw: boolean;
-  stats: DashboardStat[];
+  stats: DashboardMetric[];
   chartData: EarningsChartPoint[];
   transactions: Transaction[];
   pagination: import("@/types/pagination").PaginationData;

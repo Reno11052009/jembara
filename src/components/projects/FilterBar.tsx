@@ -12,30 +12,13 @@ import {
   Timer,
   TrendingUp,
 } from "lucide-react";
+import { usePreferences } from "@/contexts/PreferencesContext";
 import FilterDropdown from "@/components/ui/FilterDropdown";
 import type {
   FindProjectFilters,
   ProjectFilterOption,
   ProjectSort,
 } from "@/types/project";
-
-const budgetOptions: ProjectFilterOption[] = [
-  { label: "< Rp 1.000.000", value: "under-1m" },
-  { label: "Rp 1.000.000 - 3.000.000", value: "1m-3m" },
-  { label: "Rp 3.000.000 - 5.000.000", value: "3m-5m" },
-  { label: "> Rp 5.000.000", value: "over-5m" },
-];
-
-const sortOptions: Array<{
-  label: string;
-  value: ProjectSort;
-  icon: typeof Sparkles;
-}> = [
-  { label: "Paling Cocok", value: "recommended", icon: Sparkles },
-  { label: "Terbaru", value: "latest", icon: Clock },
-  { label: "Deadline Terdekat", value: "deadline", icon: Timer },
-  { label: "Budget Tertinggi", value: "budget", icon: TrendingUp },
-];
 
 interface FilterBarProps {
   filters: FindProjectFilters;
@@ -48,6 +31,27 @@ export default function FilterBar({
   skillOptions,
   locationOptions,
 }: FilterBarProps) {
+  const { dict } = usePreferences();
+  const projDict = dict.projects;
+
+  const budgetOptions: ProjectFilterOption[] = [
+    { label: projDict.budgetUnder1m, value: "under-1m" },
+    { label: projDict.budget1mTo3m, value: "1m-3m" },
+    { label: projDict.budget3mTo5m, value: "3m-5m" },
+    { label: projDict.budgetOver5m, value: "over-5m" },
+  ];
+
+  const sortOptions: Array<{
+    label: string;
+    value: ProjectSort;
+    icon: typeof Sparkles;
+  }> = [
+    { label: projDict.sortRecommended, value: "recommended", icon: Sparkles },
+    { label: projDict.sortLatest, value: "latest", icon: Clock },
+    { label: projDict.sortDeadline, value: "deadline", icon: Timer },
+    { label: projDict.sortBudget, value: "budget", icon: TrendingUp },
+  ];
+
   const router = useRouter();
   const pathname = usePathname();
   const currentSearchParams = useSearchParams();
@@ -92,7 +96,7 @@ export default function FilterBar({
           value={query}
           maxLength={100}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Cari project berdasarkan nama, skill, atau UMKM..."
+          placeholder={projDict.searchPlaceholder}
           className="w-full rounded-lg border border-hairline bg-card py-3 pl-11 pr-24 text-sm font-body text-ink placeholder:text-ink-muted focus:border-brand focus:outline-none"
         />
         {filters.skill && <input type="hidden" name="skill" value={filters.skill} />}
@@ -107,26 +111,26 @@ export default function FilterBar({
           type="submit"
           className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md bg-brand px-4 py-2 text-xs font-display font-bold uppercase text-white transition-opacity hover:opacity-90"
         >
-          Cari
+          {projDict.searchButton}
         </button>
       </Form>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2 text-ink">
           <FilterDropdown
-            label="Skill"
+            label={projDict.filterSkill}
             options={skillOptions}
             value={filters.skill}
             onChange={(value) => updateFilter("skill", value)}
           />
           <FilterDropdown
-            label="Lokasi"
+            label={projDict.filterLocation}
             options={locationOptions}
             value={filters.location}
             onChange={(value) => updateFilter("location", value)}
           />
           <FilterDropdown
-            label="Budget"
+            label={projDict.filterBudget}
             options={budgetOptions}
             value={filters.budget}
             onChange={(value) => updateFilter("budget", value)}
@@ -134,7 +138,7 @@ export default function FilterBar({
         </div>
 
         <div className="flex items-center gap-2 text-sm" ref={sortRef}>
-          <span className="font-body text-ink">Urutkan:</span>
+          <span className="font-body text-ink">{projDict.sortBy}</span>
           <div className="relative">
             <button
               type="button"

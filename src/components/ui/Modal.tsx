@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect } from "react";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface ModalProps {
   isOpen: boolean;
@@ -19,6 +20,8 @@ export default function Modal({
   description,
   footer,
 }: ModalProps) {
+  const { dict: t } = usePreferences();
+
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -62,7 +65,7 @@ export default function Modal({
           onClick={onClose}
           className="mt-6 w-full rounded-lg border border-hairline py-2 text-sm text-ink transition-colors hover:border-brand hover:text-brand"
         >
-          Tutup
+          {t.common.close}
         </button>
       </div>
     </div>

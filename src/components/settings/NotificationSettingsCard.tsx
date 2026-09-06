@@ -6,97 +6,18 @@ import type {
   NotificationPreferenceKey,
   NotificationPreferences,
 } from "@/types/notification";
-
-const notificationItems: {
-  key: NotificationPreferenceKey;
-  title: string;
-  description: string;
-}[] = [
-  {
-    key: "proposalMasuk",
-    title: "Proposal Masuk",
-    description: "Dapatkan notifikasi saat ada proposal baru untuk proyek kamu.",
-  },
-  {
-    key: "pesanBaru",
-    title: "Pesan Baru",
-    description: "Dapatkan notifikasi saat menerima pesan dari klien atau talenta.",
-  },
-  {
-    key: "pembayaran",
-    title: "Pembayaran",
-    description: "Dapatkan notifikasi terkait status pembayaran dan penarikan dana.",
-  },
-  {
-    key: "updateProyek",
-    title: "Update Proyek",
-    description: "Dapatkan notifikasi saat ada perubahan status pada proyek aktif.",
-  },
-  {
-    key: "promosiInfo",
-    title: "Promosi & Info",
-    description: "Dapatkan info seputar tips, promo, dan pembaruan fitur JemBara.",
-  },
-];
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface NotificationSettingsCardProps {
   initialPreferences: NotificationPreferences;
   isUmkm?: boolean;
 }
 
-// Item-item notifikasi UMKM di desain dipisah per kanal (Email / Push), tapi
-// skema preferensi di backend cuma punya 5 flag datar tanpa kanal. Beberapa
-// item di kanal berbeda jadi sengaja disambungkan ke key yang sama (jadi
-// nyala/mati bareng) karena secara makna itu setting yang sama, cuma beda
-// kanal penyampaian.
-const umkmEmailItems: {
-  key: NotificationPreferenceKey;
-  title: string;
-  description: string;
-}[] = [
-  {
-    key: "proposalMasuk",
-    title: "Pelamar Baru Masuk",
-    description: "Dapatkan email pemberitahuan instan setiap kali ada talenta melamar ke lowongan Anda.",
-  },
-  {
-    key: "updateProyek",
-    title: "Update Status Proyek",
-    description: "Notifikasi berkala mengenai tahap pengerjaan proyek oleh talenta terhubung.",
-  },
-  {
-    key: "pesanBaru",
-    title: "Pesan Baru dari Talent",
-    description: "Email pengingat ketika Anda menerima pesan yang belum dibaca.",
-  },
-  {
-    key: "pembayaran",
-    title: "Konfirmasi Pembayaran",
-    description: "Laporan bukti transfer transaksi pembayaran proyek yang berhasil.",
-  },
-];
-
-const umkmPushItems: {
-  key: NotificationPreferenceKey;
-  title: string;
-  description: string;
-}[] = [
-  {
-    key: "pesanBaru",
-    title: "Pesan Chat Instan",
-    description: "Notifikasi melayang ketika talenta mengirim pesan dalam sistem diskusi.",
-  },
-  {
-    key: "proposalMasuk",
-    title: "Pelamar Baru",
-    description: "Pemberitahuan real-time di bilah menu atas browser.",
-  },
-];
-
 export default function NotificationSettingsCard({
   initialPreferences,
   isUmkm = false,
 }: NotificationSettingsCardProps) {
+  const { dict } = usePreferences();
   const [settings, setSettings] = useState(initialPreferences);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
@@ -104,10 +25,83 @@ export default function NotificationSettingsCard({
   } | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  // "Pengingat Batas Waktu Proyek (Deadline)" belum ada kolomnya di skema
-  // NotificationPreferences backend — ditampilkan dulu sesuai desain, belum
-  // tersambung ke penyimpanan.
   const [deadlineReminder, setDeadlineReminder] = useState(true);
+
+  const notificationItems: {
+    key: NotificationPreferenceKey;
+    title: string;
+    description: string;
+  }[] = [
+    {
+      key: "proposalMasuk",
+      title: dict.settingsCards?.notifications?.proposalMasukTitle || "Proposal Masuk",
+      description: dict.settingsCards?.notifications?.proposalMasukDesc || "Dapatkan notifikasi saat ada proposal baru untuk proyek kamu.",
+    },
+    {
+      key: "pesanBaru",
+      title: dict.settingsCards?.notifications?.pesanBaruTitle || "Pesan Baru",
+      description: dict.settingsCards?.notifications?.pesanBaruDesc || "Dapatkan notifikasi saat menerima pesan dari klien atau talenta.",
+    },
+    {
+      key: "pembayaran",
+      title: dict.settingsCards?.notifications?.pembayaranTitle || "Pembayaran",
+      description: dict.settingsCards?.notifications?.pembayaranDesc || "Dapatkan notifikasi terkait status pembayaran dan penarikan dana.",
+    },
+    {
+      key: "updateProyek",
+      title: dict.settingsCards?.notifications?.updateProyekTitle || "Update Proyek",
+      description: dict.settingsCards?.notifications?.updateProyekDesc || "Dapatkan notifikasi saat ada perubahan status pada proyek aktif.",
+    },
+    {
+      key: "promosiInfo",
+      title: dict.settingsCards?.notifications?.promosiTitle || "Promosi & Info",
+      description: dict.settingsCards?.notifications?.promosiDesc || "Dapatkan info seputar tips, promo, dan pembaruan fitur Jembara.",
+    },
+  ];
+
+  const umkmEmailItems: {
+    key: NotificationPreferenceKey;
+    title: string;
+    description: string;
+  }[] = [
+    {
+      key: "proposalMasuk",
+      title: dict.settingsCards?.notifications?.proposalMasukTitle || "Pelamar Baru Masuk",
+      description: dict.settingsCards?.notifications?.proposalMasukDesc || "Dapatkan email pemberitahuan instan setiap kali ada talenta melamar ke lowongan Anda.",
+    },
+    {
+      key: "updateProyek",
+      title: dict.settingsCards?.notifications?.updateProyekTitle || "Update Status Proyek",
+      description: dict.settingsCards?.notifications?.updateProyekDesc || "Notifikasi berkala mengenai tahap pengerjaan proyek oleh talenta terhubung.",
+    },
+    {
+      key: "pesanBaru",
+      title: dict.settingsCards?.notifications?.pesanBaruTitle || "Pesan Baru dari Talent",
+      description: dict.settingsCards?.notifications?.pesanBaruDesc || "Email pengingat ketika Anda menerima pesan yang belum dibaca.",
+    },
+    {
+      key: "pembayaran",
+      title: dict.settingsCards?.notifications?.pembayaranTitle || "Konfirmasi Pembayaran",
+      description: dict.settingsCards?.notifications?.pembayaranDesc || "Laporan bukti transfer transaksi pembayaran proyek yang berhasil.",
+    },
+  ];
+
+  const umkmPushItems: {
+    key: NotificationPreferenceKey;
+    title: string;
+    description: string;
+  }[] = [
+    {
+      key: "pesanBaru",
+      title: dict.settingsCards?.notifications?.pesanBaruTitle || "Pesan Chat Instan",
+      description: dict.settingsCards?.notifications?.pesanBaruDesc || "Notifikasi melayang ketika talenta mengirim pesan dalam sistem diskusi.",
+    },
+    {
+      key: "proposalMasuk",
+      title: dict.settingsCards?.notifications?.proposalMasukTitle || "Pelamar Baru",
+      description: dict.settingsCards?.notifications?.proposalMasukDesc || "Pemberitahuan real-time di bilah menu atas browser.",
+    },
+  ];
 
   const toggle = (key: NotificationPreferenceKey) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -129,7 +123,7 @@ export default function NotificationSettingsCard({
       setSettings(result.preferences);
       setFeedback({
         type: "success",
-        message: "Pengaturan notifikasi tersimpan.",
+        message: dict.settingsCards?.notifications?.saveSuccess || "Pengaturan notifikasi tersimpan.",
       });
     });
   };
@@ -171,7 +165,7 @@ export default function NotificationSettingsCard({
       <div className="flex flex-col gap-6">
         <section className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline shadow-sm p-6">
           <h2 className="font-display text-lg font-bold text-neutral-900 dark:text-ink mb-5">
-            Notifikasi Email
+            {dict.settingsCards?.notifications?.emailTitle || "Notifikasi Email"}
           </h2>
           <div className="flex flex-col divide-y divide-gray-100 dark:divide-hairline">
             {umkmEmailItems.map(renderToggleRow)}
@@ -180,17 +174,17 @@ export default function NotificationSettingsCard({
 
         <section className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline shadow-sm p-6">
           <h2 className="font-display text-lg font-bold text-neutral-900 dark:text-ink mb-5">
-            Notifikasi Push (Aplikasi)
+            {dict.settingsCards?.notifications?.pushTitle || "Notifikasi Push (Aplikasi)"}
           </h2>
           <div className="flex flex-col divide-y divide-gray-100 dark:divide-hairline">
             {umkmPushItems.map(renderToggleRow)}
             <div className="flex items-start justify-between gap-6 py-4 first:pt-0 last:pb-0">
               <div>
                 <p className="font-body text-sm font-semibold text-neutral-900 dark:text-ink mb-1">
-                  Pengingat Batas Waktu Proyek (Deadline)
+                  {dict.settingsCards?.notifications?.deadlineTitle || "Pengingat Batas Waktu Proyek (Deadline)"}
                 </p>
                 <p className="font-body text-sm text-neutral-500 dark:text-ink-muted max-w-xl">
-                  Alarm peringatan otomatis 48 jam sebelum durasi kontrak proyek berakhir.
+                  {dict.settingsCards?.notifications?.deadlineDesc || "Alarm peringatan otomatis 48 jam sebelum durasi kontrak proyek berakhir."}
                 </p>
               </div>
               <button
@@ -229,7 +223,7 @@ export default function NotificationSettingsCard({
             disabled={isPending}
             className="font-body text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60 transition-colors rounded-full px-6 py-3"
           >
-            {isPending ? "Menyimpan..." : "Simpan Pengaturan"}
+            {isPending ? (dict.settingsCards?.notifications?.saving || "Menyimpan...") : (dict.settingsCards?.notifications?.saveButton || "Simpan Pengaturan")}
           </button>
         </div>
       </div>
@@ -239,7 +233,7 @@ export default function NotificationSettingsCard({
   return (
     <section className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-hairline shadow-sm p-6">
       <h2 className="font-display text-lg font-bold text-neutral-900 dark:text-ink mb-5">
-        Notifikasi
+        {dict.settings?.headers?.notifikasi?.title || "Notifikasi"}
       </h2>
 
       <div className="flex flex-col divide-y divide-gray-100">
@@ -263,7 +257,7 @@ export default function NotificationSettingsCard({
           disabled={isPending}
           className="font-body text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60 transition-colors rounded-full px-6 py-3"
         >
-          {isPending ? "Menyimpan..." : "Simpan Perubahan"}
+          {isPending ? (dict.settingsCards?.notifications?.saving || "Menyimpan...") : (dict.settings.save || "Simpan Perubahan")}
         </button>
       </div>
     </section>

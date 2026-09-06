@@ -6,6 +6,7 @@ import { Laptop, Smartphone, Monitor } from "lucide-react";
 import Swal from "sweetalert2";
 import { revokeSessionAction } from "@/app/actions/security";
 import type { ActiveSession, SessionDeviceType } from "@/types/settings";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 const DEVICE_ICON: Record<SessionDeviceType, typeof Laptop> = {
   laptop: Laptop,
@@ -18,6 +19,7 @@ export default function ActiveSessionsCard({
 }: {
   initialSessions: ActiveSession[];
 }) {
+  const { dict } = usePreferences();
   const [sessions, setSessions] = useState(initialSessions);
   const [revokingId, setRevokingId] = useState<string | null>(null);
   const router = useRouter();
@@ -25,11 +27,11 @@ export default function ActiveSessionsCard({
   const revokeSession = async (session: ActiveSession) => {
     const confirmation = await Swal.fire({
       icon: "warning",
-      title: session.isCurrentSession ? "Logout dari perangkat ini?" : "Cabut sesi ini?",
-      text: "Perangkat tersebut harus login ulang untuk mengakses Jembara.",
+      title: session.isCurrentSession ? (dict.sidebar?.logout || "Logout dari perangkat ini?") : (dict.settingsCards?.security?.confirmRevokeTitle || "Cabut sesi ini?"),
+      text: dict.settingsCards?.security?.confirmRevokeText || "Perangkat tersebut harus login ulang untuk mengakses Jembara.",
       showCancelButton: true,
-      confirmButtonText: "Ya, cabut sesi",
-      cancelButtonText: "Batal",
+      confirmButtonText: dict.settingsCards?.security?.yesRevoke || "Ya, cabut sesi",
+      cancelButtonText: dict.common?.cancel || "Batal",
       confirmButtonColor: "#ef4444",
     });
     if (!confirmation.isConfirmed) return;
@@ -47,7 +49,7 @@ export default function ActiveSessionsCard({
     } catch (error) {
       await Swal.fire({
         icon: "error",
-        title: "Sesi gagal dicabut",
+        title: dict.common?.cancel || "Gagal",
         text: error instanceof Error ? error.message : "Silakan coba lagi.",
         confirmButtonColor: "#f97316",
       });
@@ -59,11 +61,11 @@ export default function ActiveSessionsCard({
   return (
     <section className="rounded-xl border border-[#ECECEC] dark:border-gray bg-white dark:bg-card p-6">
       <h2 className="mb-5 font-display text-lg font-bold text-neutral-900 dark:text-ink">
-        Sesi Aktif
+        {dict.settingsCards?.security?.activeSessionsTitle || "Sesi Aktif"}
       </h2>
 
       {sessions.length === 0 ? (
-        <p className="text-sm text-neutral-500 dark:text-ink-muted">Tidak ada sesi aktif lain.</p>
+        <p className="text-sm text-neutral-500 dark:text-ink-muted">{dict.settingsCards?.security?.noOtherSessions || "Tidak ada sesi aktif lain."}</p>
       ) : (
         <div className="divide-y divide-[#ECECEC]">
           {sessions.map((session) => {
@@ -101,7 +103,7 @@ export default function ActiveSessionsCard({
                     session.isCurrentSession ? "hidden" : ""
                   }`}
                 >
-                  {revokingId === session.id ? "Memproses..." : "Logout"}
+                  {revokingId === session.id ? (dict.settingsCards?.security?.saving || "Memproses...") : (dict.settingsCards?.security?.logoutSession || "Logout")}
                 </button>
               </div>
             );

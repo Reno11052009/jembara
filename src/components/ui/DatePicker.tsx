@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 type DatePickerProps = {
   id: string;
@@ -17,11 +18,11 @@ type DatePickerProps = {
   className?: string;
 };
 
-const MONTH_NAMES = [
+const DEFAULT_MONTH_NAMES = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
   "Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ];
-const WEEKDAY_LABELS = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+const DEFAULT_WEEKDAY_LABELS = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
 function toISODate(date: Date) {
   const y = date.getFullYear();
@@ -74,10 +75,15 @@ export default function DatePicker({
   required = false,
   disabled = false,
   minDate,
-  placeholder = "Pilih tanggal",
+  placeholder,
   labelClassName = "mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-ink-muted",
   className,
 }: DatePickerProps) {
+  const { dict: t } = usePreferences();
+  const monthNames = t.common.datePicker?.months ?? DEFAULT_MONTH_NAMES;
+  const weekdayLabels = t.common.datePicker?.weekdays ?? DEFAULT_WEEKDAY_LABELS;
+  const effectivePlaceholder = placeholder ?? t.common.datePicker?.selectDate ?? "Pilih tanggal";
+
   const today = useMemo(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -124,8 +130,8 @@ export default function DatePicker({
   );
 
   const displayLabel = selectedDate
-    ? `${selectedDate.getDate()} ${MONTH_NAMES[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`
-    : placeholder;
+    ? `${selectedDate.getDate()} ${monthNames[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`
+    : effectivePlaceholder;
 
   return (
     <div ref={containerRef} className={`relative ${className ?? ""}`}>
@@ -170,14 +176,14 @@ export default function DatePicker({
         <div className="absolute left-0 top-full z-20 mt-2 w-full overflow-hidden rounded-xl border border-hairline bg-card shadow-xl">
           <div className="flex items-center justify-between px-4 pt-4">
             <p className="font-display text-sm font-black text-ink">
-              {MONTH_NAMES[viewDate.getMonth()]} {viewDate.getFullYear()}
+              {monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}
             </p>
             <div className="flex gap-1">
               <button
                 type="button"
                 onClick={() => changeMonth(-1)}
                 className="rounded-lg p-1.5 text-ink-muted transition hover:bg-brand/10 hover:text-brand"
-                aria-label="Bulan sebelumnya"
+                aria-label={t.common.datePicker?.prevMonth ?? "Bulan sebelumnya"}
               >
                 <ChevronLeft size={16} />
               </button>
@@ -185,7 +191,7 @@ export default function DatePicker({
                 type="button"
                 onClick={() => changeMonth(1)}
                 className="rounded-lg p-1.5 text-ink-muted transition hover:bg-brand/10 hover:text-brand"
-                aria-label="Bulan berikutnya"
+                aria-label={t.common.datePicker?.nextMonth ?? "Bulan berikutnya"}
               >
                 <ChevronRight size={16} />
               </button>
@@ -193,7 +199,7 @@ export default function DatePicker({
           </div>
 
           <div className="grid grid-cols-7 gap-y-1 px-4 pt-3 text-center text-xs font-bold text-ink-muted">
-            {WEEKDAY_LABELS.map((day) => (
+            {weekdayLabels.map((day: string) => (
               <span key={day}>{day}</span>
             ))}
           </div>
@@ -233,7 +239,7 @@ export default function DatePicker({
               onClick={() => onChange("")}
               className="text-ink-muted transition hover:text-brand"
             >
-              Hapus
+              {t.common.datePicker?.clear ?? "Hapus"}
             </button>
             <button
               type="button"
@@ -241,7 +247,7 @@ export default function DatePicker({
               disabled={today < effectiveMinDate}
               className="text-brand transition hover:text-brand disabled:cursor-not-allowed disabled:text-ink-muted/40"
             >
-              Hari ini
+              {t.common.datePicker?.today ?? "Hari ini"}
             </button>
           </div>
         </div>

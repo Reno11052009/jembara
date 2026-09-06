@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronDown, Search, X } from "lucide-react";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export type MultiSelectDropdownOption = {
   code: string;
@@ -30,12 +31,16 @@ export default function MultiSelectDropdown({
   onChange,
   options,
   placeholder,
-  searchPlaceholder = "Cari pilihan...",
-  emptyMessage = "Pilihan tidak ditemukan",
+  searchPlaceholder,
+  emptyMessage,
   maxSelections,
   disabled = false,
   invalid = false,
 }: MultiSelectDropdownProps) {
+  const { dict: t } = usePreferences();
+  const effectiveSearchPlaceholder = searchPlaceholder ?? t.common.ui.searchOptionsPlaceholder;
+  const effectiveEmptyMessage = emptyMessage ?? t.common.ui.optionNotFound;
+
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
@@ -103,7 +108,7 @@ export default function MultiSelectDropdown({
       ? placeholder
       : selectedOptions.length === 1
         ? selectedOptions[0].name
-        : `${selectedOptions.length} skill dipilih`;
+        : `${selectedOptions.length} ${t.common.ui.selectedSkills}`;
   const hasFilteredOptions = Object.keys(filteredGroups).length > 0;
   const reachedLimit =
     maxSelections !== undefined && values.length >= maxSelections;
@@ -169,7 +174,7 @@ export default function MultiSelectDropdown({
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder={searchPlaceholder}
+              placeholder={effectiveSearchPlaceholder}
               className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-gray-400 dark:placeholder:text-ink-muted"
             />
           </div>
@@ -181,7 +186,7 @@ export default function MultiSelectDropdown({
             className="max-h-72 overflow-y-auto py-1"
           >
             {!hasFilteredOptions ? (
-              <p className="px-4 py-4 text-sm text-ink-muted">{emptyMessage}</p>
+              <p className="px-4 py-4 text-sm text-ink-muted">{effectiveEmptyMessage}</p>
             ) : (
               Object.entries(filteredGroups).map(([group, groupOptions]) => (
                 <div key={group} role="group" aria-label={group}>
@@ -224,7 +229,7 @@ export default function MultiSelectDropdown({
 
           {maxSelections !== undefined ? (
             <p className="border-t border-gray-100 dark:border-hairline px-4 py-2 text-xs text-ink-muted">
-              {values.length} dari maksimal {maxSelections} skill dipilih
+              {values.length} {t.common.ui.maxSelectedSkills} {maxSelections} {t.common.ui.selectedSkills}
             </p>
           ) : null}
         </div>

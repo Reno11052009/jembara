@@ -1,6 +1,7 @@
 "use client";
 
 import type { ProposalFilter } from "@/types/proposal";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface ProposalFilterTabsProps {
   active: ProposalFilter;
@@ -15,6 +16,23 @@ export default function ProposalFilterTabs({
   counts,
   onChange,
 }: ProposalFilterTabsProps) {
+  const { dict } = usePreferences();
+
+  const getTabLabel = (tab: ProposalFilter) => {
+    switch (tab) {
+      case "Semua":
+        return dict.proposals.all || "Semua";
+      case "Pending":
+        return dict.proposals.submitted || "Pending";
+      case "Accepted":
+        return dict.proposals.accepted || "Accepted";
+      case "Rejected":
+        return dict.proposals.rejected || "Rejected";
+      default:
+        return tab;
+    }
+  };
+
   return (
     <div className="flex flex-wrap gap-2">
       {tabs.map((tab) => {
@@ -29,7 +47,7 @@ export default function ProposalFilterTabs({
                 : "border border-hairline bg-card text-ink hover:border-brand hover:text-brand"
             }`}
           >
-            {tab} ({counts[tab]})
+            {getTabLabel(tab)} ({counts[tab]})
           </button>
         );
       })}

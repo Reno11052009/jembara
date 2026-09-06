@@ -1,5 +1,8 @@
+"use client";
+
 import { Flame } from "lucide-react";
 import { Proposal } from "@/types/proposal";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface ProposalCardProps {
   proposal: Proposal;
@@ -12,6 +15,14 @@ const statusStyles: Record<Proposal["status"], string> = {
 };
 
 export default function ProposalCard({ proposal }: ProposalCardProps) {
+  const { dict } = usePreferences();
+
+  const statusLabels: Record<Proposal["status"], string> = {
+    Pending: dict.proposals.submitted || "Pending",
+    Accepted: dict.proposals.accepted || "Accepted",
+    Rejected: dict.proposals.rejected || "Rejected",
+  };
+
   return (
     <div className="rounded-xl border border-hairline bg-card p-6">
       <div className="flex items-start justify-between gap-3">
@@ -26,12 +37,12 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
         <div className="flex shrink-0 items-center gap-2">
           <span className="flex items-center gap-1 whitespace-nowrap rounded-full bg-brand-soft px-3 py-1.5 text-xs font-black font-display leading-none text-brand">
             <Flame size={14} />
-            {proposal.matchPercent}% Match
+            {proposal.matchPercent}% {dict.proposals.match || "Match"}
           </span>
           <span
             className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-black font-display leading-none ${statusStyles[proposal.status]}`}
           >
-            {proposal.status}
+            {statusLabels[proposal.status]}
           </span>
         </div>
       </div>
@@ -54,13 +65,13 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
 
         <div className="flex gap-6">
           <div>
-            <p className="font-body text-xs text-ink-muted">Budget</p>
+            <p className="font-body text-xs text-ink-muted">{dict.proposals.budget || "Budget"}</p>
             <p className="mt-0.5 font-display text-sm font-black text-ink">
               {proposal.budgetLabel}
             </p>
           </div>
           <div>
-            <p className="font-body text-xs text-ink-muted flex justify-end">Tanggal Pengajuan</p>
+            <p className="font-body text-xs text-ink-muted flex justify-end">{dict.proposals.submittedDate || "Tanggal Pengajuan"}</p>
             <p className="mt-0.5 font-body text-sm font-bold text-ink">
               {proposal.submittedLabel}
             </p>

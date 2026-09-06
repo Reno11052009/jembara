@@ -91,10 +91,10 @@ export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
     const isEasterEgg = Math.floor(Math.random() * 1_000_000) === 0;
     
     const result = await Swal.fire({
-      title: "Are You Sure?",
+      title: dict.sidebar.logoutConfirmTitle,
       showCancelButton: true,
-      confirmButtonText: "Pretty Sure!",
-      cancelButtonText: "Nope!",
+      confirmButtonText: dict.sidebar.logoutConfirmButton,
+      cancelButtonText: dict.sidebar.logoutCancelButton,
       confirmButtonColor: "#f97316",
       reverseButtons: true,
       ...(isEasterEgg
@@ -213,6 +213,7 @@ export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
         {/* Fixed Footer untuk Tombol Logout (Selalu Terlihat) */}
         <div className="shrink-0 border-t border-white/10 p-4">
           <button
+            suppressHydrationWarning
             type="button"
             onClick={handleLogoutClick}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm text-white transition-colors hover:bg-white/5 hover:text-white"

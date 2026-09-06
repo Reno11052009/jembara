@@ -87,6 +87,7 @@ export default function SettingsView({
 
               return (
                 <button
+                  suppressHydrationWarning
                   key={id}
                   onClick={() => setActiveTab(id)}
                   className={`flex w-full items-center pl-6 pr-4 py-3 text-left text-sm font-medium rounded-r-2xl transition-colors ${

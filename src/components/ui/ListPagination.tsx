@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import type { PaginationData } from "@/types/pagination";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 export default function ListPagination({
   basePath,
@@ -10,6 +13,7 @@ export default function ListPagination({
   pagination: PaginationData;
   preservedParams?: Record<string, string | null | undefined>;
 }) {
+  const { dict: t } = usePreferences();
   const { currentPage, totalItems, totalPages, pageSize } = pagination;
   if (totalItems === 0) return null;
 
@@ -30,17 +34,17 @@ export default function ListPagination({
   return (
     <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
       <p className="text-sm text-ink-muted">
-        Menampilkan {start}-{end} dari {totalItems}
+        {t.common.pagination.showing} {start}-{end} {t.common.pagination.of} {totalItems}
       </p>
       {totalPages > 1 && (
         <nav aria-label="Pagination" className="flex items-center gap-2">
           {currentPage > 1 ? (
             <Link href={hrefFor(currentPage - 1)} className={linkClass}>
-              Sebelumnya
+              {t.common.pagination.previous}
             </Link>
           ) : (
             <span className={`${linkClass} cursor-not-allowed opacity-40`}>
-              Sebelumnya
+              {t.common.pagination.previous}
             </span>
           )}
           <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-brand px-2 text-xs font-semibold text-white">
@@ -48,11 +52,11 @@ export default function ListPagination({
           </span>
           {currentPage < totalPages ? (
             <Link href={hrefFor(currentPage + 1)} className={linkClass}>
-              Berikutnya
+              {t.common.pagination.next}
             </Link>
           ) : (
             <span className={`${linkClass} cursor-not-allowed opacity-40`}>
-              Berikutnya
+              {t.common.pagination.next}
             </span>
           )}
         </nav>

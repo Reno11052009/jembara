@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { Check } from "lucide-react";
 import { ProjectMilestone } from "@/types/active-project";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface MilestoneChecklistProps {
   milestones: ProjectMilestone[];
 }
 
 export default function MilestoneChecklist({ milestones }: MilestoneChecklistProps) {
+  const { dict: t } = usePreferences();
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(
     Object.fromEntries(milestones.map((m) => [m.id, m.done]))
   );
@@ -22,7 +24,9 @@ export default function MilestoneChecklist({ milestones }: MilestoneChecklistPro
 
   return (
     <div className="rounded-lg bg-canvas p-4">
-      <p className="font-display text-sm font-black text-ink">Milestone Project</p>
+      <p className="font-display text-sm font-black text-ink">
+        {t.activeProjects.progress.milestoneTitle}
+      </p>
       <ul className="mt-3 flex flex-col gap-2.5">
         {milestones.map((milestone) => {
           const isChecked = checkedItems[milestone.id] ?? milestone.done;

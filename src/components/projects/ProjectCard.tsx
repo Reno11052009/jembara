@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { BriefcaseBusiness, TrendingUp } from "lucide-react";
 import { Project } from "@/types/project";
 import ShareProjectButton from "@/components/projects/ShareProjectButton";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface ProjectCardProps {
   project: Project;
@@ -12,6 +15,9 @@ export default function ProjectCard({
   project,
   showStudentFeatures = true,
 }: ProjectCardProps) {
+  const { dict } = usePreferences();
+  const projDict = dict.projects;
+
   return (
     <div className="rounded-xl border border-hairline bg-card p-5">
       <div className="flex items-start justify-between gap-3">
@@ -21,12 +27,12 @@ export default function ProjectCard({
         {showStudentFeatures ? (
           <span className="flex shrink-0 items-center gap-1 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-display font-black text-brand">
             <TrendingUp size={14} />
-            {project.skillMatchPercent}% Skill Match
+            {project.skillMatchPercent}% {projDict.skillMatch}
           </span>
         ) : (
           <span className="flex shrink-0 items-center gap-1 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-display font-black text-brand">
             <BriefcaseBusiness size={14} />
-            Project OPEN
+            {projDict.projectOpen}
           </span>
         )}
       </div>
@@ -47,16 +53,16 @@ export default function ProjectCard({
 
       <div className="mt-4 flex flex-wrap items-start gap-x-5 gap-y-3 text-xs">
         <div>
-          <p className="text-ink-muted">Budget</p>
+          <p className="text-ink-muted">{projDict.filterBudget}</p>
           <p className="mt-0.5 font-display font-black text-ink text-base">{project.budgetLabel}</p>
         </div>
         <div>
-          <p className="text-ink-muted">Deadline</p>
+          <p className="text-ink-muted">{projDict.deadlineLabel}</p>
           <p className="mt-0.5 font-display font-black text-ink text-base">{project.deadlineLabel}</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="shrink-0">
-            <p className="text-ink-muted">Lokasi</p>
+            <p className="text-ink-muted">{projDict.filterLocation}</p>
             <p className="mt-0.5 font-display font-black text-ink text-base">{project.locationLabel}</p>
           </div>
           {showStudentFeatures && (
@@ -81,7 +87,7 @@ export default function ProjectCard({
           href={`/dashboard/find-projects/${project.id}`}
           className="rounded-[99px] bg-brand px-6 py-2.5 text-sm font-display font-bold uppercase text-white transition-opacity hover:opacity-90"
         >
-          Lihat Project
+          {projDict.viewProject}
         </Link>
         <ShareProjectButton
           projectId={project.id}

@@ -83,6 +83,7 @@ export const FormattedNumericInput = forwardRef<
   return (
     <>
       <input
+        suppressHydrationWarning
         ref={inputRef}
         type="text"
         inputMode="numeric"

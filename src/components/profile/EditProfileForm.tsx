@@ -6,6 +6,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import { updateProfileAction } from "@/app/actions/profile";
+import { usePreferences } from "@/contexts/PreferencesContext";
 
 interface ProfileData {
   name: string;
@@ -19,6 +20,7 @@ interface ProfileData {
 }
 
 export default function EditProfileForm({ initialData }: { initialData: ProfileData }) {
+  const { dict: t } = usePreferences();
   const [isLoading, setIsLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string>(initialData.avatarUrl);
   const [avatarBase64, setAvatarBase64] = useState<string | null>(null);
@@ -128,7 +130,7 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
             
             <Link href="/dashboard/profile" className="flex items-center text-sm font-medium text-gray-700 dark:text-ink-muted hover:text-gray-900 dark:hover:text-ink">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Kembali ke Profil
+              {t.profilePage.backToProfile}
             </Link>
           </div>
         </div>
@@ -138,8 +140,8 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-100 dark:border-hairline overflow-hidden">
           <div className="border-b border-gray-100 dark:border-hairline p-6 bg-gray-50/50 dark:bg-void/50">
-            <h1 className="text-xl font-bold">Edit Profil</h1>
-            <p className="text-sm text-gray-500 dark:text-ink-muted mt-1">Perbarui informasi profil Anda agar lebih menarik bagi klien UMKM.</p>
+            <h1 className="text-xl font-bold">{t.profilePage.editProfileTitle}</h1>
+            <p className="text-sm text-gray-500 dark:text-ink-muted mt-1">{t.profilePage.editProfileSubtitle}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-6">
@@ -168,21 +170,21 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
                 />
               </div>
               <div className="flex flex-col justify-center text-center sm:text-left">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-ink">Foto Profil</h3>
-                <p className="text-xs text-gray-500 dark:text-ink-muted mt-1 mb-3">Disarankan rasio 1:1. Maksimal 5MB.</p>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-ink">{t.profilePage.profilePicture}</h3>
+                <p className="text-xs text-gray-500 dark:text-ink-muted mt-1 mb-3">{t.profilePage.pictureSizeNote}</p>
                 <button 
                   type="button" 
                   onClick={() => fileInputRef.current?.click()}
                   className="text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/15 hover:bg-orange-100 dark:hover:bg-orange-500/20 px-3 py-1.5 rounded-full transition-colors self-center sm:self-start border border-orange-200 dark:border-orange-500/30"
                 >
-                  Ubah Foto
+                  {t.profilePage.changePhoto}
                 </button>
               </div>
             </div>
             {/* Name & Headline */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col gap-2">
-                <label htmlFor="name" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">Nama Lengkap</label>
+                <label htmlFor="name" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">{t.profilePage.fullName}</label>
                 <input
                   type="text"
                   id="name"
@@ -193,7 +195,7 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label htmlFor="headline" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">Headline Pekerjaan</label>
+                <label htmlFor="headline" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">{t.profilePage.jobHeadline}</label>
                 <input
                   type="text"
                   id="headline"
@@ -208,7 +210,7 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
 
             {/* Location & Education */}
             <div className="flex flex-col gap-2">
-              <label htmlFor="location" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">Lokasi / Alamat</label>
+              <label htmlFor="location" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">{t.profilePage.locationAddress}</label>
               <input
                 type="text"
                 id="location"
@@ -221,7 +223,7 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col gap-2">
-                <label htmlFor="tingkat_pendidikan" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">Tingkat Pendidikan</label>
+                <label htmlFor="tingkat_pendidikan" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">{t.profilePage.educationLevel}</label>
                 <select
                   id="tingkat_pendidikan"
                   name="tingkat_pendidikan"
@@ -229,7 +231,7 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
                   className="w-full rounded-lg border border-gray-300 dark:border-hairline px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 bg-white dark:bg-card"
                   required
                 >
-                  <option value="" disabled>Pilih tingkat pendidikan</option>
+                  <option value="" disabled>{t.profilePage.selectEducationLevel}</option>
                   <option value="SMA">SMA</option>
                   <option value="SMK">SMK</option>
                   <option value="D3">D3 (Diploma 3)</option>
@@ -240,7 +242,7 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
                 </select>
               </div>
               <div className="flex flex-col gap-2">
-                <label htmlFor="school" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">Nama Sekolah / Universitas</label>
+                <label htmlFor="school" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">{t.profilePage.schoolUniversity}</label>
                 <input
                   type="text"
                   id="school"
@@ -255,7 +257,7 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
 
             {/* About */}
             <div className="flex flex-col gap-2">
-              <label htmlFor="about" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">Tentang Saya / Deskripsi</label>
+              <label htmlFor="about" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">{t.profilePage.aboutMeDescription}</label>
               <textarea
                 id="about"
                 name="about"
@@ -264,19 +266,19 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
                 className="w-full rounded-lg border border-gray-300 dark:border-hairline px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 resize-y"
                 required
               />
-              <p className="text-xs text-gray-500 dark:text-ink-muted">Ceritakan sedikit tentang latar belakang, minat, dan spesialisasi Anda.</p>
+              <p className="text-xs text-gray-500 dark:text-ink-muted">{t.profilePage.aboutMeNote}</p>
             </div>
 
             {/* Skills */}
             <div className="flex flex-col gap-2">
-              <label htmlFor="skills" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">Keahlian & Tools</label>
+              <label htmlFor="skills" className="text-sm font-semibold text-gray-700 dark:text-ink-muted">{t.profilePage.skillsAndTools}</label>
               <input
                 type="text"
                 id="skills"
                 name="skills"
                 defaultValue={initialData.skills.join(", ")}
                 className="w-full rounded-lg border border-gray-300 dark:border-hairline px-4 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-                placeholder="Pisahkan dengan koma (contoh: React, Figma, UI Design)"
+                placeholder={t.profilePage.skillsPlaceholder}
                 required
               />
             </div>
@@ -286,7 +288,7 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
                 href="/dashboard/profile" 
                 className="px-5 py-2.5 text-sm font-bold text-gray-700 dark:text-ink-muted bg-white dark:bg-card border border-gray-300 dark:border-hairline rounded-lg hover:bg-gray-50 dark:hover:bg-void transition-colors"
               >
-                Batal
+                {t.common.cancel}
               </Link>
               <button 
                 type="submit" 
@@ -294,11 +296,11 @@ export default function EditProfileForm({ initialData }: { initialData: ProfileD
                 className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-70"
               >
                 {isLoading ? (
-                  "Menyimpan..."
+                  t.profilePage.saving
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
-                    Simpan Perubahan
+                    {t.common.save}
                   </>
                 )}
               </button>

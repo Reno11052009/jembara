@@ -1,6 +1,5 @@
 import "server-only";
 
-import { BarChart3, Calendar, Clock, Wallet } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Prisma } from "@/generated/prisma/client";
 import prisma from "./prisma";
@@ -93,10 +92,10 @@ function createEmptyData(
     walletBalanceLabel: formatRupiah(0),
     canWithdraw,
     stats: [
-      { id: "total", label: "Total Nilai Proyek Selesai", value: formatRupiah(0), icon: Wallet },
-      { id: "month", label: "Nilai Selesai Bulan Ini", value: formatRupiah(0), icon: Calendar },
-      { id: "pending", label: "Nilai Dalam Review", value: formatRupiah(0), icon: Clock },
-      { id: "average", label: "Rata-rata Proyek Selesai", value: formatRupiah(0), icon: BarChart3 },
+      { id: "total", label: "Total Nilai Proyek Selesai", value: formatRupiah(0) },
+      { id: "month", label: "Nilai Selesai Bulan Ini", value: formatRupiah(0) },
+      { id: "pending", label: "Nilai Dalam Review", value: formatRupiah(0) },
+      { id: "average", label: "Rata-rata Proyek Selesai", value: formatRupiah(0) },
     ],
     chartData: buildChartData([], now),
     transactions: [],
@@ -238,25 +237,21 @@ export async function getEarningsData(
         id: "total",
         label: "Total Nilai Proyek Selesai",
         value: formatRupiah(totalCompleted),
-        icon: Wallet,
       },
       {
         id: "month",
         label: "Nilai Selesai Bulan Ini",
         value: formatRupiah(completedThisMonth),
-        icon: Calendar,
       },
       {
         id: "pending",
         label: "Nilai Dalam Review",
         value: formatRupiah(pendingReview),
-        icon: Clock,
       },
       {
         id: "average",
         label: "Rata-rata Proyek Selesai",
         value: formatRupiah(averageCompleted),
-        icon: BarChart3,
       },
     ],
     chartData: buildChartData(monthlyTotals, now),
