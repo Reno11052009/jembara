@@ -7,6 +7,8 @@ import { updateProfileAction } from "@/app/actions/profile";
 import { useRouter } from "next/navigation";
 import { FaBehance, FaGithub, FaLinkedin } from "react-icons/fa";
 import SearchableSelect from "@/components/ui/SearchableSelect";
+import { createRoot, type Root } from "react-dom/client";
+import FormattedNumericInput from "@/components/ui/FormattedNumericInput";
 import type { ProfileData } from "@/lib/profile";
 import {
   educationLevelOptions,
@@ -15,6 +17,32 @@ import {
 import { skillTaxonomy } from "@/lib/skill-taxonomy";
 import IndonesiaRegionFields from "@/components/regions/IndonesiaRegionFields";
 import type { BusinessCategoryOption } from "@/lib/business-categories";
+
+function SwalSearchableSelect({
+  options,
+  onChange,
+}: {
+  options: { code: string; name: string }[];
+  onChange: (val: string) => void;
+}) {
+  const [val, setVal] = useState("");
+  return (
+    <SearchableSelect
+      id="swal-skill-select"
+      label="Pilih skill resmi dari jembara"
+      value={val}
+      onChange={(selected) => {
+        setVal(selected);
+        onChange(selected);
+      }}
+      options={options}
+      placeholder="Pilih skill resmi Jembara"
+      searchPlaceholder="Cari skill (mis. React, UI/UX...)"
+      required
+      showSearch
+    />
+  );
+}
 
 type ProfileSettingsProps = {
   initialData: ProfileData;
@@ -170,22 +198,56 @@ export default function ProfileSettings({
       return;
     }
 
+    let selectedSkillValue = "";
+    let rootInstance: Root | null = null;
+
+    const options = availableSkills.map((skill) => ({
+      code: skill.name,
+      name: skill.name,
+    }));
+
     const { value: newSkill } = await Swal.fire({
       title: "Tambah Skill",
-      input: "select",
-      inputOptions: Object.fromEntries(
-        availableSkills.map((skill) => [skill.name, skill.name]),
-      ),
-      inputPlaceholder: "Pilih skill resmi Jembara",
+      html: '<div id="swal-skill-mount-container" class="text-left my-2"></div>',
       showCancelButton: true,
       confirmButtonColor: "#FF6B35",
       confirmButtonText: "Tambah",
       cancelButtonText: "Batal",
-      inputValidator: (value) => (value ? undefined : "Pilih salah satu skill."),
+      didOpen: () => {
+        const popup = Swal.getPopup();
+        if (popup) popup.style.overflow = "visible";
+        const htmlContainer = Swal.getHtmlContainer();
+        if (htmlContainer) htmlContainer.style.overflow = "visible";
+
+        const mountPoint = document.getElementById("swal-skill-mount-container");
+        if (mountPoint) {
+          rootInstance = createRoot(mountPoint);
+          rootInstance.render(
+            <SwalSearchableSelect
+              options={options}
+              onChange={(val) => {
+                selectedSkillValue = val;
+              }}
+            />,
+          );
+        }
+      },
+      willClose: () => {
+        if (rootInstance) {
+          rootInstance.unmount();
+        }
+      },
+      preConfirm: () => {
+        if (!selectedSkillValue) {
+          Swal.showValidationMessage("Pilih salah satu skill.");
+          return false;
+        }
+        return selectedSkillValue;
+      },
     });
 
     if (newSkill) {
-      setSkills([...skills, newSkill]);
+      setSkills((prev) => [...prev, newSkill]);
       setSkillLevels((current) => ({ ...current, [newSkill]: "BEGINNER" }));
     }
   };
@@ -594,7 +656,12 @@ export default function ProfileSettings({
                   />
                 </div>
                 <div>
-                  <label htmlFor="school" className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">Nama Universitas/Sekolah</label>
+                  <label htmlFor="school" className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
+                    <span className="inline-flex items-center gap-1">
+                      Nama Universitas/Sekolah
+                      <span className="text-red-500 dark:text-red-400">*</span>
+                    </span>
+                  </label>
                   <input
                     id="school"
                     type="text"
@@ -605,7 +672,12 @@ export default function ProfileSettings({
                   />
                 </div>
                 <div>
-                  <label htmlFor="headline" className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">Jurusan</label>
+                  <label htmlFor="headline" className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
+                    <span className="inline-flex items-center gap-1">
+                      Jurusan
+                      <span className="text-red-500 dark:text-red-400">*</span>
+                    </span>
+                  </label>
                   <input
                     id="headline"
                     type="text"
@@ -636,7 +708,10 @@ export default function ProfileSettings({
 
           <div>
             <label className="block text-[11px] font-bold text-gray-500 dark:text-ink-muted tracking-wider uppercase mb-1.5">
-              Bio
+              <span className="inline-flex items-center gap-1">
+                Bio
+                <span className="text-red-500 dark:text-red-400">*</span>
+              </span>
             </label>
             <textarea
               name="about"
@@ -740,26 +815,34 @@ export default function ProfileSettings({
               <p className="text-sm text-gray-500 dark:text-ink-muted italic">Belum ada skill yang ditambahkan.</p>
             )}
           </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {skills.map((skill) => (
-              <label key={`${skill}-level`} className="text-xs font-semibold text-ink-muted">Level {skill}
-                <select value={skillLevels[skill] || "BEGINNER"} onChange={(event) => setSkillLevels((current) => ({ ...current, [skill]: event.target.value }))} className="mt-1 w-full rounded-lg border border-hairline bg-card px-3 py-2 text-sm text-ink">
-                  <option value="BEGINNER">Beginner</option><option value="INTERMEDIATE">Intermediate</option><option value="ADVANCED">Advanced</option>
-                </select>
-              </label>
+              <div key={`${skill}-level`}>
+                <SearchableSelect
+                  id={`skill-level-${skill}`}
+                  label={`Level ${skill}`}
+                  labelClassName="block text-xs font-semibold text-ink-muted mb-1"
+                  value={skillLevels[skill] || "BEGINNER"}
+                  onChange={(val) =>
+                    setSkillLevels((current) => ({ ...current, [skill]: val }))
+                  }
+                  options={[
+                    { code: "BEGINNER", name: "Beginner" },
+                    { code: "INTERMEDIATE", name: "Intermediate" },
+                    { code: "ADVANCED", name: "Advanced" },
+                  ]}
+                  placeholder="Pilih level skill"
+                  showSearch={false}
+                />
+              </div>
             ))}
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <label className="block text-xs font-semibold text-ink-muted">
               Ekspektasi budget minimum (Rp)
-              <input
-                type="text"
-                inputMode="numeric"
+              <FormattedNumericInput
                 value={expectedBudgetMin}
-                onChange={(e) => {
-                  const raw = e.target.value.replace(/\D/g, "");
-                  setExpectedBudgetMin(raw ? new Intl.NumberFormat("id-ID").format(Number(raw)) : "");
-                }}
+                onValueChange={setExpectedBudgetMin}
                 placeholder="Contoh: 500.000"
                 className="mt-1 w-full rounded-lg border border-hairline bg-card px-3 py-2 text-sm text-ink text-right"
               />
@@ -767,14 +850,9 @@ export default function ProfileSettings({
             </label>
             <label className="block text-xs font-semibold text-ink-muted">
               Ekspektasi budget maksimum (Rp)
-              <input
-                type="text"
-                inputMode="numeric"
+              <FormattedNumericInput
                 value={expectedBudgetMax}
-                onChange={(e) => {
-                  const raw = e.target.value.replace(/\D/g, "");
-                  setExpectedBudgetMax(raw ? new Intl.NumberFormat("id-ID").format(Number(raw)) : "");
-                }}
+                onValueChange={setExpectedBudgetMax}
                 placeholder="Contoh: 5.000.000"
                 className="mt-1 w-full rounded-lg border border-hairline bg-card px-3 py-2 text-sm text-ink text-right"
               />

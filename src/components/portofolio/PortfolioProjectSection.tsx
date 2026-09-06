@@ -72,7 +72,10 @@ export default function PortfolioProjectSection({
         >
           <div className="grid gap-4 md:grid-cols-2">
             <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
-              Judul karya
+              <span className="inline-flex items-center gap-1">
+                Judul karya
+                <span className="text-red-500 dark:text-red-400">*</span>
+              </span>
               <input
                 name="title"
                 type="text"
@@ -83,6 +86,7 @@ export default function PortfolioProjectSection({
                 className="rounded-lg border border-hairline bg-card px-4 py-2.5 text-sm outline-none focus:border-brand"
               />
             </label>
+            
             <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
               Tautan karya (opsional)
               <input
@@ -93,6 +97,7 @@ export default function PortfolioProjectSection({
                 className="rounded-lg border border-hairline bg-card px-4 py-2.5 text-sm outline-none focus:border-brand"
               />
             </label>
+            
             <label className="flex flex-col gap-1.5 text-sm font-medium text-ink md:col-span-2">
               URL gambar (opsional)
               <input
@@ -103,6 +108,7 @@ export default function PortfolioProjectSection({
                 className="rounded-lg border border-hairline bg-card px-4 py-2.5 text-sm outline-none focus:border-brand"
               />
             </label>
+            
             <label className="flex flex-col gap-1.5 text-sm font-medium text-ink md:col-span-2">
               Deskripsi (opsional)
               <textarea
@@ -114,7 +120,7 @@ export default function PortfolioProjectSection({
               />
             </label>
           </div>
-
+            
           <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
             {feedback?.type === "error" && (
               <p role="alert" className="mr-auto text-sm text-danger">

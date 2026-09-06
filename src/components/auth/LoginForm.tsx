@@ -60,7 +60,11 @@ export default function LoginForm() {
 
   return (
     <>
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        className="flex flex-col gap-5 rounded-xl border border-gray-200 p-6 dark:border-gray-700"
+      >
         <InputField
           label="Email"
           required

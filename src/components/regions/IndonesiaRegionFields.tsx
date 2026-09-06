@@ -214,7 +214,7 @@ export default function IndonesiaRegionFields({
             options={regencies.options}
             loading={regencies.loading}
             disabled={!provinceCode}
-            placeholder="Pilih kabupaten/kota"
+            placeholder="Pilih kota"
             searchPlaceholder="Cari kabupaten/kota..."
             required
           />
@@ -243,7 +243,7 @@ export default function IndonesiaRegionFields({
             options={villages.options}
             loading={villages.loading}
             disabled={!districtCode}
-            placeholder="Pilih kelurahan/desa"
+            placeholder="Pilih desa"
             searchPlaceholder="Cari kelurahan/desa..."
             required
           />

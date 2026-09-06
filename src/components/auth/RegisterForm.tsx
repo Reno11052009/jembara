@@ -74,7 +74,11 @@ export default function RegisterForm() {
   }, [formData]);
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
+    <form
+      onSubmit={handleSubmit}
+      noValidate
+      className="flex flex-col gap-5 rounded-xl border border-gray-200 p-6 dark:border-gray-700"
+    >
       <div>
         <div className="mb-1.5 flex justify-between text-xs text-ink-muted">
           <span>Profile Progress</span>

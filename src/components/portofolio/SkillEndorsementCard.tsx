@@ -5,6 +5,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import { setSkillEvidenceAction } from "@/app/actions/skills";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import type { PortfolioProject, PortfolioSkill } from "@/types/portfolio";
 
 interface SkillEndorsementCardProps {
@@ -23,6 +24,15 @@ export default function SkillEndorsementCard({ skill, projects }: SkillEndorseme
       else { await Swal.fire({ icon: "success", title: "Bukti skill diperbarui", text: "Admin dapat meninjau portofolio yang dipilih." }); router.refresh(); }
     });
   }
+
+  const evidenceOptions = [
+    { code: "", name: "Belum dipilih" },
+    ...projects.map((project) => ({
+      code: project.id,
+      name: project.title,
+    })),
+  ];
+
   return (
     <div className="rounded-xl border border-hairline bg-card p-5">
       <p className="font-display text-sm font-black text-ink">{skill.name}</p>
@@ -41,12 +51,19 @@ export default function SkillEndorsementCard({ skill, projects }: SkillEndorseme
           {skill.isVerified ? "Terverifikasi" : "Belum terverifikasi"}
         </span>
       </div>
-      <label className="mt-4 block text-xs font-semibold text-ink-muted">Bukti portofolio
-        <select value={skill.evidencePortfolioId ?? ""} disabled={pending} onChange={(event) => updateEvidence(event.target.value)} className="mt-1 w-full rounded-lg border border-hairline bg-card px-2 py-2 text-xs text-ink">
-          <option value="">Belum dipilih</option>
-          {projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}
-        </select>
-      </label>
+      <div className="mt-4">
+        <SearchableSelect
+          id={`evidence-portfolio-${skill.id}`}
+          label="Bukti portofolio"
+          labelClassName="block text-xs font-semibold text-ink-muted mb-1"
+          value={skill.evidencePortfolioId ?? ""}
+          disabled={pending}
+          onChange={(portfolioId) => updateEvidence(portfolioId)}
+          options={evidenceOptions}
+          placeholder="Pilih bukti portofolio"
+          showSearch={false}
+        />
+      </div>
     </div>
   );
 }

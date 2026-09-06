@@ -7,6 +7,7 @@ import Button from "@/components/ui/Button";
 import DatePicker from "@/components/ui/DatePicker";
 import MultiSelectDropdown from "@/components/ui/MultiSelectDropdown";
 import SearchableSelect from "@/components/ui/SearchableSelect";
+import FormattedNumericInput from "@/components/ui/FormattedNumericInput";
 import type { ProjectCreationData, ProjectWorkMode } from "@/types/my-jobs";
 
 const workModes: Array<{ code: ProjectWorkMode; name: string }> = [
@@ -55,7 +56,7 @@ export default function PasangLowonganView({ data }: { data: ProjectCreationData
             <span>
               Budget Tetap (Rp) <span className="text-red-500 dark:text-red-400">*</span>
             </span>
-            <input name="budget" inputMode="numeric" required value={budget} onChange={(event) => { const raw = event.target.value.replace(/\D/g, ""); setBudget(raw ? new Intl.NumberFormat("id-ID").format(Number(raw)) : ""); }} placeholder="Contoh: 2.500.000" className={`${fieldClass} text-right`} />
+            <FormattedNumericInput name="budget" required value={budget} onValueChange={setBudget} placeholder="Contoh: 2.500.000" className={`${fieldClass} text-right`} />
             <input type="hidden" name="budgetRaw" value={budget.replace(/\D/g, "")} />
             {state.fieldErrors?.budget?.[0] && <span className="text-sm font-normal text-danger">{state.fieldErrors.budget[0]}</span>}
           </label>

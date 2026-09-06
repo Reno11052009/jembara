@@ -55,7 +55,7 @@ export default function RoleSelectionCards() {
   return (
     <div className="grid items-start gap-6 md:grid-cols-2">
       {/* Card Pelajar */}
-      <div className="group relative rounded-2xl border border-zinc-200 dark:border-hairline bg-white/80 dark:bg-card/90 p-8 shadow-sm backdrop-blur-sm">
+      <div className="group relative rounded-2xl border border-zinc-200 dark:border-hairline bg-white/80 dark:bg-gray p-8 shadow-sm backdrop-blur-sm">
         <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-brand/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
         <div className="relative">
@@ -87,7 +87,7 @@ export default function RoleSelectionCards() {
       </div>
 
       {/* Card UMKM */}
-      <div className="group relative rounded-2xl border border-zinc-200 dark:border-hairline bg-white/80 dark:bg-card/90 p-8 shadow-sm backdrop-blur-sm">
+      <div className="group relative rounded-2xl border border-zinc-200 dark:border-hairline bg-white/80 dark:bg-gray p-8 shadow-sm backdrop-blur-sm">
         <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-brand/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
         <div className="relative">

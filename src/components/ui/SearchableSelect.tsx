@@ -9,9 +9,9 @@ export type SearchableSelectOption = {
 };
 
 type SearchableSelectProps = {
-  id: string;
-  name: string;
-  label: string;
+  id?: string;
+  name?: string;
+  label?: string;
   value: string;
   onChange: (code: string) => void;
   options: SearchableSelectOption[];
@@ -89,9 +89,11 @@ export default function SearchableSelect({
 
   return (
     <div ref={containerRef} className="relative">
-      <label htmlFor={id} className={labelClassName}>
-        {label} {required ? <span className="text-red-500 dark:text-red-400">*</span> : null}
-      </label>
+      {label ? (
+        <label htmlFor={id} className={labelClassName}>
+          {label} {required ? <span className="text-red-500 dark:text-red-400">*</span> : null}
+        </label>
+      ) : null}
 
       <button
         type="button"
@@ -108,7 +110,7 @@ export default function SearchableSelect({
       >
         <span className={selected ? "text-gray-900 dark:text-ink" : "text-gray-400 dark:text-ink-muted"}>
           {loading
-            ? `Memuat ${label.toLocaleLowerCase("id-ID")}...`
+            ? `Memuat ${(label ?? "pilihan").toLocaleLowerCase("id-ID")}...`
             : selected?.name ?? placeholder}
         </span>
         <ChevronDown
@@ -139,7 +141,7 @@ export default function SearchableSelect({
       </select>
 
       {isOpen ? (
-        <div className="absolute left-0 top-full z-20 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 dark:border-hairline bg-white dark:bg-card shadow-xl">
+        <div className="absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 dark:border-hairline bg-white dark:bg-card shadow-xl">
           {showSearch ? (
             <div className="flex items-center gap-2 border-b border-gray-100 dark:border-hairline px-3 py-2">
               <Search size={14} className="shrink-0 text-gray-400 dark:text-ink-muted" />
