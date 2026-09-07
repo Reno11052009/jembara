@@ -4,6 +4,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { config } from "@/config/unifiedConfig";
 import { getSafeChatbotRecommendation } from "@/lib/chatbot-recommendations";
+import {
+  getChatbotBanStatus,
+  isBannedChatbotPrompt,
+  recordChatbotViolation,
+} from "@/lib/chatbot-security";
 import { consumeRateLimits, createRateLimitKey } from "@/lib/rate-limit";
 import { verifySession } from "@/lib/session";
 
@@ -146,6 +151,26 @@ export async function POST(request: NextRequest) {
   if (!session) return json({ error: "Unauthorized" }, 401);
 
   try {
+    const banStatus = await getChatbotBanStatus(session.userId);
+    if (banStatus.isBanned) {
+      if (banStatus.isPermanent) {
+        return json(
+          {
+            error:
+              "Akun Anda telah diblokir permanen dari fitur AI karena pelanggaran berulang terhadap kebijakan keamanan.",
+          },
+          403,
+        );
+      }
+      return json(
+        {
+          error: `Akun Anda sedang dibatasi dari fitur AI selama ${banStatus.remainingMinutes} menit karena pelanggaran kebijakan keamanan.`,
+        },
+        403,
+        { "Retry-After": String(banStatus.retryAfterSeconds) },
+      );
+    }
+
     const rateLimit = await enforceRateLimit(session.userId);
     if (!rateLimit.allowed) {
       return json(
@@ -174,6 +199,33 @@ export async function POST(request: NextRequest) {
     }
 
     const latestUserMessage = parsedBody.data.messages.at(-1)!.content;
+
+    if (isBannedChatbotPrompt(latestUserMessage)) {
+      const violation = await recordChatbotViolation(session.userId);
+      if (violation.banned) {
+        if (violation.isPermanent) {
+          return json(
+            {
+              error:
+                "Anda telah melebihi batas toleransi pelanggaran prompt. Akses AI Anda diblokir permanen.",
+            },
+            403,
+          );
+        }
+        return json(
+          {
+            error: `Anda telah melakukan pelanggaran prompt. Akses AI Anda dibatasi selama ${violation.banDurationMinutes} menit.`,
+          },
+          403,
+          { "Retry-After": String(violation.retryAfterSeconds) },
+        );
+      }
+
+      return json({
+        message:
+          "Maaf, saya hanya dapat membantu pertanyaan terkait platform Jembara dan proyek digital UMKM. Ada yang bisa saya bantu terkait proyek atau fitur Jembara?",
+      });
+    }
     const recommendation = await getSafeChatbotRecommendation({
       userId: session.userId,
       role: session.role,

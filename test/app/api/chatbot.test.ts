@@ -5,6 +5,9 @@ const mocks = vi.hoisted(() => ({
   consumeRateLimits: vi.fn(),
   recommendation: vi.fn(),
   fetch: vi.fn(),
+  getChatbotBanStatus: vi.fn(),
+  isBannedChatbotPrompt: vi.fn(),
+  recordChatbotViolation: vi.fn(),
 }));
 
 vi.mock("server-only", () => ({}));
@@ -12,6 +15,11 @@ vi.mock("@/lib/session", () => ({ verifySession: mocks.verifySession }));
 vi.mock("@/lib/rate-limit", () => ({
   consumeRateLimits: mocks.consumeRateLimits,
   createRateLimitKey: (scope: string, value: string) => `${scope}:${value}`,
+}));
+vi.mock("@/lib/chatbot-security", () => ({
+  getChatbotBanStatus: mocks.getChatbotBanStatus,
+  isBannedChatbotPrompt: mocks.isBannedChatbotPrompt,
+  recordChatbotViolation: mocks.recordChatbotViolation,
 }));
 vi.mock("@/lib/chatbot-recommendations", () => ({
   getSafeChatbotRecommendation: mocks.recommendation,
@@ -55,6 +63,12 @@ describe("chatbot API", () => {
       { allowed: true, remaining: 99, retryAfterSeconds: 0 },
     ]);
     mocks.recommendation.mockResolvedValue({ handled: false });
+    mocks.getChatbotBanStatus.mockResolvedValue({ isBanned: false });
+    mocks.isBannedChatbotPrompt.mockReturnValue(false);
+    mocks.recordChatbotViolation.mockResolvedValue({
+      banned: false,
+      violationCount: 1,
+    });
     mocks.fetch.mockResolvedValue(
       new Response(
         JSON.stringify({ choices: [{ message: { content: "Jawaban aman" } }] }),
